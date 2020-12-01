@@ -4,7 +4,7 @@
     "slug": "expofirebase",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/ic_launcher.png",
     "splash": {
       "image": "./assets/images/estremera.png",
       "resizeMode": "cover",
