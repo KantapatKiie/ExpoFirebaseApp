@@ -10,6 +10,7 @@ import SignInScreen from "../screens/auth/SignIn";
 import SignUpScreen from "../screens/auth/SignUp";
 import BasketScreen from "../screens/Basket";
 import CategoriesScreen from "../screens/Categories";
+import ProductsScreen from "../screens/ProductScreen";
 import CustomDrawerContent from "./Menu";
 import { Icon, Header } from "../components";
 import { Images, materialTheme } from "../constants/";
@@ -134,6 +135,26 @@ function CategoriesStack(props) {
         options={{
           header: ({ navigation, scene }) => (
             <Header title="Categories" scene={scene} navigation={navigation} />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function ProductStack(props) {
+  return (
+    <Stack.Navigator
+      initialRouteName="Products"
+      mode="card"
+      headerMode="none"
+    >
+      <Stack.Screen
+        name="Products"
+        component={ProductsScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header title="Products" scene={scene} navigation={navigation} />
           ),
         }}
       />
@@ -284,67 +305,71 @@ function AppStack(props) {
       />
       <Drawer.Screen name="Basket" component={BasketStack} />
       <Drawer.Screen name="Categories" component={CategoriesStack} />
+      <Drawer.Screen name="Products" component={ProductStack} />
       <Drawer.Screen name="Pro" component={ProStack} />
     </Drawer.Navigator>
   );
 }
 
 function OnboardingStack(props) {
-  const [expoPushToken, setExpoPushToken] = useState("");
-  const [notification, setNotification] = useState(false);
-  const notificationListener = useRef();
-  const responseListener = useRef();
+  // const [expoPushToken, setExpoPushToken] = useState("");
+  // const [notification, setNotification] = useState(false);
+  // const notificationListener = useRef();
+  // const responseListener = useRef();
 
-  useEffect(() => {
-    registerForPushNotificationsAsync().then((token) =>
-      setExpoPushToken(token)
-    );
-    notificationListener.current = Notifications.addNotificationReceivedListener(
-      (notification) => {
-        setNotification(notification);
-      }
-    );
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        console.log(response);
-      }
-    );
-    return () => {
-      Notifications.removeNotificationSubscription(notificationListener);
-      Notifications.removeNotificationSubscription(responseListener);
-    };
-  }, []);
+  // useEffect(() => {
+  //   registerForPushNotificationsAsync().then((token) =>
+  //     setExpoPushToken(token)
+  //   );
 
-  async function registerForPushNotificationsAsync() {
-    let token;
-    const { status: existingStatus } = await Permissions.getAsync(
-      Permissions.NOTIFICATIONS
-    );
-    let finalStatus = existingStatus;
-    if (existingStatus !== "granted") {
-      const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
-      finalStatus = status;
-    }
-    if (finalStatus !== "granted") {
-      alert("Failed to get push token for push notification!");
-      return;
-    }
-    token = (await Notifications.getExpoPushTokenAsync()).data;
-    // console.log(expoPushToken);
-    firebase.database().ref("ExpoToken").set({
-      Token: token,
-    });
+  // notificationListener.current = Notifications.addNotificationReceivedListener(
+  //   (notification) => {
+  //     setNotification(notification);
+  //     console.log(notification);
+  //   }
+  // );
+  // responseListener.current = Notifications.addNotificationResponseReceivedListener(
+  //   (response) => {
+  //     console.log(response);
+  //   }
+  // );
+  //   return () => {
+  //     Notifications.removeNotificationSubscription(notificationListener);
+  //     Notifications.removeNotificationSubscription(responseListener);
+  //   };
+  // }, []);
 
-    if (Platform.OS === "android") {
-      Notifications.setNotificationChannelAsync("default", {
-        name: "default",
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#FF231F7C",
-      });
-    }
-    return token;
-  }
+  // async function registerForPushNotificationsAsync() {
+  //   let token;
+  //   const { status: existingStatus } = await Permissions.getAsync(
+  //     Permissions.NOTIFICATIONS
+  //   );
+  //   let finalStatus = existingStatus;
+    
+  //   if (existingStatus !== "granted") {
+  //     const { status } = Permissions.askAsync(Permissions.NOTIFICATIONS);
+  //     finalStatus = status;
+  //   }
+  //   if (finalStatus !== "granted") {
+  //     alert("Failed to get push token for push notification!");
+  //     return;
+  //   }
+  //   token = (await Notifications.getExpoPushTokenAsync()).data;
+  //   firebase.database().ref("ExpoToken").set({
+  //     Token: "token",
+  //   });
+  //   // console.log(token);
+
+  //   if (Platform.OS === "android") {
+  //     await Notifications.setNotificationChannelAsync("default", {
+  //       name: "default",
+  //       importance: Notifications.AndroidImportance.MAX,
+  //       vibrationPattern: [0, 250, 250, 250],
+  //       lightColor: "#FF231F7C",
+  //     });
+  //   }
+  //   return token;
+  // }
   return (
     <Stack.Navigator mode="card" headerMode="none">
       <Stack.Screen name="App" component={AppStack} />

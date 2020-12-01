@@ -8,35 +8,49 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Block, Text, theme } from "galio-framework";
-import materialTheme from "../constants/Theme";
+import { connect, useSelector } from "react-redux";
+import * as ActionProductActivity from "../actions/action-product/ActionProduct";
 
 const { width } = Dimensions.get("screen");
 
-class Product extends React.Component {
-  render() {
-    const {
-      navigation,
-      product,
-      horizontal,
-      full,
-      style,
-      priceColor,
-      imageStyle,
-    } = this.props;
-    const imageStyles = [
-      styles.image,
-      full ? styles.fullImage : styles.horizontalImage,
-      imageStyle,
-    ];
+function Product(props) {
+  const {
+    navigation,
+    product,
+    horizontal,
+    full,
+    style,
+    priceColor,
+    imageStyle,
+  } = props;
+  const imageStyles = [
+    styles.image,
+    full ? styles.fullImage : styles.horizontalImage,
+    imageStyle,
+  ];
+  const { objProductActivity } = useSelector((state) => ({
+    objProductActivity: state.actionProduct.objProductActivity,
+  }));
+  const onClickProducts = () => {
+    navigation.navigate("Products", { params: product });
+    let newObj = Object.assign({}, objProductActivity);
+    newObj.TITLE = product.title;
+    newObj.IMAGE = product.image;
+    newObj.PRICE = product.price;
+    newObj.DETAIL = product.detail;
+    newObj.TOTAL_PRICE = product.price;
+    newObj.COUNT = 0;
+    props.setObjProductActivity(newObj);
+  };
 
-    return (
+  return (
+    <>
       <Block
         row={horizontal}
         card
         flex
         style={[styles.product, styles.shadow, style]}
       >
-        {/* <TouchableWithoutFeedback onPress={() => navigation.navigate('Home', { product: product })}> */}
         {/* Source Image */}
         <TouchableWithoutFeedback>
           <Block flex style={[styles.imageContainer, styles.shadow]}>
@@ -44,22 +58,27 @@ class Product extends React.Component {
           </Block>
         </TouchableWithoutFeedback>
         {/* Click */}
-        <TouchableOpacity onPress={() => navigation.navigate('Home', { product: product })}>
+        <TouchableOpacity onPress={onClickProducts}>
           <Block flex space="between" style={styles.productDescription}>
-            <Text  style={styles.productTitle}>
-              {product.title}
-            </Text>
-            <Text style={styles.productPrice} muted={!priceColor} color={priceColor}>
+            <Text style={styles.productTitle}>{product.title}</Text>
+            <Text
+              style={styles.productPrice}
+              muted={!priceColor}
+              color={priceColor}
+            >
               {product.price}฿
             </Text>
           </Block>
         </TouchableOpacity>
       </Block>
-    );
-  }
+    </>
+  );
 }
 
-export default withNavigation(Product);
+// export default withNavigation(Product);
+export default withNavigation(
+  connect(null, ActionProductActivity.actions)(Product)
+);
 
 const styles = StyleSheet.create({
   product: {
@@ -77,7 +96,7 @@ const styles = StyleSheet.create({
   productPrice: {
     flexWrap: "wrap",
     fontSize: 13,
-    fontWeight: "700"
+    fontWeight: "700",
   },
   productDescription: {
     padding: theme.SIZES.BASE / 2,

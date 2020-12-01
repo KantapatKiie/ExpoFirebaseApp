@@ -22,7 +22,6 @@ const initialState = {
   listTrSearchHD: [],
   disabledInput: false,
   editable: false,
-  editableSupplier: false
 };
 
 export const reducer = persistReducer(

@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, Dimensions, ScrollView } from "react-native";
 import { Button, Block, Text, Input, theme } from "galio-framework";
 import { Icon, Product } from "../components/";
@@ -68,23 +68,17 @@ export default class Home extends React.Component {
   };
 
   renderProducts = () => {
-    
     return (
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.products}
       >
         <Block flex>
-          <Product product={products[0]} horizontal />
-          <Block flex row>
-            <Product
-              product={products[1]}
-              style={{ marginRight: theme.SIZES.BASE }}
-            />
-            <Product product={products[2]} />
-          </Block>
-          <Product product={products[3]} horizontal />
-          <Product product={products[4]} full />
+          {products.map((item) => (
+            <Block flex row key={item.title}>
+              <Product product={item} />
+            </Block>
+          ))}
         </Block>
       </ScrollView>
     );
@@ -148,3 +142,25 @@ const styles = StyleSheet.create({
     paddingVertical: theme.SIZES.BASE * 1.5,
   },
 });
+
+//#region Backup ProducView
+{
+  /* <ScrollView
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={styles.products}
+>
+  <Block flex>
+    <Product product={products[0]} horizontal />
+    <Block flex row>
+      <Product
+        product={products[1]}
+        style={{ marginRight: theme.SIZES.BASE }}
+      />
+      <Product product={products[2]} />
+    </Block>
+    <Product product={products[3]} horizontal />
+    <Product product={products[4]} full />
+  </Block>
+</ScrollView>; */
+}
+//#endregion
