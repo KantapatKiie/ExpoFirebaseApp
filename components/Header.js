@@ -17,9 +17,9 @@ import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const { height, width } = Dimensions.get("window");
 
-const iPhoneX = () =>
-  Platform.OS === "ios" &&
-  (height === 812 || width === 812 || height === 896 || width === 896);
+// const iPhoneX = () =>
+//   Platform.OS === "ios" &&
+//   (height === 812 || width === 812 || height === 896 || width === 896);
 
 const ModalMessage = ({ isWhite, style }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -85,7 +85,6 @@ const BasketButton = ({ isWhite, style, navigation }) => {
 };
 
 function Header(props) {
-  const { onSelect, onClose, show } = props;
   const [objSearch, setObjSearch] = useState({
     SEARCH_NO: "",
   });
@@ -310,7 +309,6 @@ function Header(props) {
 export default withNavigation(Header);
 
 const styles = StyleSheet.create({
-  
   button: {
     padding: 12,
     position: "relative",
@@ -323,7 +321,7 @@ const styles = StyleSheet.create({
   navbar: {
     paddingVertical: 0,
     paddingBottom: theme.SIZES.BASE * 1.5,
-    paddingTop: iPhoneX ? theme.SIZES.BASE * 3.5 : theme.SIZES.BASE,
+    paddingTop: theme.SIZES.BASE * 2.5,
     zIndex: 5,
   },
   shadow: {
