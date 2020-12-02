@@ -14,6 +14,7 @@ import { HeaderHeight } from "../constants/utils";
 import { connect, useSelector } from "react-redux";
 import * as ActionCart from "../actions/action-cart/ActionCart";
 import products from "../constants/products";
+import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 
 function CartScreen(props) {
   const { objCartBasket } = useSelector((state) => ({
@@ -25,7 +26,7 @@ function CartScreen(props) {
   }, []);
 
   //#region renderProduct
-  let totalPrice = 0;  //Cal TotalPrice
+  let totalPrice = 0; //Cal TotalPrice
   for (let i = 0; i < products.length; i++) {
     totalPrice += products[i].price;
   }
@@ -43,12 +44,37 @@ function CartScreen(props) {
             }}
           />
           <Block style={styles.containerDetail}>
-            <Text style={styles.titleText}>{item.title}</Text>
-            <Text style={styles.titleText}>&nbsp;</Text>
-            <Text style={styles.titleText}>&nbsp;</Text>
+            <Text style={styles.titleTextOne}>{item.title}</Text>
             <Block row>
-              <Text style={styles.titleText}>Price:</Text>
-              <Text style={styles.titleText}>{item.price}฿</Text>
+              <Text style={styles.titleText}>Price: {item.price}฿</Text>
+              <Text style={styles.titleText}>Value: ####</Text>
+            </Block>
+            <Text>&nbsp;</Text>
+            <Block style={styles.IconControl}>
+            <TouchableOpacity onPress={() => console.log("Plus")}>
+              <Icons
+                name="plus-circle"
+                size={20}
+                color="black"
+                style={styles.IconBack}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => console.log("Disturb")}>
+              <Icons
+                name="do-not-disturb"
+                size={20}
+                color="black"
+                style={styles.IconBack}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => console.log("Delete")}>
+              <Icons
+                name="delete"
+                size={20}
+                color="black"
+                style={styles.IconBack}
+              />
+            </TouchableOpacity>
             </Block>
           </Block>
         </Block>
@@ -130,7 +156,7 @@ function CartScreen(props) {
           </Block>
         </ScrollView>
       </Block>
-      <Block row style={{backgroundColor:"white"}}>
+      <Block row style={{ backgroundColor: "white" }}>
         <Text style={styles.totalPrice}>Total Price</Text>
         <Text style={styles.totalPrices}>{totalPrice}฿</Text>
       </Block>
@@ -164,16 +190,16 @@ export default connect(null, ActionCart.actions)(CartScreen);
 const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.COLORS.BUTTON_COLOR,
-    marginTop: Platform.OS === "android" ? -HeaderHeight : 0,
+    marginTop: Platform.OS === "android" ? -HeaderHeight - 10 : 0,
     padding: 2,
-    backgroundColor: "white",
+    backgroundColor: "#242538",
   },
   containerConfirm: {
     backgroundColor: theme.COLORS.BUTTON_COLOR,
     backgroundColor: "white",
   },
   containerImage: {
-    backgroundColor: "#242538",
+    backgroundColor: "white",
     flexDirection: "row",
     overflow: "scroll",
     marginTop: theme.SIZES.BASE - 20,
@@ -192,7 +218,7 @@ const styles = StyleSheet.create({
   paddeds: {
     paddingHorizontal: theme.SIZES.BASE,
     flexDirection: "row",
-    backgroundColor: "white"
+    backgroundColor: "white",
   },
   button: {
     borderRadius: 12,
@@ -204,26 +230,38 @@ const styles = StyleSheet.create({
   },
   IconBack: {
     color: "black",
+    paddingLeft: 20
   },
   titleText: {
     fontSize: 15,
     fontWeight: "bold",
-    paddingLeft: 10,
+    paddingLeft: 5,
     textAlign: "left",
-    color: "white",
+    color: "black",
     flex: 1,
   },
-  totalPrice:{
+  titleTextOne: {
+    fontSize: 14,
+    color: "black",
+    textAlign: "left",
+    padding: 5,
+  },
+  totalPrice: {
     fontSize: 17,
     fontWeight: "bold",
-    padding: 10
+    padding: 10,
   },
-  totalPrices:{
+  totalPrices: {
     fontSize: 17,
     fontWeight: "bold",
     flex: 5,
     textAlign: "right",
-    padding: 10
+    padding: 10,
+  },
+  IconControl:{
+    alignSelf: "flex-start",
+    position: "relative",
+    flexDirection: "row"
   }
 });
 
