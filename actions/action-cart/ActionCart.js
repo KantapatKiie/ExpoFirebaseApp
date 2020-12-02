@@ -14,8 +14,13 @@ const actionTypes = {
 
 const initialState = {
   objCartBasket: {
-    CART_ID: "CRT001",
+    CART_ID: "CRTID001",
+    TITLE: "",
+    DETAIL: "",
+    IMAGE: "../../assets/tiendat.png",
+    PRICE: 0,
     COUNT: 0,
+    TOTAL_PRICE: 0,
     INSERT_DT: moment(new Date()).format("YYYY-MM-DDT00:00:00"),
   },
   listTrCartBasket: [],

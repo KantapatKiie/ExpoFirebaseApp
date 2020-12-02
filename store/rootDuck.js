@@ -1,4 +1,4 @@
-import { all } from "redux-saga/effects";
+// import { all } from "redux-saga/effects";
 import { combineReducers } from "redux";
 import * as login from "../actions/action-actives/ActionLogin";
 import * as auth from "./ducks/auth.duck";

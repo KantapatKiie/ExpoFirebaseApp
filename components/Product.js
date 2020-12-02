@@ -39,7 +39,7 @@ function Product(props) {
     newObj.PRICE = product.price;
     newObj.DETAIL = product.detail;
     newObj.TOTAL_PRICE = product.price;
-    newObj.COUNT = 0;
+    newObj.COUNT = 1;
     props.setObjProductActivity(newObj);
   };
 

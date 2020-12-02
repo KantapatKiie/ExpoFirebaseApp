@@ -29,7 +29,8 @@ export default class Settings extends React.Component {
       case 'button': 
         return (
           <Block style={styles.rows}>
-            <TouchableOpacity onPress={() => navigate('Pro')}>
+            {/* <TouchableOpacity onPress={() => navigate('Pro')}> */}
+            <TouchableOpacity>
               <Block row middle space="between" style={{paddingTop:7}}>
                 <Text size={14}>{item.title}</Text>
                 <Icon name="angle-right" family="font-awesome" style={{ paddingRight: 5 }} />

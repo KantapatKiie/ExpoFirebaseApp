@@ -18,7 +18,7 @@ const initialState = {
     DETAIL: "",
     IMAGE: "../../assets/tiendat.png",
     PRICE: 0,
-    COUNT: 0,
+    COUNT: 1,
     TOTAL_PRICE: 0,
   },
   // listTrProductActivity: [],
@@ -34,7 +34,6 @@ export const reducer = persistReducer(
         return {
           ...state,
           objProductActivity: action.payload.obj,
-          editable: false,
         };
       }
 

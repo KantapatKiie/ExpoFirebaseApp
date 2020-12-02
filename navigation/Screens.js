@@ -4,13 +4,13 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import HomeScreen from "../screens/Home";
 import ProfileScreen from "../screens/Profile";
-import ProScreen from "../screens/Pro";
 import SettingsScreen from "../screens/Settings";
 import SignInScreen from "../screens/auth/SignIn";
 import SignUpScreen from "../screens/auth/SignUp";
 import BasketScreen from "../screens/Basket";
 import CategoriesScreen from "../screens/Categories";
 import ProductsScreen from "../screens/ProductScreen";
+import CartScreen from "../screens/CartScreen";
 import CustomDrawerContent from "./Menu";
 import { Icon, Header } from "../components";
 import { Images, materialTheme } from "../constants/";
@@ -144,11 +144,7 @@ function CategoriesStack(props) {
 
 function ProductStack(props) {
   return (
-    <Stack.Navigator
-      initialRouteName="Products"
-      mode="card"
-      headerMode="none"
-    >
+    <Stack.Navigator initialRouteName="Products" mode="card" headerMode="none">
       <Stack.Screen
         name="Products"
         component={ProductsScreen}
@@ -162,10 +158,18 @@ function ProductStack(props) {
   );
 }
 
-function ProStack(props) {
+function CartStack(props) {
   return (
-    <Stack.Navigator initialRouteName="Pro" mode="card" headerMode="none">
-      <Stack.Screen name="Pro" component={ProScreen} />
+    <Stack.Navigator initialRouteName="Cart" mode="card" headerMode="screen">
+      <Stack.Screen
+        name="Cart"
+        component={CartScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header title="Cart" scene={scene} navigation={navigation} />
+          ),
+        }}
+      />
     </Stack.Navigator>
   );
 }
@@ -306,7 +310,7 @@ function AppStack(props) {
       <Drawer.Screen name="Basket" component={BasketStack} />
       <Drawer.Screen name="Categories" component={CategoriesStack} />
       <Drawer.Screen name="Products" component={ProductStack} />
-      <Drawer.Screen name="Pro" component={ProStack} />
+      <Drawer.Screen name="Cart" component={CartStack} />
     </Drawer.Navigator>
   );
 }
@@ -345,7 +349,7 @@ function OnboardingStack(props) {
   //     Permissions.NOTIFICATIONS
   //   );
   //   let finalStatus = existingStatus;
-    
+
   //   if (existingStatus !== "granted") {
   //     const { status } = Permissions.askAsync(Permissions.NOTIFICATIONS);
   //     finalStatus = status;
@@ -356,7 +360,7 @@ function OnboardingStack(props) {
   //   }
   //   token = (await Notifications.getExpoPushTokenAsync()).data;
   //   firebase.database().ref("ExpoToken").set({
-  //     Token: "token",
+  //     Token: token,
   //   });
   //   // console.log(token);
 
