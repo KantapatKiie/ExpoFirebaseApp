@@ -8,6 +8,7 @@ import {
   Alert,
   View,
   Modal,
+  ToastAndroid,
 } from "react-native";
 import { Block, Input, theme } from "galio-framework";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -18,6 +19,7 @@ import { Product } from "../components/";
 import products from "../constants/products";
 import moment from "moment";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+// import Toast from 'react-native-toast-message';
 
 const { height, width } = Dimensions.get("screen");
 
@@ -131,6 +133,10 @@ function Basket(props) {
     </Modal>
   );
   //#endregion
+  
+  const showToast = () => {
+    ToastAndroid.show("Test ToastAndriod React Native !", ToastAndroid.SHORT);
+  };
 
   return (
     <>
@@ -200,6 +206,16 @@ function Basket(props) {
               buttonStyle={styles.btnStyle}
             />
           </Block>
+          <Block>
+            <Button
+              titleStyle={{ color: "white" }}
+              title="Snackbar"
+              type="solid"
+              containerStyle={styles.blockStyle}
+              buttonStyle={styles.btnStyle}
+              onPress={() => showToast()}
+            />
+          </Block>
           {/* Image Products */}
           <Block flex style={styles2.bloxStyle}>
             <Product product={products[5]} horizontal />
@@ -221,6 +237,7 @@ function Basket(props) {
         </ScrollView>
       </View>
       {modal}
+      {/* <Toast ref={(ref) => Toast.setRef(ref)} /> */}
     </>
   );
 }
