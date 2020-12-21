@@ -19,6 +19,8 @@ import * as ActionLogin from "../actions/action-actives/ActionLogin";
 import * as firebase from "firebase";
 import * as Notifications from "expo-notifications";
 import * as Permissions from "expo-permissions";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 
 //SET FIREBASE-CONFIG
 const firebaseConfig = {
@@ -46,6 +48,7 @@ Notifications.setNotificationHandler({
 const { width } = Dimensions.get("screen");
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
+const Tab = createBottomTabNavigator();
 
 function ProfileStack(props) {
   return (
@@ -182,17 +185,73 @@ function HomeStack(props) {
         component={HomeScreen}
         options={{
           header: ({ navigation, scene }) => (
-            <Header
-              search
-              tabs
-              title="Home"
-              navigation={navigation}
-              scene={scene}
-            />
+            <>
+              <Header
+                search
+                tabs
+                title="Home"
+                navigation={navigation}
+                scene={scene}
+              />
+            </>
           ),
         }}
       />
     </Stack.Navigator>
+  );
+}
+function HomeStackBottom() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen
+        name="Flash Sale"
+        component={HomeStack}
+        options={{
+          tabBarLabel: 'Flash Sale',
+          tabBarIcon: ({ color, size }) => (
+            <Icons name="home" color={"orange"} size={size} />
+          ),
+          // tabBarBadge: 3,
+        }}
+      />
+      <Tab.Screen
+        name="Promotion"
+        component={SettingsStack}
+        style={{color:"black"}}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icons name="news" color={"green"} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="News"
+        component={SettingsStack}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icons name="news" color={"pink"} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Events"
+        component={SettingsStack}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icons name="news" color={"red"} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Payment"
+        component={SettingsStack}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icons name="news" color={"black"} size={size} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
   );
 }
 
@@ -238,7 +297,7 @@ function AppStack(props) {
     >
       <Drawer.Screen
         name="Home"
-        component={HomeStack}
+        component={HomeStackBottom}
         options={{
           drawerIcon: ({ focused }) => (
             <Icon
