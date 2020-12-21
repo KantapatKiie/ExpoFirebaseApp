@@ -3,11 +3,12 @@ import { withNavigation } from "@react-navigation/compat";
 import {
   TouchableOpacity,
   StyleSheet,
-  Platform,
   Dimensions,
   Modal,
   TouchableHighlight,
   View,
+  ScrollView,
+  SafeAreaView,
 } from "react-native";
 import { Block, NavBar, Input, Text, theme } from "galio-framework";
 import Icon from "./Icon";
@@ -228,7 +229,7 @@ function Header(props) {
     );
   };
 
-  //renderFucntion Tabs 
+  //renderFucntion Tabs
   const renderTabs = () => {
     const { tabTitleLeft, tabTitleRight } = props;
 
@@ -249,7 +250,7 @@ function Header(props) {
         <TouchableOpacity
           shadowless
           style={[styles.tab, styles.divider]}
-          onPress={() => props.navigation.navigate("Pro")}
+          // onPress={() => props.navigation.navigate("Pro")}
         >
           <Block row middle>
             <Icon name="grid" family="feather" style={{ paddingRight: 8 }} />
@@ -261,27 +262,25 @@ function Header(props) {
       </Block>
     );
   };
-  const renderTabsBottom = () => {
+  const renderTabViews = () => {
     const { tabTitleLeft, tabTitleRight } = props;
-
     return (
-      <Block row style={styles.tabsBottom}>
-        <TouchableOpacity
-          shadowless
-          style={[styles.tab, styles.divider]}
-          //onPress={() => props.navigation.navigate("Categories")}
-        >
-          <Block row middle>
-            <Icon name="grid" family="feather" style={{ paddingRight: 8 }} />
-            <Text size={16} style={styles.tabTitle}>
-              {tabTitleLeft || "Flash Sale"}
-            </Text>
-          </Block>
-        </TouchableOpacity>
+      <Block row style={styles.tabs}>
+        <SafeAreaView>
+          <ScrollView>
+            <TouchableOpacity shadowless style={[styles.tab, styles.divider]}>
+              <Block row middle>
+                {/* <Icon name="back" family="feather" style={{ paddingRight: 8 }} /> */}
+                <Text size={16} style={styles.tabTitle}>
+                  Product Logo
+                </Text>
+              </Block>
+            </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
       </Block>
     );
   };
-  //renderTabs
   const { search, tabs } = props;
   const renderHeader = () => {
     if (search || tabs) {
@@ -289,22 +288,12 @@ function Header(props) {
         <Block center>
           {/* {search ? renderSearch() : null} */}
           {tabs ? renderTabs() : null}
+          {tabs ? renderTabViews() : null}
         </Block>
       );
     }
     return null;
   };
-  const renderBottom = () => {
-    if (search || tabs) {
-      return (
-        <Block>
-          {/* {search ? renderSearch() : null} */}
-          {tabs ? renderTabsBottom() : null}
-        </Block>
-      );
-    }
-    return null;
-  }
 
   const { back, title, white, transparent } = props;
   const noShadow = ["Search", "Categories", "Deals", "Pro", "Profile"].includes(
@@ -316,26 +305,27 @@ function Header(props) {
   ];
 
   return (
-    <Block style={headerStyles}>
-      <NavBar
-        back={back}
-        title={title}
-        style={styles.navbar}
-        transparent={transparent}
-        rightStyle={{ alignItems: "center" }}
-        leftStyle={{ flex: 0.3, paddingTop: 2 }}
-        leftIconName={back ? "chevron-left" : "navicon"}
-        leftIconColor={white ? theme.COLORS.WHITE : theme.COLORS.ICON}
-        titleStyle={[
-          styles.title,
-          { color: theme.COLORS[white ? "WHITE" : "ICON"] },
-        ]}
-        right={renderRight()}
-        onLeftPress={handleLeftPress}
-      />
-      {renderHeader()}
-      {/* {renderBottom()} */}
-    </Block>
+    <>
+      <Block style={headerStyles}>
+        <NavBar
+          back={back}
+          title={title}
+          style={styles.navbar}
+          transparent={transparent}
+          rightStyle={{ alignItems: "center" }}
+          leftStyle={{ flex: 0.3, paddingTop: 2 }}
+          leftIconName={back ? "chevron-left" : "navicon"}
+          leftIconColor={white ? theme.COLORS.WHITE : theme.COLORS.ICON}
+          titleStyle={[
+            styles.title,
+            { color: theme.COLORS[white ? "WHITE" : "ICON"] },
+          ]}
+          right={renderRight()}
+          onLeftPress={handleLeftPress}
+        />
+        {renderHeader()}
+      </Block>
+    </>
   );
 }
 
@@ -409,7 +399,7 @@ const styles = StyleSheet.create({
   tabTitle: {
     lineHeight: 19,
     fontWeight: "300",
-    fontSize: 12
+    fontSize: 12,
   },
   // Modal CSS
   centeredView: {
