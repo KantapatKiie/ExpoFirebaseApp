@@ -316,6 +316,7 @@ function AppStack(props) {
 }
 
 function OnboardingStack(props) {
+  //#region BackpUp Firebase
   // const [expoPushToken, setExpoPushToken] = useState("");
   // const [notification, setNotification] = useState(false);
   // const notificationListener = useRef();
@@ -374,6 +375,7 @@ function OnboardingStack(props) {
   //   }
   //   return token;
   // }
+  //#endregion
   return (
     <Stack.Navigator mode="card" headerMode="none">
       <Stack.Screen name="App" component={AppStack} />

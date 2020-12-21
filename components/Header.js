@@ -227,7 +227,8 @@ function Header(props) {
       />
     );
   };
-  //Button Search
+
+  //renderFucntion Tabs 
   const renderTabs = () => {
     const { tabTitleLeft, tabTitleRight } = props;
 
@@ -260,9 +261,29 @@ function Header(props) {
       </Block>
     );
   };
-  //Header component
+  const renderTabsBottom = () => {
+    const { tabTitleLeft, tabTitleRight } = props;
+
+    return (
+      <Block row style={styles.tabsBottom}>
+        <TouchableOpacity
+          shadowless
+          style={[styles.tab, styles.divider]}
+          //onPress={() => props.navigation.navigate("Categories")}
+        >
+          <Block row middle>
+            <Icon name="grid" family="feather" style={{ paddingRight: 8 }} />
+            <Text size={16} style={styles.tabTitle}>
+              {tabTitleLeft || "Flash Sale"}
+            </Text>
+          </Block>
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+  //renderTabs
+  const { search, tabs } = props;
   const renderHeader = () => {
-    const { search, tabs } = props;
     if (search || tabs) {
       return (
         <Block center>
@@ -273,6 +294,17 @@ function Header(props) {
     }
     return null;
   };
+  const renderBottom = () => {
+    if (search || tabs) {
+      return (
+        <Block>
+          {/* {search ? renderSearch() : null} */}
+          {tabs ? renderTabsBottom() : null}
+        </Block>
+      );
+    }
+    return null;
+  }
 
   const { back, title, white, transparent } = props;
   const noShadow = ["Search", "Categories", "Deals", "Pro", "Profile"].includes(
@@ -302,6 +334,7 @@ function Header(props) {
         onLeftPress={handleLeftPress}
       />
       {renderHeader()}
+      {/* {renderBottom()} */}
     </Block>
   );
 }
@@ -356,6 +389,11 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   tabs: {
+    marginBottom: 15,
+    marginTop: 10,
+    elevation: 5,
+  },
+  tabsBottom: {
     marginBottom: 15,
     marginTop: 10,
     elevation: 5,
