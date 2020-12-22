@@ -7,21 +7,101 @@ import {
   Modal,
   TouchableHighlight,
   View,
-  ScrollView,
   SafeAreaView,
+  SectionList,
+  Image,
+  FlatList,
 } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import { Block, NavBar, Input, Text, theme } from "galio-framework";
 import Icon from "./Icon";
 import materialTheme from "../constants/Theme";
 import { API_URL } from "../config/config.app";
-import Icons from "react-native-vector-icons/MaterialCommunityIcons";
+import Icons from "react-native-vector-icons/MaterialIcons";
 
 const { height, width } = Dimensions.get("window");
 
 // const iPhoneX = () =>
 //   Platform.OS === "ios" &&
 //   (height === 812 || width === 812 || height === 896 || width === 896);
+const ModalNotification = ({ isWhite, style }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+  return (
+    <>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Coming soon!</Text>
+            <TouchableHighlight
+              style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+              onPress={() => {
+                setModalVisible(!modalVisible);
+              }}
+            >
+              <Text style={styles.textStyle}>Close</Text>
+            </TouchableHighlight>
+          </View>
+        </View>
+      </Modal>
 
+      <TouchableOpacity
+        style={[styles.button, style]}
+        onPress={() => {
+          setModalVisible(true);
+        }}
+      >
+        <Icons name="notifications" color={"black"} size={20} />
+        <Block middle style={styles.notify} />
+      </TouchableOpacity>
+    </>
+  );
+};
+const ModalSearch = ({ isWhite, style }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+  return (
+    <>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Coming soon!</Text>
+            <TouchableHighlight
+              style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+              onPress={() => {
+                setModalVisible(!modalVisible);
+              }}
+            >
+              <Text style={styles.textStyle}>Close</Text>
+            </TouchableHighlight>
+          </View>
+        </View>
+      </Modal>
+
+      <TouchableOpacity
+        style={[styles.button, style]}
+        onPress={() => {
+          setModalVisible(true);
+        }}
+      >
+        <Icons name="search" color={"black"} size={20} />
+        <Block middle style={styles.notify} />
+      </TouchableOpacity>
+    </>
+  );
+};
 const ModalMessage = ({ isWhite, style }) => {
   const [modalVisible, setModalVisible] = useState(false);
   return (
@@ -90,9 +170,113 @@ function Header(props) {
     SEARCH_NO: "",
   });
 
-  const handleLeftPress = () => {
-    const { back, navigation } = props;
-    return back ? navigation.goBack() : navigation.openDrawer();
+  const renderLeft = () => {
+    const { white, title, navigation } = props;
+
+    if (title === "Title") {
+      return [
+        <ModalNotification
+          key="chat-title"
+          navigation={navigation}
+          isWhite={white}
+        />,
+        <ModalSearch
+          key="basket-title"
+          navigation={navigation}
+          isWhite={white}
+        />,
+      ];
+    }
+
+    switch (title) {
+      case "Home":
+        return [
+          <ModalNotification
+            key="chat-home"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-home"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Deals":
+        return [
+          <ModalNotification key="chat-categories" navigation={navigation} />,
+          <ModalSearch key="basket-categories" navigation={navigation} />,
+        ];
+      case "Categories":
+        return [
+          <ModalNotification
+            key="chat-categories"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-categories"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Category":
+        return [
+          <ModalNotification
+            key="chat-deals"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-deals"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Profile":
+        return [
+          <ModalNotification
+            key="chat-profile"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-deals"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Search":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Settings":
+        return [];
+      case "Basket":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      default:
+        break;
+    }
   };
   const renderRight = () => {
     const { white, title, navigation } = props;
@@ -203,7 +387,7 @@ function Header(props) {
     }
   };
 
-  //Input Search
+  //Search
   const renderSearch = () => {
     const changeSearch = (e) => {
       let newObjSearch = Object.assign({}, objSearch);
@@ -230,53 +414,97 @@ function Header(props) {
   };
 
   //renderFucntion Tabs
-  const renderTabs = () => {
-    const { tabTitleLeft, tabTitleRight } = props;
-
+  const ListItemTypeProduct = ({ item }) => {
     return (
-      <Block row style={styles.tabs}>
+      <View style={styles2.item}>
         <TouchableOpacity
           shadowless
           style={[styles.tab, styles.divider]}
-          onPress={() => props.navigation.navigate("Categories")}
+          onPress={() => {
+            props.navigation.navigate(item.sectionPage);
+          }}
         >
-          <Block row middle>
-            <Icon name="grid" family="feather" style={{ paddingRight: 8 }} />
-            <Text size={16} style={styles.tabTitle}>
-              {tabTitleLeft || "Categories"}
-            </Text>
-          </Block>
+          <Icons name={item.icon} style={{ paddingRight: 10, fontSize: 20 }} />
+          <Text style={styles.tabTitle}>{item.text}</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          shadowless
-          style={[styles.tab, styles.divider]}
-          // onPress={() => props.navigation.navigate("Pro")}
-        >
-          <Block row middle>
-            <Icon name="grid" family="feather" style={{ paddingRight: 8 }} />
-            <Text size={16} style={styles.tabTitle}>
-              {tabTitleLeft || "Products"}
-            </Text>
-          </Block>
-        </TouchableOpacity>
+      </View>
+    );
+  };
+  const renderTabs = () => {
+    return (
+      <Block style={styles2.container1}>
+        <StatusBar style="auto" />
+        <SafeAreaView style={{ flex: 1 }}>
+          <SectionList
+            contentContainerStyle={{ paddingHorizontal: 10 }}
+            stickySectionHeadersEnabled={false}
+            sections={sectionProductType}
+            renderSectionHeader={({ section }) => (
+              <>
+                {section.horizontal ? (
+                  <FlatList
+                    horizontal
+                    data={section.data}
+                    renderItem={({ item }) => (
+                      <ListItemTypeProduct item={item} />
+                    )}
+                    showsHorizontalScrollIndicator={false}
+                  />
+                ) : null}
+              </>
+            )}
+            renderItem={({ item, section }) => {
+              if (section.horizontal) {
+                return null;
+              }
+              return <ListItem item={item} />;
+            }}
+          />
+        </SafeAreaView>
       </Block>
     );
   };
-  const renderTabViews = () => {
-    const { tabTitleLeft, tabTitleRight } = props;
+  const ListItemProduct = ({ item }) => {
     return (
-      <Block row style={styles.tabs}>
-        <SafeAreaView>
-          <ScrollView>
-            <TouchableOpacity shadowless style={[styles.tab, styles.divider]}>
-              <Block row middle>
-                {/* <Icon name="back" family="feather" style={{ paddingRight: 8 }} /> */}
-                <Text size={16} style={styles.tabTitle}>
-                  Product Logo
-                </Text>
-              </Block>
-            </TouchableOpacity>
-          </ScrollView>
+      <View style={styles2.item}>
+        <Image
+          source={{
+            uri: item.uri,
+          }}
+          style={styles2.itemPhoto}
+          resizeMode="cover"
+        />
+        <Text style={styles2.itemText}>{item.text}</Text>
+      </View>
+    );
+  };
+  const renderTabViews = () => {
+    return (
+      <Block style={styles2.container2}>
+        <SafeAreaView style={{ flex: 1 }}>
+          <SectionList
+            contentContainerStyle={{ paddingHorizontal: 10 }}
+            stickySectionHeadersEnabled={false}
+            sections={sectionProduct}
+            renderSectionHeader={({ section }) => (
+              <>
+                {section.horizontal ? (
+                  <FlatList
+                    horizontal
+                    data={section.data}
+                    renderItem={({ item }) => <ListItemProduct item={item} />}
+                    showsHorizontalScrollIndicator={false}
+                  />
+                ) : null}
+              </>
+            )}
+            renderItem={({ item, section }) => {
+              if (section.horizontal) {
+                return null;
+              }
+              return <ListItem item={item} />;
+            }}
+          />
         </SafeAreaView>
       </Block>
     );
@@ -295,8 +523,8 @@ function Header(props) {
     return null;
   };
 
-  const { back, title, white, transparent } = props;
-  const noShadow = ["Search", "Categories", "Deals", "Pro", "Profile"].includes(
+  const { back, title, transparent } = props;
+  const noShadow = ["Search", "Categories", "Profile"].includes(
     title
   );
   const headerStyles = [
@@ -309,19 +537,18 @@ function Header(props) {
       <Block style={headerStyles}>
         <NavBar
           back={back}
-          title={title}
+          // title={title}
+          title={"WangDek"}
           style={styles.navbar}
           transparent={transparent}
           rightStyle={{ alignItems: "center" }}
-          leftStyle={{ flex: 0.3, paddingTop: 2 }}
-          leftIconName={back ? "chevron-left" : "navicon"}
-          leftIconColor={white ? theme.COLORS.WHITE : theme.COLORS.ICON}
-          titleStyle={[
-            styles.title,
-            { color: theme.COLORS[white ? "WHITE" : "ICON"] },
-          ]}
+          leftStyle={{ alignItems: "center", flexDirection: "row" }}
+          titleStyle={[styles.title]}
+          left={renderLeft()}
           right={renderRight()}
-          onLeftPress={handleLeftPress}
+          // onLeftPress={handleLeftPress}
+          // leftIconName={back ? "chevron-left" : "navicon"}
+          // leftIconColor={white ? theme.COLORS.WHITE : theme.COLORS.ICON}
         />
         {renderHeader()}
       </Block>
@@ -337,15 +564,16 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   title: {
-    width: "100%",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "bold",
+    alignItems: "center",
+    color: "black"
   },
   navbar: {
     paddingVertical: 0,
-    paddingBottom: theme.SIZES.BASE * 1.5,
-    paddingTop: theme.SIZES.BASE * 2.5,
-    zIndex: 5,
+    paddingBottom: theme.SIZES.BASE * 1.4,
+    paddingTop: theme.SIZES.BASE * 2.8,
+    zIndex: 4,
   },
   shadow: {
     backgroundColor: theme.COLORS.WHITE,
@@ -368,7 +596,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.COLORS.WHITE,
   },
   divider: {
-    borderRightWidth: 0.3,
+    borderRightWidth: 0,
     borderRightColor: theme.COLORS.MUTED,
   },
   search: {
@@ -390,16 +618,17 @@ const styles = StyleSheet.create({
   },
   tab: {
     backgroundColor: theme.COLORS.TRANSPARENT,
-    width: width * 0.5,
+    width: width * 0.35,
     borderRadius: 0,
     borderWidth: 0,
-    height: 24,
+    height: 20,
     elevation: 0,
+    flexDirection: "row",
   },
   tabTitle: {
-    lineHeight: 19,
-    fontWeight: "300",
-    fontSize: 12,
+    lineHeight: 20,
+    fontWeight: "400",
+    fontSize: 13,
   },
   // Modal CSS
   centeredView: {
@@ -438,3 +667,118 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
+const styles2 = StyleSheet.create({
+  container1: {
+    backgroundColor: "#f2f0f0",
+    height: 40,
+  },
+  container2: {
+    backgroundColor: "white",
+    height: 60,
+  },
+  sectionHeader: {
+    fontWeight: "800",
+    fontSize: 18,
+    color: "#f4f4f4",
+    marginTop: 20,
+    marginBottom: 5,
+  },
+  item: {
+    margin: 10,
+  },
+  itemPhoto: {
+    width: 25,
+    height: 25,
+    alignSelf: "center",
+  },
+  itemText: {
+    color: "black",
+    marginTop: 5,
+  },
+  itemiconType: {
+    height: 50,
+    width: 50,
+  },
+});
+
+const sectionProductType = [
+  {
+    horizontal: true,
+    data: [
+      {
+        key: "1",
+        text: "Categories",
+        icon: "category",
+        sectionPage: "Categories",
+      },
+      {
+        key: "2",
+        text: "Product",
+        icon: "build",
+        sectionPage: "Categories",
+      },
+      {
+        key: "3",
+        text: "Test1",
+        icon: "extension",
+        sectionPage: "Categories",
+      },
+      {
+        key: "4",
+        text: "Test2",
+        icon: "extension",
+        sectionPage: "Categories",
+      },
+    ],
+  },
+];
+const sectionProduct = [
+  {
+    title: "Made for you",
+    horizontal: true,
+    data: [
+      {
+        key: "1",
+        text: "Item text 1",
+        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+      },
+      {
+        key: "2",
+        text: "Item text 2",
+        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+      },
+
+      {
+        key: "3",
+        text: "Item text 3",
+        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+      },
+      {
+        key: "4",
+        text: "Item text 4",
+        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+      },
+      {
+        key: "5",
+        text: "Item text 5",
+        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+      },
+      {
+        key: "6",
+        text: "Item text 6",
+        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+      },
+      {
+        key: "7",
+        text: "Item text 7",
+        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+      },
+      {
+        key: "8",
+        text: "Item text 8",
+        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+      },
+    ],
+  },
+];

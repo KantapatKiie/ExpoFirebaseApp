@@ -1,26 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Dimensions } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { createDrawerNavigator } from "@react-navigation/drawer";
+// import { createDrawerNavigator } from "@react-navigation/drawer";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "../screens/Home";
 import ProfileScreen from "../screens/Profile";
 import SettingsScreen from "../screens/Settings";
 import SignInScreen from "../screens/auth/SignIn";
 import SignUpScreen from "../screens/auth/SignUp";
 import BasketScreen from "../screens/Basket";
-import CategoriesScreen from "../screens/Categories";
 import ProductsScreen from "../screens/ProductScreen";
 import CartScreen from "../screens/CartScreen";
-import CustomDrawerContent from "./Menu";
-import { Icon, Header } from "../components";
-import { Images, materialTheme } from "../constants/";
+import { Header } from "../components";
 import { connect, useSelector } from "react-redux";
 import * as ActionLogin from "../actions/action-actives/ActionLogin";
 import * as firebase from "firebase";
 import * as Notifications from "expo-notifications";
-import * as Permissions from "expo-permissions";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Icons from "react-native-vector-icons/MaterialCommunityIcons";
+import Icons from "react-native-vector-icons/MaterialIcons";
 
 //SET FIREBASE-CONFIG
 const firebaseConfig = {
@@ -47,8 +43,8 @@ Notifications.setNotificationHandler({
 
 const { width } = Dimensions.get("screen");
 const Stack = createStackNavigator();
-const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
+// const Drawer = createDrawerNavigator();
 
 function ProfileStack(props) {
   return (
@@ -93,17 +89,10 @@ function SettingsStack(props) {
   );
 }
 
-function SignInStack(props) {
+function RegistrationStack(props) {
   return (
     <Stack.Navigator mode="card" headerMode="none">
       <Stack.Screen name="Sign In" component={SignInScreen} />
-    </Stack.Navigator>
-  );
-}
-
-function SignUpStack(props) {
-  return (
-    <Stack.Navigator mode="card" headerMode="none">
       <Stack.Screen name="Sign Up" component={SignUpScreen} />
     </Stack.Navigator>
   );
@@ -125,29 +114,13 @@ function BasketStack(props) {
   );
 }
 
-function CategoriesStack(props) {
+function ProductStack(props) {
   return (
     <Stack.Navigator
       initialRouteName="Categories"
       mode="card"
-      headerMode="screen"
+      headerMode="none"
     >
-      <Stack.Screen
-        name="Categories"
-        component={CategoriesScreen}
-        options={{
-          header: ({ navigation, scene }) => (
-            <Header title="Categories" scene={scene} navigation={navigation} />
-          ),
-        }}
-      />
-    </Stack.Navigator>
-  );
-}
-
-function ProductStack(props) {
-  return (
-    <Stack.Navigator initialRouteName="Products" mode="card" headerMode="none">
       <Stack.Screen
         name="Products"
         component={ProductsScreen}
@@ -157,13 +130,6 @@ function ProductStack(props) {
           ),
         }}
       />
-    </Stack.Navigator>
-  );
-}
-
-function CartStack(props) {
-  return (
-    <Stack.Navigator initialRouteName="Cart" mode="card" headerMode="screen">
       <Stack.Screen
         name="Cart"
         component={CartScreen}
@@ -198,179 +164,6 @@ function HomeStack(props) {
         }}
       />
     </Stack.Navigator>
-  );
-}
-function HomeStackBottom() {
-  return (
-    <Tab.Navigator>
-      <Tab.Screen
-        name="Flash Sale"
-        component={HomeStack}
-        options={{
-          tabBarLabel: 'Flash Sale',
-          tabBarIcon: ({ color, size }) => (
-            <Icons name="home" color={"orange"} size={size} />
-          ),
-          // tabBarBadge: 3,
-        }}
-      />
-      <Tab.Screen
-        name="Promotion"
-        component={SettingsStack}
-        style={{color:"black"}}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Icons name="news" color={"green"} size={size} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="News"
-        component={SettingsStack}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Icons name="news" color={"pink"} size={size} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Events"
-        component={SettingsStack}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Icons name="news" color={"red"} size={size} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Payment"
-        component={SettingsStack}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Icons name="news" color={"black"} size={size} />
-          ),
-        }}
-      />
-    </Tab.Navigator>
-  );
-}
-
-function AppStack(props) {
-  const { objLoginHD } = useSelector((state) => ({
-    objLoginHD: state.login.objLoginHD,
-  }));
-  const profile = {
-    avatar: Images.Onboarding,
-    name: objLoginHD.EMAIL === "" ? "Guest" : objLoginHD.EMAIL,
-    type: "Administrator",
-    rating: 4.9,
-  };
-
-  return (
-    <Drawer.Navigator
-      style={{ flex: 1 }}
-      drawerContent={(props) => (
-        <CustomDrawerContent {...props} profile={profile} />
-      )}
-      drawerStyle={{
-        backgroundColor: "white",
-        width: width * 0.8,
-      }}
-      drawerContentOptions={{
-        activeTintColor: "white",
-        inactiveTintColor: "#000",
-        activeBackgroundColor: materialTheme.COLORS.ACTIVE,
-        inactiveBackgroundColor: "transparent",
-        itemStyle: {
-          width: width * 0.74,
-          paddingHorizontal: 12,
-          justifyContent: "center",
-          alignContent: "center",
-          overflow: "hidden",
-        },
-        labelStyle: {
-          fontSize: 18,
-          fontWeight: "normal",
-        },
-      }}
-      initialRouteName="Home"
-    >
-      <Drawer.Screen
-        name="Home"
-        component={HomeStackBottom}
-        options={{
-          drawerIcon: ({ focused }) => (
-            <Icon
-              size={16}
-              name="shop"
-              family="GalioExtra"
-              color={focused ? "white" : materialTheme.COLORS.MUTED}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="Profile"
-        component={ProfileStack}
-        options={{
-          drawerIcon: ({ focused }) => (
-            <Icon
-              size={16}
-              name="circle-10"
-              family="GalioExtra"
-              color={focused ? "white" : materialTheme.COLORS.MUTED}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="Settings"
-        component={SettingsStack}
-        options={{
-          drawerIcon: ({ focused }) => (
-            <Icon
-              size={16}
-              name="gears"
-              family="font-awesome"
-              color={focused ? "white" : materialTheme.COLORS.MUTED}
-              style={{ marginRight: -3 }}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="Sign In"
-        component={SignInStack}
-        options={{
-          drawerIcon: ({ focused }) => (
-            <Icon
-              size={16}
-              name="ios-log-in"
-              family="ionicon"
-              color={focused ? "white" : materialTheme.COLORS.MUTED}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="Sign Up"
-        component={SignUpStack}
-        options={{
-          drawerIcon: ({ focused }) => (
-            <Icon
-              size={16}
-              name="md-person-add"
-              family="ionicon"
-              color={focused ? "white" : materialTheme.COLORS.MUTED}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen name="Basket" component={BasketStack} />
-      <Drawer.Screen name="Categories" component={CategoriesStack} />
-      <Drawer.Screen name="Products" component={ProductStack} />
-      <Drawer.Screen name="Cart" component={CartStack} />
-    </Drawer.Navigator>
   );
 }
 
@@ -436,9 +229,80 @@ function OnboardingStack(props) {
   // }
   //#endregion
   return (
-    <Stack.Navigator mode="card" headerMode="none">
-      <Stack.Screen name="App" component={AppStack} />
-    </Stack.Navigator>
+    <>
+      <Tab.Navigator
+        mode="card"
+        headerMode="none"
+        tabBarOptions={{
+          activeTintColor: "black", // Click
+          activeBackgroundColor: "#e0f0ff", // Backgrounf Before Click
+          inactiveTintColor: "black", // Font
+          inactiveBackgroundColor: "white", // Background Default
+          labelStyle: {
+            fontSize: 12,
+            margin: 0,
+            padding: 0,
+          },
+        }}
+      >
+        <Tab.Screen
+          name="Flash Sale"
+          component={HomeStack}
+          options={{
+            tabBarLabel: "Flash Sale",
+            tabBarIcon: ({ size }) => (
+              <Icons name="whatshot" color={"orange"} size={size} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Promotion"
+          component={SettingsStack}
+          style={{ color: "black" }}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icons name="loyalty" color={"green"} size={size} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="News"
+          component={ProductStack}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icons name="campaign" color={"blue"} size={size} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Events"
+          component={BasketStack}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icons name="event" color={"red"} size={size} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Payment"
+          component={ProfileStack}
+          options={{
+            tabBarIcon: ({ size }) => (
+              <Icons name="payment" color={"#820036"} size={size} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Account"
+          component={RegistrationStack}
+          options={{
+            tabBarIcon: ({ size }) => (
+              <Icons name="face" color={"#007e82"} size={size} />
+            ),
+          }}
+        />
+      </Tab.Navigator>
+    </>
   );
 }
 
