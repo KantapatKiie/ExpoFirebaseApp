@@ -104,7 +104,7 @@ function SignIn(props) {
           source={require("../../assets/images/tiendat.png")}
           style={styles.image}
         >
-          <View>
+          {/* <View>
             <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
               <Icons
                 name="home"
@@ -113,7 +113,7 @@ function SignIn(props) {
                 style={styles.IconBack}
               />
             </TouchableOpacity>
-          </View>
+          </View> */}
           <View style={styles.container2}>
             <View style={styles.logoContainer}>
               <Image
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "flex-start",
-    marginTop: 50,
+    marginTop: 80,
   },
   inputView: {
     width: "80%",

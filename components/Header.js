@@ -135,12 +135,7 @@ const ModalMessage = ({ isWhite, style }) => {
           setModalVisible(true);
         }}
       >
-        <Icon
-          family="GalioExtra"
-          size={16}
-          name="chat-33"
-          color={theme.COLORS[isWhite ? "WHITE" : "ICON"]}
-        />
+        <Icons name="favorite" color={"black"} size={20} />
         <Block middle style={styles.notify} />
       </TouchableOpacity>
     </>
@@ -153,12 +148,7 @@ const BasketButton = ({ isWhite, style, navigation }) => {
         style={[styles.button, style]}
         onPress={() => navigation.navigate("Basket")}
       >
-        <Icon
-          family="GalioExtra"
-          size={16}
-          name="basket-simple"
-          color={theme.COLORS[isWhite ? "WHITE" : "ICON"]}
-        />
+        <Icons name="store" color={"black"} size={20} />
         <Block middle style={styles.notify} />
       </TouchableOpacity>
     </>
