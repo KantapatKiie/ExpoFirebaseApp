@@ -1,21 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Dimensions,
-  ScrollView,
   View,
   SectionList,
   SafeAreaView,
   Image,
+  FlatList,
+  TouchableHighlight,
+  TouchableOpacity,
 } from "react-native";
+import moment from "moment";
+import { withNavigation } from "@react-navigation/compat";
 import { StatusBar } from "expo-status-bar";
 import { Button, Block, Text, Input, theme } from "galio-framework";
 import { Icon, Product } from "../components/";
 import products from "../constants/products";
+import CountDown from "react-native-countdown-component";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { width } = Dimensions.get("screen");
-export default class Home extends React.Component {
-  renderSearch = () => {
+function Home(props) {
+  const renderSearch = () => {
     const { navigation } = this.props;
     const iconCamera = (
       <Icon
@@ -33,119 +39,375 @@ export default class Home extends React.Component {
         style={styles.search}
         iconContent={iconCamera}
         placeholder="What are you looking for?"
-        //onFocus={() => navigation.navigate("Pro")}
+        //onFocus={() => props.navigation.navigate("Pro")}
       />
     );
   };
 
-  renderTabs = () => {
-    const { navigation } = this.props;
-
+  const ListItem = ({ item }) => {
     return (
-      <Block row style={styles.tabs}>
-        <Button
-          shadowless
-          style={[styles.tab, styles.divider]}
-          onPress={() => navigation.navigate("")}
-        >
-          <Block row middle>
-            <Icon name="grid" family="feather" style={{ paddingRight: 8 }} />
-            <Text size={16} style={styles.tabTitle}>
-              Categories
-            </Text>
-          </Block>
-        </Button>
-        <Button
-          shadowless
-          style={styles.tab}
-          onPress={() => navigation.navigate("")}
-        >
-          <Block row middle>
-            <Icon
-              size={16}
-              name="camera-18"
-              family="GalioExtra"
-              style={{ paddingRight: 8 }}
-            />
-            <Text size={16} style={styles.tabTitle}>
-              Best Products
-            </Text>
-          </Block>
-        </Button>
-      </Block>
+      <View style={styles2.item}>
+        <Image
+          source={{
+            uri: item.uri,
+          }}
+          style={styles2.itemPhoto}
+          resizeMode="cover"
+        />
+        {/* <Text style={styles2.itemText}>{item.text}</Text> */}
+      </View>
     );
   };
 
-  //Package List
-  rederPackage = () => {
-    const ListItem = ({ item }) => {
-      return (
-        <View style={styles2.item}>
-          <Image
-            source={{
-              uri: item.uri,
-            }}
-            style={styles2.itemPhoto}
-            resizeMode="cover"
-          />
-          <Text style={styles2.itemText}>{item.text}</Text>
-        </View>
-      );
-    };
+  const ListItemPublic = ({ item }) => {
     return (
-      <>
+      <View style={styles2.items}>
+        <Image
+          source={{
+            uri: item.uri,
+          }}
+          style={styles2.itemPhotos}
+          resizeMode="cover"
+        />
+        <Text style={styles2.itemText}>{item.text}</Text>
+      </View>
+    );
+  };
+
+  return (
+    <>
+      <Block flex center style={styles.home}>
         <View style={styles2.container}>
-          <StatusBar style="light" />
+          <StatusBar style="auto" />
           <SafeAreaView style={{ flex: 1 }}>
             <SectionList
-              contentContainerStyle={{ paddingHorizontal: 10 }}
+              // contentContainerStyle={{ paddingHorizontal: 10 }}
               stickySectionHeadersEnabled={false}
-              sections={SECTIONS}
+              sections={DISCOUNTLIST}
               renderSectionHeader={({ section }) => (
-                <Text style={styles2.sectionHeader}>{section.title}</Text>
+                <>
+                  <Block style={styles2.blockHeader}>
+                    <Text style={{ textAlign: "center", color: "white" }}>
+                      WANGDEKFEST ลดล้างสต็อกครึ่งปี : เริ่ม{" "}
+                      {moment(new Date()).format("hh:mm")} น.
+                    </Text>
+                  </Block>
+                  {/* Logo */}
+                  <TouchableHighlight
+                    onPress={() => props.navigation.navigate("Basket")}
+                  >
+                    <LinearGradient
+                      colors={["#00cef2", "#00c4b7", "#00d184"]}
+                      style={linerStyle.linearGradient}
+                    >
+                      <Text
+                        style={{
+                          textAlign: "left",
+                          color: "white",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        Flash Sale
+                      </Text>
+                      <Block style={linerStyle.BlockTime}>
+                        <Text
+                          style={{
+                            color: "white",
+                            fontSize: 17,
+                            fontWeight: "bold",
+                            paddingTop: 8,
+                          }}
+                        >
+                          Ends in
+                        </Text>
+                        <Text style={{ textAlign: "center", width: 150 }}>
+                          {" "}
+                        </Text>
+                        <CountDown
+                          size={25}
+                          until={1000}
+                          // onFinish={() => alert("Finished")}
+                          digitStyle={{
+                            backgroundColor: "#ffb700",
+                            height: 35,
+                            width: 50,
+                          }}
+                          digitTxtStyle={{ color: "#ffffff" }}
+                          timeToShow={["H", "M", "S"]}
+                          timeLabelStyle={{
+                            color: "black",
+                            fontWeight: "bold",
+                          }}
+                          timeLabels={{ d: null, h: null, m: null, s: null }}
+                          separatorStyle={{ color: "white" }}
+                          showSeparator
+                        />
+                      </Block>
+                    </LinearGradient>
+                  </TouchableHighlight>
+                  {/* Discount */}
+                  <Block style={styles2.containerHeader}>
+                    {section.horizontal ? (
+                      <FlatList
+                        horizontal
+                        data={section.data}
+                        renderItem={({ item }) => <ListItem item={item} />}
+                        showsHorizontalScrollIndicator={false}
+                      />
+                    ) : null}
+                  </Block>
+                </>
               )}
-              renderItem={({ item }) => {
+              renderSectionFooter={() => (
+                <>
+                  {/* Product */}
+                  <Block flex style={styles.textContainerBlock1}>
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        fontWeight: "bold",
+                        color: "black",
+                        paddingTop: 10,
+                      }}
+                    >
+                      สินค้าขายดี
+                    </Text>
+                    <Block flex style={styles.containerBlock}>
+                      <Block flex row>
+                        <Product
+                          product={products[7]}
+                          style={{ marginRight: theme.SIZES.BASE }}
+                        />
+                        <Product product={products[5]} />
+                      </Block>
+                    </Block>
+                    <Block flex style={styles.containerBlock}>
+                      <Block flex row>
+                        <Product
+                          product={products[6]}
+                          style={{ marginRight: theme.SIZES.BASE }}
+                        />
+                        <Product product={products[8]} />
+                      </Block>
+                    </Block>
+                  </Block>
+                  <Block flex style={styles.textContainerBlock2}>
+                    <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                      สินค้ายอดนิยม
+                    </Text>
+                    <Block flex style={styles.containerBlock}>
+                      <Block flex row>
+                        <Product
+                          product={products[1]}
+                          style={{ marginRight: theme.SIZES.BASE }}
+                        />
+                        <Product product={products[2]} />
+                      </Block>
+                    </Block>
+                    <Block flex style={styles.containerBlock}>
+                      <Block flex row>
+                        <Product
+                          product={products[3]}
+                          style={{ marginRight: theme.SIZES.BASE }}
+                        />
+                        <Product product={products[4]} />
+                      </Block>
+                    </Block>
+                    <Text
+                      size={14}
+                      color={theme.COLORS.PRIMARY}
+                      onPress={() => props.navigation.navigate("Home")}
+                    >
+                      View All
+                    </Text>
+                  </Block>
+                  {/* Public Relations */}
+                  <Block flex>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontWeight: "bold",
+                        color: "black",
+                        paddingTop: 25,
+                        alignSelf: "center",
+                      }}
+                    >
+                      ข่าวประชาสัมพันธ์
+                    </Text>
+                    <SafeAreaView style={{ flex: 1, paddingTop: 10 }}>
+                      <SectionList
+                        stickySectionHeadersEnabled={false}
+                        sections={DISCOUNTLIST}
+                        renderSectionHeader={({ section }) => (
+                          <>
+                            <Block style={styles2.containerHeader2}>
+                              {section.horizontal ? (
+                                <FlatList
+                                  horizontal
+                                  data={section.data}
+                                  renderItem={({ item }) => (
+                                    <ListItemPublic item={item} />
+                                  )}
+                                  showsHorizontalScrollIndicator={false}
+                                />
+                              ) : null}
+                            </Block>
+                          </>
+                        )}
+                        renderSectionFooter={() => <></>}
+                        renderItem={({ item, section }) => {
+                          if (section.horizontal) {
+                            return null;
+                          }
+                          return <ListItemPublic item={item} />;
+                        }}
+                      />
+                    </SafeAreaView>
+                    <Text
+                      style={{ alignSelf: "center", paddingBottom: 25 }}
+                      size={14}
+                      color={theme.COLORS.PRIMARY}
+                      onPress={() => props.navigation.navigate("Home")}
+                    >
+                      View All
+                    </Text>
+                  </Block>
+                  {/* Info */}
+                  <Block style={styles2.blockHeader}>
+                    <Text
+                      style={{
+                        textAlign: "left",
+                        color: "white",
+                        fontWeight: "bold",
+                        fontSize: 16,
+                      }}
+                    >
+                      Wangdek Info
+                    </Text>
+                  </Block>
+                  {INFOLIST.map((item) => (
+                    <Block style={styles2.blockHeaderInfo} key={item.key}>
+                      <TouchableOpacity
+                        onPress={() => props.navigation.navigate("Basket")}
+                      >
+                        <Block row>
+                          <Text
+                            style={{
+                              textAlign: "left",
+                              color: "black",
+                              fontWeight: "bold",
+                              fontSize: 14,
+                            }}
+                          >
+                            {item.text}
+                          </Text>
+                        </Block>
+                      </TouchableOpacity>
+                    </Block>
+                  ))}
+                </>
+              )}
+              renderItem={({ item, section }) => {
+                if (section.horizontal) {
+                  return null;
+                }
                 return <ListItem item={item} />;
               }}
             />
           </SafeAreaView>
         </View>
-      </>
-    );
-  };
-
-  renderProducts = () => {
-    return (
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.products}
-      >
-        <Block flex>
-          {products.map((item) => (
-            <Block flex row key={item.title}>
-              <Product product={item} />
-            </Block>
-          ))}
-        </Block>
-      </ScrollView>
-    );
-  };
-
-  render() {
-    return (
-      <>
-        {/* {this.rederPackage()} */}
-        <Block flex center style={styles.home}>
-          {this.renderProducts()}
-        </Block>
-      </>
-    );
-  }
+      </Block>
+    </>
+  );
 }
+export default withNavigation(Home);
+
+const DISCOUNTLIST = [
+  {
+    title: "Discount",
+    horizontal: true,
+    data: [
+      {
+        key: "1",
+        text: "Item text 1",
+        uri: "https://picsum.photos/id/1/200",
+      },
+      {
+        key: "2",
+        text: "Item text 2",
+        uri: "https://picsum.photos/id/10/200",
+      },
+
+      {
+        key: "3",
+        text: "Item text 3",
+        uri: "https://picsum.photos/id/1002/200",
+      },
+      {
+        key: "4",
+        text: "Item text 4",
+        uri: "https://picsum.photos/id/1006/200",
+      },
+      {
+        key: "5",
+        text: "Item text 5",
+        uri: "https://picsum.photos/id/1008/200",
+      },
+    ],
+  },
+];
+
+const INFOLIST = [
+  {
+    key: "1",
+    text: "เกี่ยวกับเรา",
+  },
+  {
+    key: "2",
+    text: "วิธีการสั่งซื้อสินค้า",
+  },
+  {
+    key: "3",
+    text: "วิธีการชำระเงิน",
+  },
+  {
+    key: "4",
+    text: "ติดต่อเรา",
+  },
+  {
+    key: "5",
+    text: "Term & Conditions",
+  },
+  {
+    key: "6",
+    text: "Privacy Policy",
+  },
+];
 
 const styles = StyleSheet.create({
   home: {
     width: width,
+  },
+  containerBlock: {
+    flex: 1,
+    flexDirection: "row",
+    marginTop: 10,
+    alignItems: "center",
+    alignSelf: "center",
+  },
+  textContainerBlock1: {
+    alignItems: "center",
+    alignSelf: "center",
+    backgroundColor: "#ffffff",
+    padding: 5,
+    // marginTop: 10,
+  },
+  textContainerBlock2: {
+    alignItems: "center",
+    alignSelf: "center",
+    backgroundColor: "#ffffff",
+    paddingTop: 10,
+    padding: 5,
   },
   search: {
     height: 48,
@@ -188,30 +450,59 @@ const styles = StyleSheet.create({
     borderRightColor: theme.COLORS.MUTED,
   },
   products: {
-    width: width - theme.SIZES.BASE * 1.5,
+    width: width,
     paddingVertical: theme.SIZES.BASE * 1.5,
+  },
+  BlockInfo: {
+    backgroundColor: "#f7f7f7",
+    height: 20,
+    alignItems: "stretch",
   },
 });
 
 const styles2 = StyleSheet.create({
   container: {
-    flex: 1,
-    flexDirection: "row",
-    backgroundColor: "#121212",
+    backgroundColor: "white",
+  },
+  containerHeader: {
+    backgroundColor: "#4967ad",
+  },
+  blockHeader: {
+    padding: 8,
+    backgroundColor: "#2b4c99",
+    flexDirection: "column",
+  },
+  blockHeaderInfo: {
+    padding: 8,
+    backgroundColor: "#f7f7f7",
+    flexDirection: "column",
+  },
+  blockFlashSale: {
+    padding: 8,
+    backgroundColor: "#1dab98",
+    flexDirection: "column",
+    height: 100,
   },
   sectionHeader: {
-    fontWeight: "800",
-    fontSize: 18,
+    fontWeight: "500",
+    fontSize: 15,
     color: "#f4f4f4",
-    marginTop: 20,
+    marginTop: 5,
     marginBottom: 5,
   },
   item: {
-    margin: 10,
+    margin: 5,
   },
   itemPhoto: {
-    width: 200,
-    height: 200,
+    width: 100,
+    height: 100,
+  },
+  items: {
+    margin: 5,
+  },
+  itemPhotos: {
+    width: 170,
+    height: 250,
   },
   itemText: {
     color: "rgba(255, 255, 255, 0.5)",
@@ -219,58 +510,21 @@ const styles2 = StyleSheet.create({
   },
 });
 
-const SECTIONS = [
-  {
-    title: "Made for you",
-    data: [
-      {
-        key: "1",
-        text: "Item text 1",
-        uri: "https://picsum.photos/id/1/200",
-      },
-      {
-        key: "2",
-        text: "Item text 2",
-        uri: "https://picsum.photos/id/10/200",
-      },
-
-      {
-        key: "3",
-        text: "Item text 3",
-        uri: "https://picsum.photos/id/1002/200",
-      },
-      {
-        key: "4",
-        text: "Item text 4",
-        uri: "https://picsum.photos/id/1006/200",
-      },
-      {
-        key: "5",
-        text: "Item text 5",
-        uri: "https://picsum.photos/id/1008/200",
-      },
-    ],
+const linerStyle = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
-];
-
-//#region Backup ProducView
-{
-  /* <ScrollView
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={styles.products}
->
-  <Block flex>
-    <Product product={products[0]} horizontal />
-    <Block flex row>
-      <Product
-        product={products[1]}
-        style={{ marginRight: theme.SIZES.BASE }}
-      />
-      <Product product={products[2]} />
-    </Block>
-    <Product product={products[3]} horizontal />
-    <Product product={products[4]} full />
-  </Block>
-</ScrollView>; */
-}
-//#endregion
+  linearGradient: {
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+    height: 100,
+  },
+  BlockTime: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    alignSelf: "stretch",
+  },
+});

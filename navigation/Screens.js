@@ -3,6 +3,7 @@ import { Dimensions } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 // import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NavigationContainer } from "@react-navigation/native";
 import HomeScreen from "../screens/Home";
 import ProfileScreen from "../screens/Profile";
 import SettingsScreen from "../screens/Settings";
@@ -167,6 +168,83 @@ function HomeStack(props) {
   );
 }
 
+function MyTabs() {
+  return (
+    <Tab.Navigator
+      mode="card"
+      headerMode="none"
+      tabBarOptions={{
+        activeTintColor: "black", // Click
+        activeBackgroundColor: "#e0f0ff", // Backgrounf Before Click
+        inactiveTintColor: "black", // Font
+        inactiveBackgroundColor: "white", // Background Default
+        labelStyle: {
+          fontSize: 12,
+          margin: 0,
+          padding: 0,
+        },
+      }}
+    >
+      <Tab.Screen
+        name="Flash Sale"
+        component={HomeStack}
+        options={{
+          tabBarLabel: "Flash Sale",
+          tabBarIcon: ({ size }) => (
+            <Icons name="whatshot" color={"orange"} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Promotion"
+        component={SettingsStack}
+        style={{ color: "black" }}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icons name="loyalty" color={"green"} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="News"
+        component={ProductStack}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icons name="campaign" color={"blue"} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Events"
+        component={BasketStack}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icons name="event" color={"red"} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Payment"
+        component={ProfileStack}
+        options={{
+          tabBarIcon: ({ size }) => (
+            <Icons name="payment" color={"#820036"} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Account"
+        component={RegistrationStack}
+        options={{
+          tabBarIcon: ({ size }) => (
+            <Icons name="face" color={"#007e82"} size={size} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
+
 function OnboardingStack(props) {
   //#region BackpUp Firebase
   // const [expoPushToken, setExpoPushToken] = useState("");
@@ -230,78 +308,38 @@ function OnboardingStack(props) {
   //#endregion
   return (
     <>
-      <Tab.Navigator
-        mode="card"
-        headerMode="none"
-        tabBarOptions={{
-          activeTintColor: "black", // Click
-          activeBackgroundColor: "#e0f0ff", // Backgrounf Before Click
-          inactiveTintColor: "black", // Font
-          inactiveBackgroundColor: "white", // Background Default
-          labelStyle: {
-            fontSize: 12,
-            margin: 0,
-            padding: 0,
-          },
-        }}
-      >
-        <Tab.Screen
-          name="Flash Sale"
-          component={HomeStack}
-          options={{
-            tabBarLabel: "Flash Sale",
-            tabBarIcon: ({ size }) => (
-              <Icons name="whatshot" color={"orange"} size={size} />
-            ),
-          }}
+      <Stack.Navigator>
+        <Stack.Screen
+          name="Home"
+          component={MyTabs}
+          options={{ header: () => null }}
         />
-        <Tab.Screen
-          name="Promotion"
-          component={SettingsStack}
-          style={{ color: "black" }}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Icons name="loyalty" color={"green"} size={size} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="News"
-          component={ProductStack}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Icons name="campaign" color={"blue"} size={size} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Events"
-          component={BasketStack}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Icons name="event" color={"red"} size={size} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Payment"
+        <Stack.Screen
+          name="Profile"
           component={ProfileStack}
-          options={{
-            tabBarIcon: ({ size }) => (
-              <Icons name="payment" color={"#820036"} size={size} />
-            ),
-          }}
+          options={{ header: () => null }}
         />
-        <Tab.Screen
-          name="Account"
+        <Stack.Screen
+          name="Setting"
+          component={SettingsStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Registration"
           component={RegistrationStack}
-          options={{
-            tabBarIcon: ({ size }) => (
-              <Icons name="face" color={"#007e82"} size={size} />
-            ),
-          }}
+          options={{ header: () => null }}
         />
-      </Tab.Navigator>
+        <Stack.Screen
+          name="Product"
+          component={ProductStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Basket"
+          component={BasketStack}
+          options={{ header: () => null }}
+        />
+      </Stack.Navigator>
     </>
   );
 }

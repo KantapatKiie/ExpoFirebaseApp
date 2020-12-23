@@ -84,14 +84,14 @@ function SignUp(props) {
                 style={styles.IconBack}
               />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
+            {/* <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
               <Icons
                 name="home"
                 size={20}
                 color="black"
                 style={styles.IconBack}
               />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
           <View style={styles.containerHeader}>
             <Text style={styles.labelHeader}>Sign Up</Text>
