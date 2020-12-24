@@ -330,7 +330,7 @@ function OnboardingStack(props) {
           options={{ header: () => null }}
         />
         <Stack.Screen
-          name="Product"
+          name="Products"
           component={ProductStack}
           options={{ header: () => null }}
         />
