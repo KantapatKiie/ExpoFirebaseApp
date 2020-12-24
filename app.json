@@ -25,7 +25,7 @@
       "versionCode": 1,
       "useNextNotificationsApi": true,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
+        "foregroundImage": "./assets/images/ic_launcher.png",
         "backgroundColor": "#FFFFFF"
       }
     }
