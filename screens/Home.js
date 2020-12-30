@@ -18,6 +18,7 @@ import { Icon, Product } from "../components/";
 import products from "../constants/products";
 import CountDown from "react-native-countdown-component";
 import { LinearGradient } from "expo-linear-gradient";
+// import { t } from "../i18n/I18nProvider";
 
 const { width } = Dimensions.get("screen");
 function Home(props) {
@@ -89,7 +90,7 @@ function Home(props) {
                   <Block style={styles2.blockHeader}>
                     <Text style={{ textAlign: "center", color: "white" }}>
                       WANGDEKFEST ลดล้างสต็อกครึ่งปี : เริ่ม{" "}
-                      {moment(new Date()).format("hh:mm")} น.
+                      {/* {t("hello2")} {moment(new Date()).format("hh:mm")} น. */}
                     </Text>
                   </Block>
                   {/* Logo */}
@@ -290,7 +291,12 @@ function Home(props) {
                       <TouchableOpacity
                         onPress={() => props.navigation.navigate("Basket")}
                       >
-                        <Block row>
+                        <Block
+                          row
+                          middle
+                          space="between"
+                          style={{ paddingTop: 7 }}
+                        >
                           <Text
                             style={{
                               textAlign: "left",
@@ -301,6 +307,11 @@ function Home(props) {
                           >
                             {item.text}
                           </Text>
+                          <Icon
+                            name="angle-right"
+                            family="font-awesome"
+                            style={{ paddingRight: 5 }}
+                          />
                         </Block>
                       </TouchableOpacity>
                     </Block>

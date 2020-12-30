@@ -6,10 +6,12 @@ import * as activesComponent from "../actions/action-actives/ActionActives";
 import * as actionSearchHD from "../actions/action-search-hd/ActionSearchHD";
 import * as actionCart from "../actions/action-cart/ActionCart";
 import * as actionProduct from "../actions/action-product/ActionProduct";
+import * as i18n from "./ducks/i18n";
 
 export const rootReducer = combineReducers({
   login: login.reducer,
   auth: auth.reducer,
+  i18n: i18n.reducer,
   activesComponent: activesComponent.reducer,
   actionSearchHD: actionSearchHD.reducer,
   actionCart: actionCart.reducer,
