@@ -12,10 +12,19 @@ I18n.translations = {
   th,
 };
 const allMessages = {
-  en: en,
-  th: th,
+  en,
+  th,
 };
 
+export function formatTr(name) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  // const messages = allMessages[locale];
+  I18n.locale = locale.substring(0, 2);
+  I18n.initAsync();
+  return I18n.t(name, locale);
+}
+
+//#region Backup getLanguage
 // const getLanguage = async () => {
 //   try {
 //     const choice = await Localization.locale;
@@ -26,12 +35,4 @@ const allMessages = {
 //   }
 // };
 // getLanguage();
-
-export function formatTr(name) {
-  const locale = useSelector(({ i18n }) => i18n.lang);
-  const messages = allMessages[locale];
-  I18n.locale = locale.substring(0, 2);
-  I18n.initAsync();
-
-  return I18n.t(name, locale);
-}
+//#endregion
