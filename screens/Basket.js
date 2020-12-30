@@ -133,7 +133,7 @@ function Basket(props) {
     </Modal>
   );
   //#endregion
-  
+
   const showToast = () => {
     ToastAndroid.show("Test ToastAndriod React Native !", ToastAndroid.SHORT);
   };
