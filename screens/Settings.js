@@ -66,66 +66,62 @@ function Settings(props) {
         break;
     }
   };
-
-    const recommended = [
-      { title: "Use FaceID to sign in", id: "face", type: "switch" },
-      { title: "Auto-Lock security", id: "autolock", type: "switch" },
-      { title: "Notifications", id: "Notifications", type: "button" },
-    ];
-    return (
-      <View
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.settings}
+  // var title1 = formatTr("hello1").toString();
+  const recommended = [
+    { title: "Use FaceID to sign in", id: "face", type: "switch" },
+    { title: "Auto-Lock security", id: "autolock", type: "switch" },
+    { title: "Notifications", id: "Notifications", type: "button" },
+  ];
+  return (
+    <View
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.settings}
+    >
+      <FlatList
+        data={recommended}
+        keyExtractor={(item, index) => item.id}
+        renderItem={renderItem}
+        ListHeaderComponent={
+          <Block style={styles.title}>
+            <Text
+              bold
+              center
+              size={theme.SIZES.BASE}
+              style={{ paddingBottom: 5 }}
+            >
+              Recommended Settings
+            </Text>
+            <Text center muted size={12}>
+              These are the most important settings
+            </Text>
+          </Block>
+        }
+      />
+      {/* Language */}
+      <Block style={styles.title}>
+        <Text bold center size={theme.SIZES.BASE} style={{ paddingBottom: 5 }}>
+          Language Settings
+        </Text>
+        <Text center muted size={12}>
+          Please select your language
+        </Text>
+        <Text center muted size={14}>
+          {formatTr("hello3").toString()}
+        </Text>
+      </Block>
+      <Picker
+        selectedValue={props.lang}
+        style={{ height: 50, width: width }}
+        itemStyle={{ fontSize: 12 }}
+        onValueChange={(value) => {
+          props.setLanguage(value);
+        }}
       >
-        <FlatList
-          data={recommended}
-          keyExtractor={(item, index) => item.id}
-          renderItem={renderItem}
-          ListHeaderComponent={
-            <Block style={styles.title}>
-              <Text
-                bold
-                center
-                size={theme.SIZES.BASE}
-                style={{ paddingBottom: 5 }}
-              >
-                Recommended Settings
-              </Text>
-              <Text center muted size={12}>
-                These are the most important settings
-              </Text>
-            </Block>
-          }
-        />
-        <Block style={styles.title}>
-          <Text
-            bold
-            center
-            size={theme.SIZES.BASE}
-            style={{ paddingBottom: 5 }}
-          >
-            Language Settings
-          </Text>
-          <Text center muted size={12}>
-            Please select your language
-          </Text>
-          <Text center muted size={14}>
-            {formatTr("hello3").toString()}
-          </Text>
-        </Block>
-        <Picker
-          selectedValue={props.lang}
-          style={{ height: 50, width: width }}
-          itemStyle={{ fontSize: 12 }}
-          onValueChange={(value) => {
-            props.setLanguage(value);
-          }}
-        >
-          <Picker.Item label="Thai" value="th" />
-          <Picker.Item label="English" value="en" />
-        </Picker>
-      </View>
-    );
+        <Picker.Item label="Thai" value="th" />
+        <Picker.Item label="English" value="en" />
+      </Picker>
+    </View>
+  );
 }
 
 const mapStateToProps = ({ i18n }) => ({ lang: i18n.lang });
