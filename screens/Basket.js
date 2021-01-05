@@ -20,6 +20,7 @@ import products from "../constants/products";
 import moment from "moment";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 // import Toast from 'react-native-toast-message';
+import { formatTr } from "../i18n/I18nProvider";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -197,7 +198,7 @@ function Basket(props) {
           <Block>
             <Button
               titleStyle={{ color: "white" }}
-              title="IO component"
+              title={formatTr("VIEW_ALL").toString()}
               type="solid"
               containerStyle={styles.blockStyle}
               onPress={() => {

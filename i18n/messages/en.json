@@ -1,5 +1,11 @@
 {
   "hello1": "Hellolo1",
   "hello2": "Hellolololololo2",
-  "hello3": "Hellololololololololo3"
+  "hello3": "Hellololololololololo3",
+  "VIEW_ALL": "View all",
+  "GOOD_PRODUCT": "Best selling products",
+  "POPULAR_PRODUCT": "Popular products",
+  "NEWS_RELEASE": "News release",
+  "WANGDEK_INFO": "Wangdek Info",
+  "READ_MORE": "Read more..."
 }

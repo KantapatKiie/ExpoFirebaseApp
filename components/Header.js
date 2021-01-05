@@ -160,6 +160,16 @@ function Header(props) {
     SEARCH_NO: "",
   });
 
+  const renderLogo = () => {
+    return (
+      <Block flex center>
+        <Image
+          source={require("../assets/images/logo.png")}
+          style={{ height: 50, width: 100 }}
+        />
+      </Block>
+    );
+  };
   const renderLeft = () => {
     const { white, title, navigation } = props;
 
@@ -197,7 +207,7 @@ function Header(props) {
           <ModalNotification key="chat-categories" navigation={navigation} />,
           <ModalSearch key="basket-categories" navigation={navigation} />,
         ];
-      case "Categories":
+      case "Cart":
         return [
           <ModalNotification
             key="chat-categories"
@@ -210,7 +220,7 @@ function Header(props) {
             isWhite={white}
           />,
         ];
-      case "Category":
+      case "Products":
         return [
           <ModalNotification
             key="chat-deals"
@@ -305,7 +315,7 @@ function Header(props) {
           <ModalMessage key="chat-categories" navigation={navigation} />,
           <BasketButton key="basket-categories" navigation={navigation} />,
         ];
-      case "Categories":
+      case "Cart":
         return [
           <ModalMessage
             key="chat-categories"
@@ -318,7 +328,7 @@ function Header(props) {
             isWhite={white}
           />,
         ];
-      case "Category":
+      case "Products":
         return [
           <ModalMessage
             key="chat-deals"
@@ -406,18 +416,14 @@ function Header(props) {
   //renderFucntion Tabs
   const ListItemTypeProduct = ({ item }) => {
     return (
-      <View style={styles2.item}>
+      <Block style={styles2.item}>
         <TouchableOpacity
           shadowless
-          style={[styles.tab, styles.divider]}
-          onPress={() => {
-            props.navigation.navigate(item.sectionPage);
-          }}
+          onPress={() => props.navigation.navigate(item.sectionPage)}
         >
-          <Icons name={item.icon} style={{ paddingRight: 10, fontSize: 20 }} />
-          <Text style={styles.tabTitle}>{item.text}</Text>
+          <Image source={item.icon} />
         </TouchableOpacity>
-      </View>
+      </Block>
     );
   };
   const renderTabs = () => {
@@ -426,20 +432,24 @@ function Header(props) {
         <StatusBar style="auto" />
         <SafeAreaView style={{ flex: 1 }}>
           <SectionList
-            contentContainerStyle={{ paddingHorizontal: 10 }}
+            contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 0 }}
             stickySectionHeadersEnabled={false}
             sections={sectionProductType}
+            scrollEnabled={false}
             renderSectionHeader={({ section }) => (
               <>
                 {section.horizontal ? (
-                  <FlatList
-                    horizontal
-                    data={section.data}
-                    renderItem={({ item }) => (
-                      <ListItemTypeProduct item={item} />
-                    )}
-                    showsHorizontalScrollIndicator={false}
-                  />
+                  <>
+                    <FlatList
+                      horizontal
+                      data={section.data}
+                      renderItem={({ item }) => (
+                        <ListItemTypeProduct item={item} />
+                      )}
+                      showsHorizontalScrollIndicator={false}
+                      showsVerticalScrollIndicator={false}
+                    />
+                  </>
                 ) : null}
               </>
             )}
@@ -456,16 +466,14 @@ function Header(props) {
   };
   const ListItemProduct = ({ item }) => {
     return (
-      <View style={styles2.item}>
-        <Image
-          source={{
-            uri: item.uri,
-          }}
-          style={styles2.itemPhoto}
-          resizeMode="cover"
-        />
-        <Text style={styles2.itemText}>{item.text}</Text>
-      </View>
+      <Block style={styles2.item}>
+        <TouchableOpacity
+          shadowless
+          onPress={() => props.navigation.navigate(item.sectionPage)}
+        >
+          <Image source={item.icon} style={styles2.itemPhoto} />
+        </TouchableOpacity>
+      </Block>
     );
   };
   const renderTabViews = () => {
@@ -473,9 +481,10 @@ function Header(props) {
       <Block style={styles2.container2}>
         <SafeAreaView style={{ flex: 1 }}>
           <SectionList
-            contentContainerStyle={{ paddingHorizontal: 10 }}
+            contentContainerStyle={{ paddingHorizontal: 0 }}
             stickySectionHeadersEnabled={false}
-            sections={sectionProduct}
+            sections={sectionBrand}
+            scrollEnabled={false}
             renderSectionHeader={({ section }) => (
               <>
                 {section.horizontal ? (
@@ -484,6 +493,7 @@ function Header(props) {
                     data={section.data}
                     renderItem={({ item }) => <ListItemProduct item={item} />}
                     showsHorizontalScrollIndicator={false}
+                    showsVerticalScrollIndicator={false}
                   />
                 ) : null}
               </>
@@ -514,9 +524,7 @@ function Header(props) {
   };
 
   const { back, title, transparent } = props;
-  const noShadow = ["Search", "Categories", "Profile"].includes(
-    title
-  );
+  const noShadow = ["Search", "Categories", "Profile"].includes(title);
   const headerStyles = [
     !noShadow ? styles.shadow : null,
     transparent ? { backgroundColor: "rgba(0,0,0,0)" } : null,
@@ -527,8 +535,7 @@ function Header(props) {
       <Block style={headerStyles}>
         <NavBar
           back={back}
-          // title={title}
-          title={"WangDek"}
+          title={renderLogo()}
           style={styles.navbar}
           transparent={transparent}
           rightStyle={{ alignItems: "center" }}
@@ -536,9 +543,6 @@ function Header(props) {
           titleStyle={[styles.title]}
           left={renderLeft()}
           right={renderRight()}
-          // onLeftPress={handleLeftPress}
-          // leftIconName={back ? "chevron-left" : "navicon"}
-          // leftIconColor={white ? theme.COLORS.WHITE : theme.COLORS.ICON}
         />
         {renderHeader()}
       </Block>
@@ -557,13 +561,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "bold",
     alignItems: "center",
-    color: "black"
+    color: "black",
   },
   navbar: {
     paddingVertical: 0,
     paddingBottom: theme.SIZES.BASE * 1.4,
     paddingTop: theme.SIZES.BASE * 2.8,
     zIndex: 4,
+    height: 95,
   },
   shadow: {
     backgroundColor: theme.COLORS.WHITE,
@@ -608,10 +613,10 @@ const styles = StyleSheet.create({
   },
   tab: {
     backgroundColor: theme.COLORS.TRANSPARENT,
-    width: width * 0.35,
+    width: width * 0.2,
     borderRadius: 0,
     borderWidth: 0,
-    height: 20,
+    height: 5,
     elevation: 0,
     flexDirection: "row",
   },
@@ -660,12 +665,14 @@ const styles = StyleSheet.create({
 
 const styles2 = StyleSheet.create({
   container1: {
-    backgroundColor: "#f2f0f0",
-    height: 40,
+    backgroundColor: "#f5f5f5",
+    height: 92,
+    padding: 0,
   },
   container2: {
     backgroundColor: "white",
-    height: 60,
+    height: 45,
+    padding: 0,
   },
   sectionHeader: {
     fontWeight: "800",
@@ -675,11 +682,12 @@ const styles2 = StyleSheet.create({
     marginBottom: 5,
   },
   item: {
-    margin: 10,
+    margin: 5,
+    height: 92,
   },
   itemPhoto: {
-    width: 25,
-    height: 25,
+    width: 90,
+    height: 34,
     alignSelf: "center",
   },
   itemText: {
@@ -694,80 +702,106 @@ const styles2 = StyleSheet.create({
 
 const sectionProductType = [
   {
+    // title: "Title Text",
     horizontal: true,
     data: [
       {
         key: "1",
-        text: "Categories",
-        icon: "category",
-        sectionPage: "Categories",
+        icon: require("../assets/iconMain/icon-01.png"),
+        sectionPage: "Basket",
       },
       {
         key: "2",
-        text: "Product",
-        icon: "build",
-        sectionPage: "Categories",
+        icon: require("../assets/iconMain/icon-02.png"),
+        sectionPage: "Basket",
       },
       {
         key: "3",
-        text: "Test1",
-        icon: "extension",
-        sectionPage: "Categories",
+        icon: require("../assets/iconMain/icon-03.png"),
+        sectionPage: "Basket",
       },
       {
         key: "4",
-        text: "Test2",
-        icon: "extension",
-        sectionPage: "Categories",
+        icon: require("../assets/iconMain/icon-04.png"),
+        sectionPage: "Basket",
+      },
+      {
+        key: "5",
+        icon: require("../assets/iconMain/icon-05.png"),
+        sectionPage: "Basket",
+      },
+      {
+        key: "6",
+        icon: require("../assets/iconMain/icon-06.png"),
+        sectionPage: "Basket",
+      },
+      {
+        key: "7",
+        icon: require("../assets/iconMain/icon-07.png"),
+        sectionPage: "Basket",
+      },
+      {
+        key: "8",
+        icon: require("../assets/iconMain/icon-08.png"),
+        sectionPage: "Basket",
       },
     ],
   },
 ];
-const sectionProduct = [
+const sectionBrand = [
   {
-    title: "Made for you",
+    // title: "Title Text",
     horizontal: true,
     data: [
       {
         key: "1",
-        text: "Item text 1",
-        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+        icon: require("../assets/iconBrand/brand-01.png"),
+        sectionPage: "Basket",
       },
       {
         key: "2",
-        text: "Item text 2",
-        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+        icon: require("../assets/iconBrand/brand-02.png"),
+        sectionPage: "Basket",
       },
-
       {
         key: "3",
-        text: "Item text 3",
-        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+        icon: require("../assets/iconBrand/brand-03.png"),
+        sectionPage: "Basket",
       },
       {
         key: "4",
-        text: "Item text 4",
-        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+        icon: require("../assets/iconBrand/brand-04.png"),
+        sectionPage: "Basket",
       },
       {
         key: "5",
-        text: "Item text 5",
-        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+        icon: require("../assets/iconBrand/brand-05.png"),
+        sectionPage: "Basket",
       },
       {
         key: "6",
-        text: "Item text 6",
-        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+        icon: require("../assets/iconBrand/brand-06.png"),
+        sectionPage: "Basket",
       },
       {
         key: "7",
-        text: "Item text 7",
-        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+        icon: require("../assets/iconBrand/brand-07.png"),
+        sectionPage: "Basket",
       },
       {
         key: "8",
-        text: "Item text 8",
-        uri: "https://source.unsplash.com/av39QlUcsRo/200x100",
+        icon: require("../assets/iconBrand/brand-08.png"),
+        sectionPage: "Basket",
+      },
+      {
+        key: "9",
+        icon: require("../assets/iconBrand/brand-09.png"),
+        sectionPage: "Basket",
+      },
+      {
+        key: "10",
+        icon: require("../assets/iconBrand/brand-10.png"),
+        sectionPage: "Basket",
       },
     ],
   },

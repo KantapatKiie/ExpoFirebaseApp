@@ -5,9 +5,9 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "privacy": "public",
-    "icon": "./assets/images/ic_launcher.png",
+    "icon": "./assets/images/logoApp.png",
     "splash": {
-      "image": "./assets/images/estremera.png",
+      "image": "./assets/images/splash-screen-wangdek.png",
       "resizeMode": "cover"
     },
     "updates": {

@@ -68,7 +68,7 @@ function ProductScreen(props) {
         <StatusBar barStyle="default" />
         {/* View */}
         <Block space="between" style={styles.paddedTop}>
-          <Block row>
+          {/* <Block row>
             <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
               <Icons
                 name="arrow-left"
@@ -77,7 +77,7 @@ function ProductScreen(props) {
                 style={styles.IconBack}
               />
             </TouchableOpacity>
-          </Block>
+          </Block> */}
           {/* Title */}
           <Block>
             <Text style={styles.titleText}>{objProductActivity.TITLE}</Text>

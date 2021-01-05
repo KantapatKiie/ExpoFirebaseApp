@@ -105,9 +105,6 @@ function Settings(props) {
         <Text center muted size={12}>
           Please select your language
         </Text>
-        <Text center muted size={14}>
-          {formatTr("hello3").toString()}
-        </Text>
       </Block>
       <Picker
         selectedValue={props.lang}

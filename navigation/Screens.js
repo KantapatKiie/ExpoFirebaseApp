@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Dimensions } from "react-native";
+import { Dimensions, Image, StyleSheet } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 // import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NavigationContainer } from "@react-navigation/native";
+// import { NavigationContainer } from "@react-navigation/native";
 import HomeScreen from "../screens/Home";
 import ProfileScreen from "../screens/Profile";
 import SettingsScreen from "../screens/Settings";
@@ -17,7 +17,7 @@ import { connect, useSelector } from "react-redux";
 import * as ActionLogin from "../actions/action-actives/ActionLogin";
 import * as firebase from "firebase";
 import * as Notifications from "expo-notifications";
-import Icons from "react-native-vector-icons/MaterialIcons";
+// import Icons from "react-native-vector-icons/MaterialIcons";
 
 //SET FIREBASE-CONFIG
 const firebaseConfig = {
@@ -47,7 +47,7 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 // const Drawer = createDrawerNavigator();
 
-function ProfileStack(props) {
+function ProfileStack() {
   return (
     <Stack.Navigator initialRouteName="Profile" mode="card" headerMode="screen">
       <Stack.Screen
@@ -70,7 +70,7 @@ function ProfileStack(props) {
   );
 }
 
-function SettingsStack(props) {
+function SettingsStack() {
   return (
     <Stack.Navigator
       initialRouteName="Settings"
@@ -90,7 +90,7 @@ function SettingsStack(props) {
   );
 }
 
-function RegistrationStack(props) {
+function RegistrationStack() {
   return (
     <Stack.Navigator mode="card" headerMode="none">
       <Stack.Screen name="Sign In" component={SignInScreen} />
@@ -99,7 +99,7 @@ function RegistrationStack(props) {
   );
 }
 
-function BasketStack(props) {
+function BasketStack() {
   return (
     <Stack.Navigator initialRouteName="Basket" mode="modal" headerMode="screen">
       <Stack.Screen
@@ -115,19 +115,18 @@ function BasketStack(props) {
   );
 }
 
-function ProductStack(props) {
+function ProductStack() {
   return (
-    <Stack.Navigator
-      initialRouteName="Categories"
-      mode="card"
-      headerMode="none"
-    >
+    <Stack.Navigator mode="card" headerMode="screen">
       <Stack.Screen
         name="Products"
         component={ProductsScreen}
         options={{
           header: ({ navigation, scene }) => (
-            <Header title="Products" scene={scene} navigation={navigation} />
+            <Header 
+            search
+            tabs
+             title="Products" scene={scene} navigation={navigation} />
           ),
         }}
       />
@@ -136,7 +135,13 @@ function ProductStack(props) {
         component={CartScreen}
         options={{
           header: ({ navigation, scene }) => (
-            <Header title="Cart" scene={scene} navigation={navigation} />
+            <Header
+              search
+              tabs
+              title="Cart"
+              scene={scene}
+              navigation={navigation}
+            />
           ),
         }}
       />
@@ -144,7 +149,7 @@ function ProductStack(props) {
   );
 }
 
-function HomeStack(props) {
+function HomeStack() {
   return (
     <Stack.Navigator mode="card" headerMode="screen">
       <Stack.Screen
@@ -152,15 +157,13 @@ function HomeStack(props) {
         component={HomeScreen}
         options={{
           header: ({ navigation, scene }) => (
-            <>
-              <Header
-                search
-                tabs
-                title="Home"
-                navigation={navigation}
-                scene={scene}
-              />
-            </>
+            <Header
+              search
+              tabs
+              title="Home"
+              navigation={navigation}
+              scene={scene}
+            />
           ),
         }}
       />
@@ -182,6 +185,8 @@ function MyTabs() {
           fontSize: 12,
           margin: 0,
           padding: 0,
+          fontFamily: "kanitRegular",
+          color: "gray",
         },
       }}
     >
@@ -191,7 +196,10 @@ function MyTabs() {
         options={{
           tabBarLabel: "Flash Sale",
           tabBarIcon: ({ size }) => (
-            <Icons name="whatshot" color={"orange"} size={size} />
+            <Image
+              source={require("../assets/images/menubar/flashsale.png")}
+              style={Style.menuBar}
+            />
           ),
         }}
       />
@@ -201,7 +209,10 @@ function MyTabs() {
         style={{ color: "black" }}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Icons name="loyalty" color={"green"} size={size} />
+            <Image
+              source={require("../assets/images/menubar/promotion.png")}
+              style={Style.menuBar}
+            />
           ),
         }}
       />
@@ -210,7 +221,10 @@ function MyTabs() {
         component={ProductStack}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Icons name="campaign" color={"blue"} size={size} />
+            <Image
+              source={require("../assets/images/menubar/news.png")}
+              style={Style.menuBar}
+            />
           ),
         }}
       />
@@ -219,7 +233,10 @@ function MyTabs() {
         component={BasketStack}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Icons name="event" color={"red"} size={size} />
+            <Image
+              source={require("../assets/images/menubar/events.png")}
+              style={Style.menuBar}
+            />
           ),
         }}
       />
@@ -228,7 +245,10 @@ function MyTabs() {
         component={ProfileStack}
         options={{
           tabBarIcon: ({ size }) => (
-            <Icons name="payment" color={"#820036"} size={size} />
+            <Image
+              source={require("../assets/images/menubar/payments.png")}
+              style={Style.menuBar}
+            />
           ),
         }}
       />
@@ -237,7 +257,11 @@ function MyTabs() {
         component={RegistrationStack}
         options={{
           tabBarIcon: ({ size }) => (
-            <Icons name="face" color={"#007e82"} size={size} />
+            <Image
+              source={require("../assets/images/menubar/user.png")}
+              style={Style.menuBar}
+            />
+            // <Icons name="face" color={"#007e82"} size={size} />
           ),
         }}
       />
@@ -345,3 +369,10 @@ function OnboardingStack(props) {
 }
 
 export default connect(null, ActionLogin.actions)(OnboardingStack);
+
+const Style = StyleSheet.create({
+  menuBar: {
+    width: 20,
+    height: 20,
+  },
+});

@@ -7,29 +7,47 @@ import Screens from "./navigation/Screens";
 import { createStore } from "redux";
 import { Provider } from "react-redux";
 import { rootReducer } from "./store/rootDuck";
-
-import enMessages from "./i18n/messages/en.json";
-import thMessages from "./i18n/messages/th.json";
-
-const allMessages = {
-  en: enMessages,
-  th: thMessages,
-};
+import * as Font from "expo-font";
+import AppLoading from 'expo-app-loading'
 
 //SET STATE (store)
 const store = createStore(rootReducer);
 
-export default function App(props) {
-  return (
-    <Provider store={store}>
-      <NavigationContainer>
-        <GalioProvider theme={materialTheme}>
-          <Block flex>
-            {Platform.OS === "ios" && <StatusBar barStyle="default" />}
-            <Screens />
-          </Block>
-        </GalioProvider>
-      </NavigationContainer>
-    </Provider>
-  );
+export default class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loadingFont: true,
+    };
+    this._loadingFont = this._loadingFont.bind(this);
+  }
+  componentDidMount() {
+    this._loadingFont();
+  }
+  async _loadingFont() {
+    await Font.loadAsync({
+      kanitLight: require("./assets/fonts/Kanit-Light.ttf"),
+      kanitBold: require("./assets/fonts/Kanit-Bold.ttf"),
+      kanitRegular: require("./assets/fonts/Kanit-Regular.ttf"),
+    });
+    this.setState({ loadingFont: false });
+  }
+  render() {
+    const { loadingFont } = this.state;
+    if (loadingFont) {
+      return <AppLoading />;
+    }
+    return (
+      <Provider store={store}>
+        <NavigationContainer>
+          <GalioProvider theme={materialTheme}>
+            <Block flex>
+              {Platform.OS === "ios" && <StatusBar barStyle="default" />}
+              <Screens />
+            </Block>
+          </GalioProvider>
+        </NavigationContainer>
+      </Provider>
+    );
+  }
 }
