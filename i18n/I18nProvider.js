@@ -1,8 +1,8 @@
-import React from "react";
+// import React from "react";
 import I18n from "ex-react-native-i18n";
-import { Localization } from "expo-localization";
+// import { Localization } from "expo-localization";
 import { useSelector } from "react-redux";
-import { IntlProvider } from "react-intl";
+// import { IntlProvider } from "react-intl";
 
 import en from "./messages/en.json";
 import th from "./messages/th.json";
@@ -11,10 +11,10 @@ I18n.translations = {
   en,
   th,
 };
-const allMessages = {
-  en,
-  th,
-};
+// const allMessages = {
+//   en,
+//   th,
+// };
 
 export function formatTr(name) {
   const locale = useSelector(({ i18n }) => i18n.lang);

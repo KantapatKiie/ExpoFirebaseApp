@@ -75,7 +75,6 @@ function Product(props) {
   );
 }
 
-// export default withNavigation(Product);
 export default withNavigation(
   connect(null, ActionProductActivity.actions)(Product)
 );

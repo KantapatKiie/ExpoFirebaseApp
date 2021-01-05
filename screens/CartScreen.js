@@ -86,7 +86,6 @@ function CartScreen(props) {
   //#region modalConfirm
   const [modalVisible, setModalVisible] = useState(false);
   const handleConfirm = (e) => {
-    console.log("Yes Yes Yes Yes Yes");
     setModalVisible(false);
   };
   const modalHeader = (
