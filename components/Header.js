@@ -274,6 +274,19 @@ function Header(props) {
             isWhite={white}
           />,
         ];
+      case "Payment":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
       default:
         break;
     }
@@ -369,7 +382,7 @@ function Header(props) {
         ];
       case "Settings":
         return [];
-      case "TestPage":
+      case "Payment":
         return [
           <ModalMessage
             key="chat-search"
@@ -382,6 +395,20 @@ function Header(props) {
             isWhite={white}
           />,
         ];
+      case "Payment":
+        return [
+          <ModalMessage
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+
       default:
         break;
     }

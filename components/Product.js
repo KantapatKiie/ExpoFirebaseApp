@@ -53,11 +53,10 @@ function Product(props) {
       >
         {/* Source Image */}
         <TouchableWithoutFeedback>
-          <Block flex style={[styles.imageContainer, styles.shadow]}>
+          <Block flex >
             <Image source={{ uri: product.image }} style={imageStyles} />
           </Block>
         </TouchableWithoutFeedback>
-        {/* Click */}
         <TouchableOpacity onPress={onClickProducts}>
           <Block flex space="between" style={styles.productDescription}>
             <Text style={styles.productTitle}>{product.title}</Text>
@@ -104,8 +103,8 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   image: {
-    borderRadius: 2,
-    marginHorizontal: theme.SIZES.BASE / 1.5,
+    // marginHorizontal: theme.SIZES.BASE / 1.5,
+    borderRadius: 4,
     marginTop: -20,
   },
   horizontalImage: {
