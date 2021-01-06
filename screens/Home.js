@@ -14,6 +14,7 @@ import {
 import { withNavigation } from "@react-navigation/compat";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
+import 'moment-duration-format';
 import { StatusBar } from "expo-status-bar";
 import { Block, Text, Button, theme } from "galio-framework";
 import { Icon, Product } from "../components/";
@@ -40,7 +41,7 @@ function Home(props) {
   //#endregion
 
   useEffect(() => {
-    updateTimer();
+    CountdownTime();
   }, []);
 
   //Time Everthing
@@ -139,6 +140,7 @@ function Home(props) {
                   color: "white",
                   fontFamily: "kanitBold",
                   textAlign: "center",
+                  fontSize: 13,
                 }}
               >
                 {READ_MORE}
@@ -157,7 +159,7 @@ function Home(props) {
     mins: 0,
     secs: 0,
   });
-  const updateTimer = async () => {
+  const CountdownTime = async () => {
     await setInterval(() => {
       let { eventDate } = stateTime;
       eventDate = eventDate.subtract(1, "s");
@@ -234,36 +236,36 @@ function Home(props) {
                         {/* HH */}
                         <Block style={timeStyle.timerow1}>
                           <Text style={timeStyle.timeText}>
-                            {stateTime.eventDate.toString().substring(2, 3)}
+                            {stateTime.hours.toString().substring(1, 2) !== "" ? stateTime.hours.toString().substring(0,1) : "0"}
                           </Text>
                         </Block>
                         <Block style={timeStyle.timerow2}>
                           <Text style={timeStyle.timeText}>
-                            {stateTime.eventDate.toString().substring(3, 4)}
+                          {stateTime.hours.toString().substring(1, 2) !== "" ? stateTime.hours.toString().substring(1, 2):stateTime.hours.toString().substring(0,1)}
                           </Text>
                         </Block>
                         <Text style={timeStyle.timeTextBlock}>:</Text>
                         {/* MM */}
                         <Block style={timeStyle.timerow3}>
                           <Text style={timeStyle.timeText}>
-                            {stateTime.eventDate.toString().substring(5, 6)}
+                            {stateTime.mins.toString().substring(1, 2) !== "" ? stateTime.mins.toString().substring(0,1) : "0"}
                           </Text>
                         </Block>
                         <Block style={timeStyle.timerow4}>
                           <Text style={timeStyle.timeText}>
-                            {stateTime.eventDate.toString().substring(6, 7)}
-                          </Text>
+                          {stateTime.mins.toString().substring(1, 2) !== "" ? stateTime.mins.toString().substring(1, 2):stateTime.mins.toString().substring(0,1)}
+                         </Text>
                         </Block>
                         <Text style={timeStyle.timeTextBlock}>:</Text>
                         {/* SS */}
                         <Block style={timeStyle.timerow5}>
                           <Text style={timeStyle.timeText}>
-                            {stateTime.eventDate.toString().substring(8, 9)}
+                            {stateTime.secs.toString().substring(1, 2) !== "" ? stateTime.secs.toString().substring(0,1) : "0"}
                           </Text>
                         </Block>
                         <View style={timeStyle.timerow6}>
                           <Text style={timeStyle.timeText}>
-                            {stateTime.eventDate.toString().substring(9, 10)}
+                            {stateTime.secs.toString().substring(1, 2) !== "" ? stateTime.secs.toString().substring(1, 2):stateTime.secs.toString().substring(0,1)}
                           </Text>
                         </View>
                         <Text style={timeStyle.timeTextArrow}>{">"}</Text>
@@ -340,7 +342,7 @@ function Home(props) {
                       </Block>
                     </Block>
                   </Block>
-                  {/* Popular Product */}
+                  {/* Popular product */}
                   <Block flex style={styles.textContainerBlock2}>
                     <Text style={{ fontSize: 25, fontFamily: "kanitRegular" }}>
                       {POPULAR_PRODUCT}
@@ -385,7 +387,7 @@ function Home(props) {
                       </Text>
                     </TouchableOpacity>
                   </Block>
-                  {/* Public Relations */}
+                  {/* Public relations */}
                   <Block flex style={{ backgroundColor: "#F3F3F3" }}>
                     <Text
                       style={{
@@ -436,6 +438,8 @@ function Home(props) {
                           alignSelf: "center",
                           paddingBottom: 25,
                           color: "black",
+                          // borderBottomWidth: 2,
+                          // borderBottomColor: "#00bcd1",
                         }}
                         size={14}
                         color={theme.COLORS.PRIMARY}
@@ -444,7 +448,7 @@ function Home(props) {
                       </Text>
                     </TouchableOpacity>
                   </Block>
-                  {/* Info */}
+                  {/* Bottom info */}
                   <Block style={styles2.blockHeader}>
                     <Text
                       style={{

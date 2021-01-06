@@ -11,6 +11,8 @@ import SignInScreen from "../screens/auth/SignIn";
 import SignUpScreen from "../screens/auth/SignUp";
 import BasketScreen from "../screens/Basket";
 import ProductsScreen from "../screens/ProductScreen";
+import PaymentScreen from "../screens/PaymentScreen";
+import ContactScreen from "../screens/Contact";
 import CartScreen from "../screens/CartScreen";
 import { Header } from "../components";
 import { connect, useSelector } from "react-redux";
@@ -123,10 +125,13 @@ function ProductStack() {
         component={ProductsScreen}
         options={{
           header: ({ navigation, scene }) => (
-            <Header 
-            search
-            tabs
-             title="Products" scene={scene} navigation={navigation} />
+            <Header
+              search
+              tabs
+              title="Products"
+              scene={scene}
+              navigation={navigation}
+            />
           ),
         }}
       />
@@ -139,6 +144,54 @@ function ProductStack() {
               search
               tabs
               title="Cart"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function PaymentStack() {
+  return (
+    <Stack.Navigator mode="card" headerMode="screen">
+      <Stack.Screen
+        name="Payment"
+        component={PaymentScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Payment"
+              search
+              tabs
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function ContactStack() {
+  return (
+    <Stack.Navigator mode="card" headerMode="screen">
+      <Stack.Screen
+        name="Contact"
+        component={ContactScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Contact"
+              search
+              tabs
               scene={scene}
               navigation={navigation}
             />
@@ -218,7 +271,7 @@ function MyTabs() {
       />
       <Tab.Screen
         name="News"
-        component={ProductStack}
+        component={ContactStack}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Image
@@ -230,7 +283,7 @@ function MyTabs() {
       />
       <Tab.Screen
         name="Events"
-        component={BasketStack}
+        component={ProfileStack}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Image
@@ -242,7 +295,7 @@ function MyTabs() {
       />
       <Tab.Screen
         name="Payment"
-        component={ProfileStack}
+        component={PaymentStack}
         options={{
           tabBarIcon: ({ size }) => (
             <Image

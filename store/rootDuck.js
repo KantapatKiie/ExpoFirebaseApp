@@ -7,6 +7,8 @@ import * as actionSearchHD from "../actions/action-search-hd/ActionSearchHD";
 import * as actionCart from "../actions/action-cart/ActionCart";
 import * as actionProduct from "../actions/action-product/ActionProduct";
 import * as actionHomeHD from "../actions/action-home/ActionHome";
+import * as actionPayment from "../actions/action-payment/ActionPayment";
+import * as actionContact from "../actions/action-contact/ActionContact";
 import * as i18n from "./ducks/i18n";
 
 export const rootReducer = combineReducers({
@@ -18,6 +20,8 @@ export const rootReducer = combineReducers({
   actionCart: actionCart.reducer,
   actionProduct: actionProduct.reducer,
   actionHomeHD: actionHomeHD.reducer,
+  actionPayment: actionPayment.reducer,
+  actionContact: actionContact.reducer,
 });
 
 export function* rootSaga() {

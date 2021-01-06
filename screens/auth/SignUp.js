@@ -56,14 +56,23 @@ function SignUp(props) {
 
   const onClickSignUp = () => {
     setLoading(true);
-    createAccount("firstName", "lastName", "test@test.ca", "12345")
-      .then((val) => {
-        console.log(val);
-
-        setLoading(false);
-        props.navigation.navigate("Sign In");
-      })
-      .catch((err) => console.log("error:", err.message));
+    if (
+      stateObj.firstName !== "" &&
+      stateObj.lastName !== "" &&
+      stateObj.password !== "" &&
+      stateObj.password2 !== "" &&
+      stateObj.email !== ""
+    ) {
+      createAccount("firstName", "lastName", "test@test.ca", "12345")
+        .then((val) => {
+          console.log(val);
+          setLoading(false);
+          props.navigation.navigate("Sign In");
+        })
+        .catch((err) => console.log("error:", err.message));
+    } else {
+      setLoading(false);
+    }
   };
 
   return (

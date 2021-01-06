@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "privacy": "public",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logoapp.png",
     "splash": {
       "image": "./assets/images/splash-screen-wangdek.png",
       "resizeMode": "cover"
@@ -25,7 +25,7 @@
       "versionCode": 1,
       "useNextNotificationsApi": true,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
+        "foregroundImage": "./assets/images/logoapp.png",
         "backgroundColor": "#FFFFFF"
       }
     }

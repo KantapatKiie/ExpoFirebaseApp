@@ -118,7 +118,7 @@ function SignIn(props) {
             <View style={styles.logoContainer}>
               <Image
                 style={styles.showLogo}
-                source={require("../../assets/images/ios.png")}
+                source={require("../../assets/images/logo.png")}
               />
             </View>
             <View
@@ -233,10 +233,11 @@ const styles = StyleSheet.create({
   },
   SignupText: {
     color: "white",
-    fontSize: 10,
+    fontSize: 11,
     borderBottomWidth: 0.5,
     borderBottomColor: "white",
     paddingTop: 5,
+    fontFamily:"kanitRegular"
   },
   logoContainer: {
     elevation: 1,

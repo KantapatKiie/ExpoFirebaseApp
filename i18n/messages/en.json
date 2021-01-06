@@ -7,5 +7,9 @@
   "POPULAR_PRODUCT": "Popular products",
   "NEWS_RELEASE": "News release",
   "WANGDEK_INFO": "Wangdek Info",
-  "READ_MORE": "Read more..."
+  "READ_MORE": "Read more...",
+  "HOME_BACK": "Main page",
+  "PAYMENT_NOTIFICATION" : "Payment",
+  "CONFIRM": "Confirm",
+  "CANCEL" : "Cancel"
 }

@@ -7,5 +7,9 @@
   "POPULAR_PRODUCT": "สินค้ายอดนิยม",
   "NEWS_RELEASE": "ข่าวประชาสัมพันธ์",
   "WANGDEK_INFO": "Wangdek Info",
-  "READ_MORE": "อ่านต่อ..."
+  "READ_MORE": "อ่านต่อ...",
+  "HOME_BACK": "กลับสู่หน้าหลัก",
+  "PAYMENT_NOTIFICATION" : "แจ้งชำระเงิน",
+  "CONFIRM": "ยืนยัน",
+  "CANCEL" : "ยกเลิก"
 }
