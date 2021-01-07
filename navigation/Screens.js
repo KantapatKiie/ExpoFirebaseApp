@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import { Dimensions, Image, StyleSheet } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
-// import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-// import { NavigationContainer } from "@react-navigation/native";
 import HomeScreen from "../screens/Home";
 import ProfileScreen from "../screens/Profile";
 import SettingsScreen from "../screens/Settings";
@@ -14,11 +12,14 @@ import ProductsScreen from "../screens/ProductScreen";
 import PaymentScreen from "../screens/PaymentScreen";
 import ContactScreen from "../screens/Contact";
 import CartScreen from "../screens/CartScreen";
+import ForgetPasswordScreen from "../screens/ForgetPassword";
 import { Header } from "../components";
 import { connect, useSelector } from "react-redux";
 import * as ActionLogin from "../actions/action-actives/ActionLogin";
 import * as firebase from "firebase";
 import * as Notifications from "expo-notifications";
+// import { createDrawerNavigator } from "@react-navigation/drawer";
+// import { NavigationContainer } from "@react-navigation/native";
 // import Icons from "react-native-vector-icons/MaterialIcons";
 
 //SET FIREBASE-CONFIG
@@ -92,11 +93,69 @@ function SettingsStack() {
   );
 }
 
-function RegistrationStack() {
+function SignInStack() {
+  return (
+    <Stack.Navigator mode="card" headerMode="screen">
+      <Stack.Screen
+        name="Sign In"
+        component={SignInScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              title="Sign In"
+              search
+              tabs
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen name="Sign Up" component={SignUpScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function SignUpStack() {
   return (
     <Stack.Navigator mode="card" headerMode="none">
-      <Stack.Screen name="Sign In" component={SignInScreen} />
-      <Stack.Screen name="Sign Up" component={SignUpScreen} />
+      <Stack.Screen
+        name="Sign Up"
+        component={SignUpScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              title="Sign Up"
+              search
+              tabs
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function ForgetPasswordStack() {
+  return (
+    <Stack.Navigator mode="card" headerMode="screen">
+      <Stack.Screen
+        name="Forget Password"
+        component={ForgetPasswordScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              title="Forget Password"
+              search
+              tabs
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
     </Stack.Navigator>
   );
 }
@@ -190,8 +249,6 @@ function ContactStack() {
               search
               tabs
               title="Contact"
-              search
-              tabs
               scene={scene}
               navigation={navigation}
             />
@@ -307,7 +364,7 @@ function MyTabs() {
       />
       <Tab.Screen
         name="Account"
-        component={RegistrationStack}
+        component={SignInStack}
         options={{
           tabBarIcon: ({ size }) => (
             <Image
@@ -402,11 +459,6 @@ function OnboardingStack(props) {
           options={{ header: () => null }}
         />
         <Stack.Screen
-          name="Registration"
-          component={RegistrationStack}
-          options={{ header: () => null }}
-        />
-        <Stack.Screen
           name="Products"
           component={ProductStack}
           options={{ header: () => null }}
@@ -414,6 +466,16 @@ function OnboardingStack(props) {
         <Stack.Screen
           name="Basket"
           component={BasketStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Sign Up"
+          component={SignUpStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Forget Password"
+          component={ForgetPasswordStack}
           options={{ header: () => null }}
         />
       </Stack.Navigator>
