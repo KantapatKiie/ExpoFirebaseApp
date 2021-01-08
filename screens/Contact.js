@@ -20,6 +20,7 @@ import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { Block, Input } from "galio-framework";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import DropDownPicker from "react-native-dropdown-picker";
+import WangdekInfo from "../components/WangdekInfo";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -47,7 +48,6 @@ function Contact(props) {
   const showToastConfirm = () => {
     ToastAndroid.show("ส่งแบบฟอริ์มเรียบร้อย", ToastAndroid.SHORT);
   };
-
   const showToastCancel = () => {
     setObjSearch("");
     ToastAndroid.show("ยกเลิกการส่งแบบฟอริ์ม", ToastAndroid.SHORT);
@@ -112,23 +112,14 @@ function Contact(props) {
               latitudeDelta: 0.015,
               longitudeDelta: 0.012,
             }}
-            showsMyLocationButton={true}
-            showsUserLocation={true}
-            toolbarEnabled={true}
-            followsUserLocation={true}
-            showsPointsOfInterest={true}
-            showsScale={true}
-            //   showsTraffic={true}
           >
             <Marker
               coordinate={{
                 latitude: 13.79910335904877,
                 longitude: 100.56033331534356,
-                latitudeDelta: 0.015,
-                longitudeDelta: 0.012,
               }}
-              title="this is a marker"
-              description="this is a marker example"
+              // title="this is a marker"
+              // description="this is a marker example"
             />
           </MapView>
         </Block>
@@ -469,76 +460,13 @@ function Contact(props) {
           />
         </Block>
         {/* Info */}
-        <Block row style={styles2.blockHeader}>
-          <Text
-            style={{
-              textAlign: "left",
-              color: "white",
-              fontSize: 20,
-              fontFamily: "kanitBold",
-            }}
-          >
-            {formatTr("WANGDEK_INFO").toString()}
-          </Text>
-        </Block>
-        {INFOLIST.map((item) => (
-          <Block style={styles2.blockHeaderInfo} key={item.key}>
-            <TouchableOpacity
-              onPress={() => props.navigation.navigate("Basket")}
-            >
-              <Block row middle space="between" style={{ paddingTop: 7 }}>
-                <Text
-                  style={{
-                    textAlign: "left",
-                    color: "black",
-                    fontSize: 14,
-                    fontFamily: "kanitRegular",
-                  }}
-                >
-                  {item.text}
-                </Text>
-                <Icon
-                  name="angle-right"
-                  family="font-awesome"
-                  style={{ paddingRight: 5 }}
-                />
-              </Block>
-            </TouchableOpacity>
-          </Block>
-        ))}
+        <WangdekInfo />
       </ScrollView>
     </>
   );
 }
 
 export default connect(null, ActionContact.actions)(Contact);
-
-const INFOLIST = [
-  {
-    key: "1",
-    text: "เกี่ยวกับเรา",
-  },
-  {
-    key: "2",
-    text: "วิธีการสั่งซื้อสินค้า",
-  },
-  {
-    key: "3",
-    text: "วิธีการชำระเงิน",
-  },
-  {
-    key: "4",
-    text: "ติดต่อเรา",
-  },
-  {
-    key: "5",
-    text: "Term & Conditions",
-  },
-  {
-    key: "6",
-    text: "Privacy Policy",
-  },
-];
 
 const styles = StyleSheet.create({
   buttonStyle1: {
@@ -583,26 +511,5 @@ const styles = StyleSheet.create({
   map: {
     width: width,
     height: 250,
-  },
-});
-
-const styles2 = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  blockHeader: {
-    padding: 8,
-    paddingLeft: 15,
-    backgroundColor: "#486ec7",
-    flexDirection: "column",
-  },
-  blockHeaderInfo: {
-    padding: 8,
-    paddingLeft: 15,
-    backgroundColor: "#f7f7f7",
-    flexDirection: "column",
   },
 });

@@ -25,6 +25,7 @@ import { Icon } from "../../components/";
 import { formatTr } from "../../i18n/I18nProvider";
 import * as Facebook from "expo-facebook";
 import * as ImagePicker from "expo-image-picker";
+import WangdekInfo from "../../components/WangdekInfo";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -123,6 +124,7 @@ function SignIn(props) {
   // Logout
   const LogoutAccount = () => {
     setLoggedinStatus(false);
+    setUserData("");
     ToastAndroid.show("Logout Account", ToastAndroid.SHORT);
   };
   // Facbook login
@@ -448,7 +450,11 @@ function SignIn(props) {
             >
               <Block>
                 <ImageBackground
-                  source={require("../../assets/iconSignIn/profilepic.png")}
+                  source={
+                    imagePicker !== null
+                      ? { uri: imagePicker }
+                      : require("../../assets/iconSignIn/profilepic.png")
+                  }
                   style={{
                     width: 100,
                     height: 100,
@@ -704,44 +710,7 @@ function SignIn(props) {
           </>
         )}
         {/* Info */}
-        <Block row style={stylesFooter.blockHeader}>
-          <Text
-            style={{
-              textAlign: "left",
-              color: "white",
-              fontSize: 20,
-              fontFamily: "kanitBold",
-            }}
-          >
-            {formatTr("WANGDEK_INFO").toString()}
-          </Text>
-        </Block>
-
-        {INFOLIST.map((item) => (
-          <Block style={stylesFooter.blockHeaderInfo} key={item.key}>
-            <TouchableOpacity
-              onPress={() => props.navigation.navigate("Basket")}
-            >
-              <Block row middle space="between" style={{ paddingTop: 7 }}>
-                <Text
-                  style={{
-                    textAlign: "left",
-                    color: "black",
-                    fontSize: 14,
-                    fontFamily: "kanitRegular",
-                  }}
-                >
-                  {item.text}
-                </Text>
-                <Icon
-                  name="angle-right"
-                  family="font-awesome"
-                  style={{ paddingRight: 5 }}
-                />
-              </Block>
-            </TouchableOpacity>
-          </Block>
-        ))}
+        <WangdekInfo/>
       </ScrollView>
       <ModalLoading loading={loading} />
     </>
@@ -749,33 +718,6 @@ function SignIn(props) {
 }
 
 export default connect(null, ActionLogin.actions)(SignIn);
-
-const INFOLIST = [
-  {
-    key: "1",
-    text: "เกี่ยวกับเรา",
-  },
-  {
-    key: "2",
-    text: "วิธีการสั่งซื้อสินค้า",
-  },
-  {
-    key: "3",
-    text: "วิธีการชำระเงิน",
-  },
-  {
-    key: "4",
-    text: "ติดต่อเรา",
-  },
-  {
-    key: "5",
-    text: "Term & Conditions",
-  },
-  {
-    key: "6",
-    text: "Privacy Policy",
-  },
-];
 
 const styles = StyleSheet.create({
   container: {

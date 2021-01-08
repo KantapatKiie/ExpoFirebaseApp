@@ -15,6 +15,7 @@ import * as ActionPayment from "../actions/action-payment/ActionPayment";
 import { Button } from "react-native-elements";
 import { Icon } from "../components/";
 import { formatTr } from "../i18n/I18nProvider";
+import WangdekInfo from "../components/WangdekInfo";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -206,76 +207,13 @@ function PaymentScreen(props) {
           />
         </Block>
         {/* Info */}
-        <Block row style={styles2.blockHeader}>
-          <Text
-            style={{
-              textAlign: "left",
-              color: "white",
-              fontSize: 20,
-              fontFamily: "kanitBold",
-            }}
-          >
-            {formatTr("WANGDEK_INFO").toString()}
-          </Text>
-        </Block>
-        {INFOLIST.map((item) => (
-          <Block style={styles2.blockHeaderInfo} key={item.key}>
-            <TouchableOpacity
-              onPress={() => props.navigation.navigate("Basket")}
-            >
-              <Block row middle space="between" style={{ paddingTop: 7 }}>
-                <Text
-                  style={{
-                    textAlign: "left",
-                    color: "black",
-                    fontSize: 14,
-                    fontFamily: "kanitRegular",
-                  }}
-                >
-                  {item.text}
-                </Text>
-                <Icon
-                  name="angle-right"
-                  family="font-awesome"
-                  style={{ paddingRight: 5 }}
-                />
-              </Block>
-            </TouchableOpacity>
-          </Block>
-        ))}
+        <WangdekInfo/>
       </ScrollView>
     </>
   );
 }
 
 export default connect(null, ActionPayment.actions)(PaymentScreen);
-
-const INFOLIST = [
-  {
-    key: "1",
-    text: "เกี่ยวกับเรา",
-  },
-  {
-    key: "2",
-    text: "วิธีการสั่งซื้อสินค้า",
-  },
-  {
-    key: "3",
-    text: "วิธีการชำระเงิน",
-  },
-  {
-    key: "4",
-    text: "ติดต่อเรา",
-  },
-  {
-    key: "5",
-    text: "Term & Conditions",
-  },
-  {
-    key: "6",
-    text: "Privacy Policy",
-  },
-];
 
 const styles = StyleSheet.create({
   buttonStyle1: {
@@ -306,26 +244,5 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     borderWidth: 1.5,
     borderRadius: 5,
-  },
-});
-
-const styles2 = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  blockHeader: {
-    padding: 8,
-    paddingLeft: 15,
-    backgroundColor: "#486ec7",
-    flexDirection: "column",
-  },
-  blockHeaderInfo: {
-    padding: 8,
-    paddingLeft: 15,
-    backgroundColor: "#f7f7f7",
-    flexDirection: "column",
   },
 });

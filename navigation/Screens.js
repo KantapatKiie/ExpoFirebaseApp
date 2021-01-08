@@ -111,14 +111,13 @@ function SignInStack() {
           ),
         }}
       />
-      <Stack.Screen name="Sign Up" component={SignUpScreen} />
     </Stack.Navigator>
   );
 }
 
 function SignUpStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="none">
+    <Stack.Navigator mode="card" headerMode="screen">
       <Stack.Screen
         name="Sign Up"
         component={SignUpScreen}
@@ -464,8 +463,8 @@ function OnboardingStack(props) {
           options={{ header: () => null }}
         />
         <Stack.Screen
-          name="Basket"
-          component={BasketStack}
+          name="Contact"
+          component={ContactStack}
           options={{ header: () => null }}
         />
         <Stack.Screen
@@ -476,6 +475,11 @@ function OnboardingStack(props) {
         <Stack.Screen
           name="Forget Password"
           component={ForgetPasswordStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Basket"
+          component={BasketStack}
           options={{ header: () => null }}
         />
       </Stack.Navigator>
