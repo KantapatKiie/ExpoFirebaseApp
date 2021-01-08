@@ -13,7 +13,7 @@ import materialTheme from "../constants/Theme";
 import { Picker } from "@react-native-picker/picker";
 import { connect } from "react-redux";
 import * as i18n from "../store/ducks/i18n";
-import { formatTr } from "../i18n/I18nProvider";
+// import { formatTr } from "../i18n/I18nProvider";
 
 const { width } = Dimensions.get("screen");
 
@@ -97,7 +97,7 @@ function Settings(props) {
           </Block>
         }
       />
-      {/* Language */}
+      {/* Select Language */}
       <Block style={styles.title}>
         <Text bold center size={theme.SIZES.BASE} style={{ paddingBottom: 5 }}>
           Language Settings

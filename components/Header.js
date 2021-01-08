@@ -287,6 +287,19 @@ function Header(props) {
             isWhite={white}
           />,
         ];
+        case "Sign In":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
       default:
         break;
     }
@@ -396,6 +409,19 @@ function Header(props) {
           />,
         ];
       case "Payment":
+        return [
+          <ModalMessage
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Sign In":
         return [
           <ModalMessage
             key="chat-search"

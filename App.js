@@ -29,6 +29,7 @@ export default class App extends React.Component {
       kanitLight: require("./assets/fonts/Kanit-Light.ttf"),
       kanitBold: require("./assets/fonts/Kanit-Bold.ttf"),
       kanitRegular: require("./assets/fonts/Kanit-Regular.ttf"),
+      kanitItalic: require("./assets/fonts/Kanit-Italic.ttf"),
     });
     this.setState({ loadingFont: false });
   }

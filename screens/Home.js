@@ -23,6 +23,7 @@ import CountDown from "react-native-countdown-component";
 import { LinearGradient } from "expo-linear-gradient";
 import { formatTr } from "../i18n/I18nProvider";
 import * as ActionHome from "../actions/action-home/ActionHome";
+import WangdekInfo from "../components/WangdekInfo";
 
 const { width } = Dimensions.get("screen");
 
@@ -449,48 +450,7 @@ function Home(props) {
                     </TouchableOpacity>
                   </Block>
                   {/* Bottom info */}
-                  <Block style={styles2.blockHeader}>
-                    <Text
-                      style={{
-                        textAlign: "left",
-                        color: "white",
-                        fontSize: 20,
-                        fontFamily: "kanitBold",
-                      }}
-                    >
-                      {WANGDEK_INFO}
-                    </Text>
-                  </Block>
-                  {INFOLIST.map((item) => (
-                    <Block style={styles2.blockHeaderInfo} key={item.key}>
-                      <TouchableOpacity
-                        onPress={() => props.navigation.navigate("Basket")}
-                      >
-                        <Block
-                          row
-                          middle
-                          space="between"
-                          style={{ paddingTop: 7 }}
-                        >
-                          <Text
-                            style={{
-                              textAlign: "left",
-                              color: "black",
-                              fontSize: 14,
-                              fontFamily: "kanitRegular",
-                            }}
-                          >
-                            {item.text}
-                          </Text>
-                          <Icon
-                            name="angle-right"
-                            family="font-awesome"
-                            style={{ paddingRight: 5 }}
-                          />
-                        </Block>
-                      </TouchableOpacity>
-                    </Block>
-                  ))}
+                  <WangdekInfo/>
                 </>
               )}
               renderItem={({ item, section }) => {
@@ -598,33 +558,6 @@ const INFORMATION = [
         uri: "https://picsum.photos/id/1008/200",
       },
     ],
-  },
-];
-
-const INFOLIST = [
-  {
-    key: "1",
-    text: "เกี่ยวกับเรา",
-  },
-  {
-    key: "2",
-    text: "วิธีการสั่งซื้อสินค้า",
-  },
-  {
-    key: "3",
-    text: "วิธีการชำระเงิน",
-  },
-  {
-    key: "4",
-    text: "ติดต่อเรา",
-  },
-  {
-    key: "5",
-    text: "Term & Conditions",
-  },
-  {
-    key: "6",
-    text: "Privacy Policy",
   },
 ];
 

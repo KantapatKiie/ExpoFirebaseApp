@@ -17,7 +17,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.iamcompany.expofirebase",
-      "buildNumber": "1.0.0"
+      "buildNumber": "1.0.0",
+      "config": {
+        "googleMapsApiKey": "AIzaSyBOPwrViKPYbjD7ASVKheIlwHFq5GP4Qyg"
+      }
     },
     "android": {
       "googleServicesFile": "./google-services.json",
@@ -27,6 +30,9 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logoapp.png",
         "backgroundColor": "#FFFFFF"
+      },
+      "config": {
+        "googleMaps": { "apiKey": "AIzaSyBOPwrViKPYbjD7ASVKheIlwHFq5GP4Qyg" }
       }
     }
   }
