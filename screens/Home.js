@@ -205,7 +205,9 @@ function Home(props) {
                   </Block>
                   {/* Flash Sale Count Down */}
                   <TouchableHighlight
-                  // onPress={() => props.navigation.navigate("Basket")}
+                    onPress={() =>
+                      props.navigation.navigate("Flashsale Product")
+                    }
                   >
                     <LinearGradient
                       colors={["#00cef2", "#00c4b7", "#00d184"]}
@@ -237,36 +239,48 @@ function Home(props) {
                         {/* HH */}
                         <Block style={timeStyle.timerow1}>
                           <Text style={timeStyle.timeText}>
-                            {stateTime.hours.toString().substring(1, 2) !== "" ? stateTime.hours.toString().substring(0,1) : "0"}
+                            {stateTime.hours.toString().substring(1, 2) !== ""
+                              ? stateTime.hours.toString().substring(0, 1)
+                              : "0"}
                           </Text>
                         </Block>
                         <Block style={timeStyle.timerow2}>
                           <Text style={timeStyle.timeText}>
-                          {stateTime.hours.toString().substring(1, 2) !== "" ? stateTime.hours.toString().substring(1, 2):stateTime.hours.toString().substring(0,1)}
+                            {stateTime.hours.toString().substring(1, 2) !== ""
+                              ? stateTime.hours.toString().substring(1, 2)
+                              : stateTime.hours.toString().substring(0, 1)}
                           </Text>
                         </Block>
                         <Text style={timeStyle.timeTextBlock}>:</Text>
                         {/* MM */}
                         <Block style={timeStyle.timerow3}>
                           <Text style={timeStyle.timeText}>
-                            {stateTime.mins.toString().substring(1, 2) !== "" ? stateTime.mins.toString().substring(0,1) : "0"}
+                            {stateTime.mins.toString().substring(1, 2) !== ""
+                              ? stateTime.mins.toString().substring(0, 1)
+                              : "0"}
                           </Text>
                         </Block>
                         <Block style={timeStyle.timerow4}>
                           <Text style={timeStyle.timeText}>
-                          {stateTime.mins.toString().substring(1, 2) !== "" ? stateTime.mins.toString().substring(1, 2):stateTime.mins.toString().substring(0,1)}
-                         </Text>
+                            {stateTime.mins.toString().substring(1, 2) !== ""
+                              ? stateTime.mins.toString().substring(1, 2)
+                              : stateTime.mins.toString().substring(0, 1)}
+                          </Text>
                         </Block>
                         <Text style={timeStyle.timeTextBlock}>:</Text>
                         {/* SS */}
                         <Block style={timeStyle.timerow5}>
                           <Text style={timeStyle.timeText}>
-                            {stateTime.secs.toString().substring(1, 2) !== "" ? stateTime.secs.toString().substring(0,1) : "0"}
+                            {stateTime.secs.toString().substring(1, 2) !== ""
+                              ? stateTime.secs.toString().substring(0, 1)
+                              : "0"}
                           </Text>
                         </Block>
                         <View style={timeStyle.timerow6}>
                           <Text style={timeStyle.timeText}>
-                            {stateTime.secs.toString().substring(1, 2) !== "" ? stateTime.secs.toString().substring(1, 2):stateTime.secs.toString().substring(0,1)}
+                            {stateTime.secs.toString().substring(1, 2) !== ""
+                              ? stateTime.secs.toString().substring(1, 2)
+                              : stateTime.secs.toString().substring(0, 1)}
                           </Text>
                         </View>
                         <Text style={timeStyle.timeTextArrow}>{">"}</Text>
@@ -382,6 +396,7 @@ function Home(props) {
                           paddingBottom: 25,
                           marginTop: 10,
                           color: "black",
+                          fontFamily:"kanitRegular"
                         }}
                       >
                         {VIEW_ALL + " >"}
@@ -439,6 +454,7 @@ function Home(props) {
                           alignSelf: "center",
                           paddingBottom: 25,
                           color: "black",
+                          fontFamily:"kanitRegular"
                           // borderBottomWidth: 2,
                           // borderBottomColor: "#00bcd1",
                         }}
@@ -450,7 +466,7 @@ function Home(props) {
                     </TouchableOpacity>
                   </Block>
                   {/* Bottom info */}
-                  <WangdekInfo/>
+                  <WangdekInfo />
                 </>
               )}
               renderItem={({ item, section }) => {

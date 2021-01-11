@@ -292,7 +292,7 @@ function SignIn(props) {
                 style={{
                   alignSelf: "flex-end",
                 }}
-                onPress={() => props.navigation.navigate("Forget Password")}
+                onPress={() => props.navigation.navigate("Notifications")}
               >
                 <Text style={styles.forgot}>ลืมรหัสผ่าน ?</Text>
               </TouchableOpacity>
