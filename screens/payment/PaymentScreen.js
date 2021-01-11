@@ -11,11 +11,11 @@ import {
 } from "react-native";
 import { Block } from "galio-framework";
 import { connect, useSelector } from "react-redux";
-import * as ActionPayment from "../actions/action-payment/ActionPayment";
+import * as ActionPayment from "../../actions/action-payment/ActionPayment";
 import { Button } from "react-native-elements";
-import { Icon } from "../components/";
-import { formatTr } from "../i18n/I18nProvider";
-import WangdekInfo from "../components/WangdekInfo";
+import { Icon } from "../../components";
+import { formatTr } from "../../i18n/I18nProvider";
+import WangdekInfo from "../../components/WangdekInfo";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -113,7 +113,7 @@ function PaymentScreen(props) {
         {/* Bank */}
         <Block row style={{ padding: 10, backgroundColor: "white" }}>
           <Image
-            source={require("../assets/images/BkkBank.jpg")}
+            source={require("../../assets/images/BkkBank.jpg")}
             style={{ height: 80, width: 80, margin: 10 }}
           />
         </Block>
@@ -140,7 +140,7 @@ function PaymentScreen(props) {
           }}
         >
           <Image
-            //source={require("../assets/images/BkkBank.jpg")}
+            //source={require("../../assets/images/BkkBank.jpg")}
             style={{ height: 80, width: 80, margin: 10 }}
           />
         </Block>

@@ -7,12 +7,16 @@ import ProfileScreen from "../screens/Profile";
 import SettingsScreen from "../screens/Settings";
 import SignInScreen from "../screens/auth/SignIn";
 import SignUpScreen from "../screens/auth/SignUp";
-import BasketScreen from "../screens/Basket";
 import ProductsScreen from "../screens/ProductScreen";
-import PaymentScreen from "../screens/PaymentScreen";
+import PaymentScreen from "../screens/payment/PaymentScreen";
+import PaymentNotifications from "../screens/payment/PaymentNotifications";
 import ContactScreen from "../screens/Contact";
 import CartScreen from "../screens/CartScreen";
-import ForgetPasswordScreen from "../screens/ForgetPassword";
+import ForgetPasswordScreen from "../screens/auth/ForgetPassword";
+import ChangePasswordScreen from "../screens/auth/ChangePassword";
+import FlashsaleProductScreen from "../screens/FlashsaleProduct";
+import NotificationsScreen from "../screens/Notifications";
+import AboutUsScreen from "../screens/AboutUs";
 import { Header } from "../components";
 import { connect, useSelector } from "react-redux";
 import * as ActionLogin from "../actions/action-actives/ActionLogin";
@@ -159,15 +163,21 @@ function ForgetPasswordStack() {
   );
 }
 
-function BasketStack() {
+function ChangePasswordStack() {
   return (
-    <Stack.Navigator initialRouteName="Basket" mode="modal" headerMode="screen">
+    <Stack.Navigator mode="card" headerMode="screen">
       <Stack.Screen
-        name="Basket"
-        component={BasketScreen}
+        name="Change Password"
+        component={ChangePasswordScreen}
         options={{
           header: ({ navigation, scene }) => (
-            <Header title="Basket" scene={scene} navigation={navigation} />
+            <Header
+              title="Change Password"
+              search
+              tabs
+              scene={scene}
+              navigation={navigation}
+            />
           ),
         }}
       />
@@ -236,6 +246,30 @@ function PaymentStack() {
   );
 }
 
+function PaymentNotificationStack() {
+  return (
+    <Stack.Navigator mode="card" headerMode="screen">
+      <Stack.Screen
+        name="Payment Notifications"
+        component={PaymentNotifications}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Payment Notifications"
+              search
+              tabs
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 function ContactStack() {
   return (
     <Stack.Navigator mode="card" headerMode="screen">
@@ -248,6 +282,72 @@ function ContactStack() {
               search
               tabs
               title="Contact"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function FlashsaleProductStack() {
+  return (
+    <Stack.Navigator mode="card" headerMode="screen">
+      <Stack.Screen
+        name="Flashsale Product"
+        component={FlashsaleProductScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Flashsale Product"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function NotificationsStack() {
+  return (
+    <Stack.Navigator mode="card" headerMode="screen">
+      <Stack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Notifications"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function AboutUsStack() {
+  return (
+    <Stack.Navigator mode="card" headerMode="screen">
+      <Stack.Screen
+        name="About Us"
+        component={AboutUsScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="About Us"
               scene={scene}
               navigation={navigation}
             />
@@ -351,7 +451,7 @@ function MyTabs() {
       />
       <Tab.Screen
         name="Payment"
-        component={PaymentStack}
+        component={PaymentNotificationStack}
         options={{
           tabBarIcon: ({ size }) => (
             <Image
@@ -478,8 +578,28 @@ function OnboardingStack(props) {
           options={{ header: () => null }}
         />
         <Stack.Screen
-          name="Basket"
-          component={BasketStack}
+          name="Change Password"
+          component={ChangePasswordStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Flashsale Product"
+          component={FlashsaleProductStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Notifications"
+          component={NotificationsStack}
+          options={{ header: () => null }}
+        />
+         <Stack.Screen
+          name="About Us"
+          component={AboutUsStack}
+          options={{ header: () => null }}
+        />
+         <Stack.Screen
+          name="Payment"
+          component={PaymentStack}
           options={{ header: () => null }}
         />
       </Stack.Navigator>

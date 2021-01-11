@@ -6351,10 +6351,10 @@ react-native-paper@^4.5.0:
     color "^3.1.2"
     react-native-iphone-x-helper "^1.3.1"
 
-react-native-picker-module@^2.0.31:
-  version "2.0.31"
-  resolved "https://registry.yarnpkg.com/react-native-picker-module/-/react-native-picker-module-2.0.31.tgz#529514837d2325f024c39f8f9f8776d9041b6183"
-  integrity sha512-AoyYWDY6am3VImDD6li7EA6CGuiPvkGAG2k98mYE2gGPABNrb1Jf7ohmQBSXcyF8T7YDcgMwb1kepH5qvwiOaA==
+react-native-progress-bar@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/react-native-progress-bar/-/react-native-progress-bar-0.1.2.tgz#2fbe32ed49d15e2a57a2b9d29b6d588a4fa1554e"
+  integrity sha1-L74y7UnRXipXornSm21Yik+hVU4=
 
 react-native-push-notification@^6.1.3:
   version "6.1.3"

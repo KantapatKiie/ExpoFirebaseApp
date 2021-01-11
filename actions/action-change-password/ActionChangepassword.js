@@ -3,17 +3,17 @@ import AsyncStorage from "react-native";
 import moment from "moment";
 
 const actionTypes = {
-  setObjContactHDins: "OBJ_CONTACT_US_ACTIVITY_HD",
-  clearObjContactHD: "CLEAR_OBJ_CONTACT_US_ACTIVITY",
-  setDisabledInput: "SET_DISABLED_INPUT_CONTACT_US_ACTIVITY",
-  pushListTrContactHD: "PUSH_LIST_TR_CONTACT_US_ACTIVITY",
-  setListTrContactHD: "SET_LIST_TR_CONTACT_US_ACTIVITY",
-  removeListTrContactHD: "REMOVE_LIST_TR_CONTACT_US_ACTIVITY",
-  setEditable: "SET_EDITABLE_CONTACT_US_ACTIVITY",
+  setObjChangePasswordins: "OBJ_CHANGE_PASSWORD_HD",
+  clearObjChangePassword: "CLEAR_OBJ_CHANGE_PASSWORD",
+  setDisabledInput: "SET_DISABLED_INPUT_CHANGE_PASSWORD",
+  pushListTrChangePassword: "PUSH_LIST_TR_CHANGE_PASSWORD",
+  setListTrChangePassword: "SET_LIST_TR_CHANGE_PASSWORD",
+  removeListTrChangePassword: "REMOVE_LIST_TR_CHANGE_PASSWORD",
+  setEditable: "SET_EDITABLE_CHANGE_PASSWORD",
 };
 
 const initialState = {
-  objContactHD: {
+  objChangePassword: {
     TITLE: "",
     DETAIL: "",
     IMAGE: "../../assets/tiendat.png",
@@ -21,23 +21,23 @@ const initialState = {
     COUNT: 1,
     TOTAL_PRICE: 0,
   },
-  // listTrContactHD: [],
+  // listTrChangePassword: [],
   // disabledInput: false,
   // editable: false,
 };
 
 export const reducer = persistReducer(
-  { storage: AsyncStorage, key: "ContactHD" },
+  { storage: AsyncStorage, key: "ChangePasswordHD" },
   (state = initialState, action) => {
     switch (action.type) {
-      case actionTypes.setObjContactHDins: {
+      case actionTypes.setObjChangePasswordins: {
         return {
           ...state,
-          objContactHD: action.payload.obj,
+          objChangePassword: action.payload.obj,
         };
       }
 
-      case actionTypes.clearObjContactHD: {
+      case actionTypes.clearObjChangePassword: {
         return initialState;
       }
 
@@ -45,18 +45,18 @@ export const reducer = persistReducer(
         return { ...state, disabledInput: action.payload.bool };
       }
 
-      case actionTypes.pushListTrContactHD: {
+      case actionTypes.pushListTrChangePassword: {
         return {
           ...state,
-          listTrContactHD: [
-            ...state.listTrContactHD,
+          listTrChangePassword: [
+            ...state.listTrChangePassword,
             action.payload.obj,
           ],
         };
       }
 
-      case actionTypes.setListTrContactHD: {
-        return { ...state, listTrContactHD: action.payload.obj };
+      case actionTypes.setListTrChangePassword: {
+        return { ...state, listTrChangePassword: action.payload.obj };
       }
 
       case actionTypes.setEditable: {
@@ -70,25 +70,25 @@ export const reducer = persistReducer(
 );
 
 export const actions = {
-  setObjContactHD: (obj) => ({
-    type: actionTypes.setObjContactHDins,
+  setObjChangePassword: (obj) => ({
+    type: actionTypes.setObjChangePasswordins,
     payload: { obj },
   }),
 
-  clearObjContactHD: () => ({
-    type: actionTypes.clearObjContactHD,
+  clearObjChangePassword: () => ({
+    type: actionTypes.clearObjChangePassword,
   }),
 
   setDisabledInput: (bool) => ({
     type: actionTypes.setDisabledInput,
     payload: { bool },
   }),
-  pushListTrContactHD: (obj) => ({
-    type: actionTypes.pushListTrContactHD,
+  pushListTrChangePassword: (obj) => ({
+    type: actionTypes.pushListTrChangePassword,
     payload: { obj },
   }),
-  setListTrContactHD: (obj) => ({
-    type: actionTypes.setListTrContactHD,
+  setListTrChangePassword: (obj) => ({
+    type: actionTypes.setListTrChangePassword,
     payload: { obj },
   }),
 

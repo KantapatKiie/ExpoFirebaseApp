@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ScrollView,
+  ToastAndroid,
 } from "react-native";
 import moment from "moment";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -193,6 +194,10 @@ function SignUp(props) {
     } else {
       setLoading(false);
     }
+  };
+
+  const showToast = () => {
+    ToastAndroid.show("Test ToastAndriod React Native !", ToastAndroid.SHORT);
   };
 
   return (
@@ -645,6 +650,7 @@ function SignUp(props) {
               labelStyle={{
                 textAlign: "left",
                 color: "#000",
+                fontFamily:"kanitRegular"
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -682,9 +688,10 @@ function SignUp(props) {
                 fontFamily: "kanitRegular",
               }}
               placeholder={"- โปรดเลือก -"}
-              labelStyle={{
+                              labelStyle={{
                 textAlign: "left",
                 color: "#000",
+                fontFamily:"kanitRegular"
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -722,9 +729,10 @@ function SignUp(props) {
                 fontFamily: "kanitRegular",
               }}
               placeholder={"- โปรดเลือก -"}
-              labelStyle={{
+                              labelStyle={{
                 textAlign: "left",
                 color: "#000",
+                fontFamily:"kanitRegular"
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -834,9 +842,10 @@ function SignUp(props) {
                 fontFamily: "kanitRegular",
               }}
               placeholder={"- โปรดเลือก -"}
-              labelStyle={{
+                              labelStyle={{
                 textAlign: "left",
                 color: "#000",
+                fontFamily:"kanitRegular"
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -874,9 +883,10 @@ function SignUp(props) {
                 fontFamily: "kanitRegular",
               }}
               placeholder={"- โปรดเลือก -"}
-              labelStyle={{
+                              labelStyle={{
                 textAlign: "left",
                 color: "#000",
+                fontFamily:"kanitRegular"
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -914,9 +924,10 @@ function SignUp(props) {
                 fontFamily: "kanitRegular",
               }}
               placeholder={"- โปรดเลือก -"}
-              labelStyle={{
+                              labelStyle={{
                 textAlign: "left",
                 color: "#000",
+                fontFamily:"kanitRegular"
               }}
               arrowColor={"white"}
               arrowSize={18}

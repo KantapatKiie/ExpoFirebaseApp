@@ -26,7 +26,7 @@ function WangdekInfo(props) {
       </Block>
       {infoList.map((item) => (
         <Block style={styles2.blockHeaderInfo} key={item.key}>
-          <TouchableOpacity onPress={() => props.navigation.navigate("Contact")}>
+          <TouchableOpacity onPress={() => props.navigation.navigate(item.page)}>
             <Block row middle space="between" style={{ paddingTop: 7 }}>
               <Text
                 style={{

@@ -8,8 +8,11 @@ import * as actionCart from "../actions/action-cart/ActionCart";
 import * as actionProduct from "../actions/action-product/ActionProduct";
 import * as actionHomeHD from "../actions/action-home/ActionHome";
 import * as actionPayment from "../actions/action-payment/ActionPayment";
+import * as actionPaymentNotifications from "../actions/action-payment/ActionPaymentNotifications";
 import * as actionContact from "../actions/action-contact/ActionContact";
 import * as actionForgetPassword from "../actions/action-forgetPassword/ActionForgetPassword";
+import * as actionChangepassword from "../actions/action-change-password/ActionChangepassword";
+import * as actionFlashsaleProduct from "../actions/action-flashsale-product/ActionFlashsaleProduct";
 import * as i18n from "./ducks/i18n";
 
 export const rootReducer = combineReducers({
@@ -22,8 +25,11 @@ export const rootReducer = combineReducers({
   actionProduct: actionProduct.reducer,
   actionHomeHD: actionHomeHD.reducer,
   actionPayment: actionPayment.reducer,
+  actionPaymentNotifications:actionPaymentNotifications.reducer,
   actionContact: actionContact.reducer,
   actionForgetPassword: actionForgetPassword.reducer,
+  actionChangepassword: actionChangepassword.reducer,
+  actionFlashsaleProduct: actionFlashsaleProduct.reducer,
 });
 
 export function* rootSaga() {

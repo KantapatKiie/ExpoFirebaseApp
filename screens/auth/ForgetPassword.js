@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { connect, useSelector } from "react-redux";
-import * as auth from "../store/ducks/auth.duck";
+import * as auth from "../../store/ducks/auth.duck";
 import {
   StyleSheet,
   Text,
@@ -13,15 +13,15 @@ import {
   Image,
   Dimensions,
 } from "react-native";
-import ModalLoading from "../components/ModalLoading";
-import { logins } from "../store/mock/mock"; //mock api
-import { setToken } from "../store/mock/token";
-import { login } from "../store/crud/auth.crud"; //real api
-import * as ActionForgetPassword from "../actions/action-forgetPassword/ActionForgetPassword";
+import ModalLoading from "../../components/ModalLoading";
+import { logins } from "../../store/mock/mock"; //mock api
+import { setToken } from "../../store/mock/token";
+import { login } from "../../store/crud/auth.crud"; //real api
+import * as ActionForgetPassword from "../../actions/action-forgetPassword/ActionForgetPassword";
 import { Block } from "galio-framework";
-import { Icon } from "../components/";
-import { formatTr } from "../i18n/I18nProvider";
-import WangdekInfo from "../components/WangdekInfo";
+import { Icon } from "../../components";
+import { formatTr } from "../../i18n/I18nProvider";
+import WangdekInfo from "../../components/WangdekInfo";
 
 const { height, width } = Dimensions.get("screen");
 
