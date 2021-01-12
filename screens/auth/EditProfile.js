@@ -15,18 +15,16 @@ import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import ModalLoading from "../../components/ModalLoading";
 import * as auth from "../../store/ducks/auth.duck";
 import { createAccount } from "../../store/mock/mock";
-import { signup } from "../../store/crud/auth.crud";
 import { Block, Input } from "galio-framework";
 import WangdekInfo from "../../components/WangdekInfo";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { RadioButton } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Button } from "react-native-elements";
-import { CheckBox } from "react-native-elements";
 
 const { height, width } = Dimensions.get("screen");
 
-function SignUp(props) {
+function EditProfile(props) {
   useEffect(() => {}, []);
 
   const [loading, setLoading] = useState(false);
@@ -57,18 +55,6 @@ function SignUp(props) {
       setVisiblePass1(true);
     } else {
       setVisiblePass1(false);
-    }
-  };
-  const onChangePassword2 = (e) => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.password2 = e;
-    setStateObj(newObj);
-  };
-  const changeVisiblePassword2 = () => {
-    if (visiblePass2 === false) {
-      setVisiblePass2(true);
-    } else {
-      setVisiblePass2(false);
     }
   };
 
@@ -175,7 +161,7 @@ function SignUp(props) {
   };
 
   // Signup
-  const onClickSignUp = () => {
+  const onClickConfirm = () => {
     setLoading(true);
     if (
       stateObj.firstName !== "" &&
@@ -204,12 +190,16 @@ function SignUp(props) {
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Title */}
+        <TouchableOpacity onPress={() => props.navigation.navigate("Sign In")}>
         <Block
+          row
           style={{
             paddingTop: 20,
             paddingLeft: 20,
             paddingBottom: 20,
             backgroundColor: "white",
+            borderBottomWidth: 1,
+            borderBottomColor: "#e0e0e0",
           }}
         >
           <Text
@@ -217,24 +207,15 @@ function SignUp(props) {
               color: "black",
               fontFamily: "kanitRegular",
               fontSize: 18,
-              textAlign: "center",
             }}
           >
-            สมัครสมาชิก
+            {"<  "}แก้ไขข้อมูล
           </Text>
         </Block>
-
+        </TouchableOpacity>
         {/* Block 1 */}
         <Block style={styles.containerBlock1}>
-          <Block row style={{ marginBottom: 5, marginTop: 20 }}>
-            <Image
-              source={require("../../assets/iconRegister/icon1.png")}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 30,
-              }}
-            />
+          <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
                 alignSelf: "flex-start",
@@ -316,88 +297,23 @@ function SignUp(props) {
               />
             </TouchableOpacity>
           </Block>
-          <Block>
-            <Text
-              style={{
-                fontFamily: "kanitRegular",
-                color: "#009ac9",
-                fontSize: 15,
-              }}
-            >
-              กรุณาใส่ 6 ตัวอักษรขึ้นไป
-            </Text>
-          </Block>
-          {/* Password2 */}
-          <Block style={{ marginBottom: 5, marginTop: 20 }}>
-            <Text
-              style={{
-                alignSelf: "flex-start",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-              }}
-            >
-              ยืนยันรหัสผ่าน
-            </Text>
-          </Block>
           <Block
-            row
-            style={{
-              borderWidth: 1.5,
-              borderColor: "#e0e0e0",
-              backgroundColor: "white",
-              width: width - 45,
-              height: 47,
-            }}
+            style={{ paddingTop: 20, alignSelf: "center" }}
           >
-            <TextInput
-              style={styles.inputTextPassword}
-              placeholder="กรอกรหัสผ่าน"
-              placeholderTextColor="#808080"
-              value={stateObj.password2}
-              onChangeText={onChangePassword2}
-              secureTextEntry={visiblePass2}
+            <Button
+              titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+              title={"เปลี่ยนรหัสผ่าน"}
+              type="solid"
+              onPress={showToast}
+              containerStyle={styles.blockButton1}
+              buttonStyle={styles.buttonStyle1}
             />
-            <TouchableOpacity
-              style={{ marginTop: 10, marginLeft: 100 }}
-              onPress={changeVisiblePassword2}
-            >
-              <Image
-                source={
-                  visiblePass2
-                    ? require("../../assets/iconRegister/viewpass1.png")
-                    : require("../../assets/iconRegister/viewpass2.png")
-                }
-                style={{
-                  width: 25,
-                  height: 25,
-                }}
-              />
-            </TouchableOpacity>
-          </Block>
-          <Block>
-            <Text
-              style={{
-                fontFamily: "kanitRegular",
-                color: "#009ac9",
-                fontSize: 15,
-              }}
-            >
-              กรุณากรอกรหัสผ่านให้ตรงกัน
-            </Text>
           </Block>
         </Block>
 
         {/* Block 2 */}
         <Block style={styles.containerBlock2}>
-          <Block row style={{ marginBottom: 5, marginTop: 20 }}>
-            <Image
-              source={require("../../assets/iconRegister/icon2.png")}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 30,
-              }}
-            />
+          <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
                 alignSelf: "flex-start",
@@ -578,14 +494,6 @@ function SignUp(props) {
         {/* Block 3 */}
         <Block style={styles.containerBlock3}>
           <Block row style={{ marginBottom: 5, marginTop: 20 }}>
-            <Image
-              source={require("../../assets/iconRegister/icon3.png")}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 30,
-              }}
-            />
             <Text
               style={{
                 alignSelf: "flex-start",
@@ -650,7 +558,7 @@ function SignUp(props) {
               labelStyle={{
                 textAlign: "left",
                 color: "#000",
-                fontFamily:"kanitRegular"
+                fontFamily: "kanitRegular",
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -688,10 +596,10 @@ function SignUp(props) {
                 fontFamily: "kanitRegular",
               }}
               placeholder={"- โปรดเลือก -"}
-                              labelStyle={{
+              labelStyle={{
                 textAlign: "left",
                 color: "#000",
-                fontFamily:"kanitRegular"
+                fontFamily: "kanitRegular",
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -729,10 +637,10 @@ function SignUp(props) {
                 fontFamily: "kanitRegular",
               }}
               placeholder={"- โปรดเลือก -"}
-                              labelStyle={{
+              labelStyle={{
                 textAlign: "left",
                 color: "#000",
-                fontFamily:"kanitRegular"
+                fontFamily: "kanitRegular",
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -772,15 +680,7 @@ function SignUp(props) {
 
         {/* Block 4 */}
         <Block style={styles.containerBlock4}>
-          <Block row style={{ marginBottom: 5, marginTop: 20 }}>
-            <Image
-              source={require("../../assets/iconRegister/icon4.png")}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 30,
-              }}
-            />
+          <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
                 alignSelf: "flex-start",
@@ -842,10 +742,10 @@ function SignUp(props) {
                 fontFamily: "kanitRegular",
               }}
               placeholder={"- โปรดเลือก -"}
-                              labelStyle={{
+              labelStyle={{
                 textAlign: "left",
                 color: "#000",
-                fontFamily:"kanitRegular"
+                fontFamily: "kanitRegular",
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -883,10 +783,10 @@ function SignUp(props) {
                 fontFamily: "kanitRegular",
               }}
               placeholder={"- โปรดเลือก -"}
-                              labelStyle={{
+              labelStyle={{
                 textAlign: "left",
                 color: "#000",
-                fontFamily:"kanitRegular"
+                fontFamily: "kanitRegular",
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -924,10 +824,10 @@ function SignUp(props) {
                 fontFamily: "kanitRegular",
               }}
               placeholder={"- โปรดเลือก -"}
-                              labelStyle={{
+              labelStyle={{
                 textAlign: "left",
                 color: "#000",
-                fontFamily:"kanitRegular"
+                fontFamily: "kanitRegular",
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -985,17 +885,6 @@ function SignUp(props) {
               keyboardType="number-pad"
             />
           </Block>
-          <Block>
-            <Text
-              style={{
-                fontFamily: "kanitRegular",
-                color: "#009ac9",
-                fontSize: 15,
-              }}
-            >
-              กรุณากรอกเบอร์มือถือของท่าน เพื่อคววามสะดวกในการจัดส่งสินค้า
-            </Text>
-          </Block>
         </Block>
 
         {/* Block 5 */}
@@ -1050,80 +939,22 @@ function SignUp(props) {
               </Block>
             </Block>
           </Block>
-          {/* Block Blue */}
-          <Block
-            style={{
-              width: width - 15,
-              height: 115,
-              alignSelf: "center",
-              backgroundColor: "#475ed1",
-            }}
-          >
-            <Block row style={{height:55}}>
-              <CheckBox
-                containerStyle={{ marginTop: 20 }}
-                checked={isChecked}
-                onPress={() => setIsChecked(!isChecked)}
-                checkedColor="#71D58E"
-              />
-              <Text
-                style={{
-                  color: "white",
-                  fontFamily: "kanitRegular",
-                  fontSize: 20,
-                  marginTop: 27,
-                  marginLeft:5
-                }}
-              >
-                ฉันได้อ่านและยอมรับเงื่อนไข
-              </Text>
-            </Block>
-            <Block row style={{ marginLeft: 70, marginBottom: 10 }}>
-              <Text
-                style={{
-                  color: "white",
-                  fontFamily: "kanitRegular",
-                  fontSize: 20,
-                }}
-              >
-                ข้อตกลง
-              </Text>
-              <Text
-                style={{
-                  color: "white",
-                  fontFamily: "kanitBold",
-                  fontSize: 19,
-                  marginLeft:  10,
-                  color:"#00c6ed",
-                  borderBottomColor:"#00c6ed",
-                  borderBottomWidth:1
-                }}
-              >
-                Privacy Policy
-              </Text>
-            </Block>
-          </Block>
           {/* Button */}
-          <Block row style={{ paddingTop: 49, paddingBottom: 40 }}>
+          <Block
+            row
+            style={{ paddingTop: 20, paddingBottom: 40, alignSelf: "center" }}
+          >
             <Button
               titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-              title={"รีเซ็ทข้อมูล"}
+              title={"บันทึกข้อมูล"}
               type="solid"
-              onPress={() => props.navigation.navigate("Flash Sale")}
+              onPress={showToast}
               containerStyle={styles.blockButton1}
               buttonStyle={styles.buttonStyle1}
             />
-            <Button
-              titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-              title={"ยืนยัน"}
-              type="solid"
-              containerStyle={styles.blockButton2}
-              buttonStyle={styles.buttonStyle2}
-              onPress={() => showToast()}
-            />
           </Block>
         </Block>
-        {/* Info */}
+
         <WangdekInfo />
       </ScrollView>
       <ModalLoading loading={loading} />
@@ -1131,7 +962,7 @@ function SignUp(props) {
   );
 }
 
-export default connect(null, auth.actions)(SignUp);
+export default connect(null, auth.actions)(EditProfile);
 
 const styles = StyleSheet.create({
   container: {
@@ -1145,7 +976,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     marginTop: 25,
     paddingLeft: 25,
-    marginBottom: 25,
+    marginBottom: 5,
   },
   containerBlock2: {
     flex: 1,
@@ -1299,13 +1130,13 @@ const styles = StyleSheet.create({
   },
   blockButton1: {
     flexDirection: "row",
-    paddingLeft: 25,
+    paddingLeft: 5,
   },
   blockButton2: {
     paddingLeft: 40,
   },
   buttonStyle1: {
-    backgroundColor: "#535454",
+    backgroundColor: "#00e08e",
     borderRadius: 20,
     width: 150,
     alignSelf: "center",

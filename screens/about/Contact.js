@@ -12,15 +12,15 @@ import {
   TextInput,
 } from "react-native";
 import { connect, useSelector } from "react-redux";
-import * as ActionContact from "../actions/action-contact/ActionContact";
+import * as ActionContact from "../../actions/action-contact/ActionContact";
 import { Button } from "react-native-elements";
-import { Icon } from "../components/";
-import { formatTr } from "../i18n/I18nProvider";
+import { Icon } from "../../components";
+import { formatTr } from "../../i18n/I18nProvider";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { Block, Input } from "galio-framework";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import DropDownPicker from "react-native-dropdown-picker";
-import WangdekInfo from "../components/WangdekInfo";
+import WangdekInfo from "../../components/WangdekInfo";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -126,7 +126,7 @@ function Contact(props) {
         {/* Contact */}
         <Block felx>
           <ImageBackground
-            source={require("../assets/images/bg-p.jpg")}
+            source={require("../../assets/images/bg-p.jpg")}
             style={{
               width: width,
               height: 500,
@@ -187,7 +187,7 @@ function Contact(props) {
               </Text>
               <Block row>
                 <Image
-                  source={require("../assets/iconContact/phone-icon.png")}
+                  source={require("../../assets/iconContact/phone-icon.png")}
                   style={{
                     width: 25,
                     height: 25,
@@ -209,7 +209,7 @@ function Contact(props) {
               </Block>
               <Block row>
                 <Image
-                  source={require("../assets/iconContact/fax-icon.png")}
+                  source={require("../../assets/iconContact/fax-icon.png")}
                   style={{
                     width: 25,
                     height: 25,
@@ -231,7 +231,7 @@ function Contact(props) {
               </Block>
               <Block row>
                 <Image
-                  source={require("../assets/iconContact/mail-icon.png")}
+                  source={require("../../assets/iconContact/mail-icon.png")}
                   style={{
                     width: 25,
                     height: 25,
@@ -253,7 +253,7 @@ function Contact(props) {
               </Block>
               <Block row>
                 <Image
-                  source={require("../assets/iconContact/line-icon.png")}
+                  source={require("../../assets/iconContact/line-icon.png")}
                   style={{
                     width: 25,
                     height: 25,
@@ -275,7 +275,7 @@ function Contact(props) {
               </Block>
               <Block>
                 <Image
-                  source={require("../assets/iconContact/QR-mockup.jpg")}
+                  source={require("../../assets/iconContact/QR-mockup.jpg")}
                   style={{
                     width: 100,
                     height: 100,

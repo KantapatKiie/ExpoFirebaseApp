@@ -65,6 +65,7 @@ const styles2 = StyleSheet.create({
     paddingLeft: 15,
     backgroundColor: "#486ec7",
     flexDirection: "column",
+    marginTop:20
   },
   blockHeaderInfo: {
     padding: 8,

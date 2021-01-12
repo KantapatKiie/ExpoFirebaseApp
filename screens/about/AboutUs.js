@@ -13,10 +13,10 @@ import {
   Dimensions,
 } from "react-native";
 import { Block } from "galio-framework";
-import { Icon } from "../components";
-import { formatTr } from "../i18n/I18nProvider";
-import WangdekInfo from "../components/WangdekInfo";
-import MattelLogo from "../constants/MattelLogo";
+import { Icon } from "../../components";
+import { formatTr } from "../../i18n/I18nProvider";
+import WangdekInfo from "../../components/WangdekInfo";
+import MattelLogo from "../../constants/MattelLogo";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -47,7 +47,7 @@ function AboutUs(props) {
           </Block>
           <Block style={{ marginLeft: 20 }}>
             <Image
-              source={require("../assets/images/logo.png")}
+              source={require("../../assets/images/logo.png")}
               style={{ alignSelf: "center" }}
             />
             <Text
@@ -87,7 +87,7 @@ function AboutUs(props) {
             </Text>
           </Block>
           <Image
-            source={require("../assets/iconBrand/aboutus.png")}
+            source={require("../../assets/iconBrand/aboutus.png")}
             style={{ width: width, height: 200 }}
           />
           {/* Notification-2 */}
@@ -128,43 +128,43 @@ function AboutUs(props) {
           <Block row style={{ marginTop: 25, marginBottom: 25 }}>
             <Block flex>
               <Image
-                source={require("../assets/iconBrand/brand-01.png")}
+                source={require("../../assets/iconBrand/brand-01.png")}
                 style={{ width: 120, height: 50 }}
               />
               <Image
-                source={require("../assets/iconBrand/brand-07.png")}
+                source={require("../../assets/iconBrand/brand-07.png")}
                 style={{ width: 120, height: 50 }}
               />
               <Image
-                source={require("../assets/iconBrand/brand-03.png")}
-                style={{ width: 120, height: 50 }}
-              />
-            </Block>
-            <Block flex>
-              <Image
-                source={require("../assets/iconBrand/brand-04.png")}
-                style={{ width: 120, height: 50 }}
-              />
-              <Image
-                source={require("../assets/iconBrand/brand-08.png")}
-                style={{ width: 120, height: 50 }}
-              />
-              <Image
-                source={require("../assets/iconBrand/brand-02.png")}
+                source={require("../../assets/iconBrand/brand-03.png")}
                 style={{ width: 120, height: 50 }}
               />
             </Block>
             <Block flex>
               <Image
-                source={require("../assets/iconBrand/brand-06.png")}
+                source={require("../../assets/iconBrand/brand-04.png")}
                 style={{ width: 120, height: 50 }}
               />
               <Image
-                source={require("../assets/iconBrand/brand-09.png")}
+                source={require("../../assets/iconBrand/brand-08.png")}
                 style={{ width: 120, height: 50 }}
               />
               <Image
-                source={require("../assets/iconBrand/brand-10.png")}
+                source={require("../../assets/iconBrand/brand-02.png")}
+                style={{ width: 120, height: 50 }}
+              />
+            </Block>
+            <Block flex>
+              <Image
+                source={require("../../assets/iconBrand/brand-06.png")}
+                style={{ width: 120, height: 50 }}
+              />
+              <Image
+                source={require("../../assets/iconBrand/brand-09.png")}
+                style={{ width: 120, height: 50 }}
+              />
+              <Image
+                source={require("../../assets/iconBrand/brand-10.png")}
                 style={{ width: 120, height: 50 }}
               />
             </Block>
@@ -206,7 +206,7 @@ function AboutUs(props) {
             </Text>
           </Block>
           <Image
-            source={require("../assets/iconBrand/brand-05.png")}
+            source={require("../../assets/iconBrand/brand-05.png")}
             style={{
               width: 200,
               height: 100,

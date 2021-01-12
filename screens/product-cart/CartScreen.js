@@ -10,11 +10,12 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Block, Button, Text, theme } from "galio-framework";
-import { HeaderHeight } from "../constants/utils";
+import { HeaderHeight } from "../../constants/utils";
 import { connect, useSelector } from "react-redux";
-import * as ActionCart from "../actions/action-cart/ActionCart";
-import products from "../constants/products";
+import * as ActionCart from "../../actions/action-cart/ActionCart";
+import products from "../../constants/products";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
+import WangdekInfo from "../../components/WangdekInfo";
 
 function CartScreen(props) {
   const { objCartBasket } = useSelector((state) => ({
@@ -51,30 +52,30 @@ function CartScreen(props) {
             </Block>
             <Text>&nbsp;</Text>
             <Block style={styles.IconControl}>
-            <TouchableOpacity onPress={() => console.log("Plus")}>
-              <Icons
-                name="plus-circle"
-                size={20}
-                color="black"
-                style={styles.IconBack}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => console.log("Disturb")}>
-              <Icons
-                name="do-not-disturb"
-                size={20}
-                color="black"
-                style={styles.IconBack}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => console.log("Delete")}>
-              <Icons
-                name="delete"
-                size={20}
-                color="black"
-                style={styles.IconBack}
-              />
-            </TouchableOpacity>
+              <TouchableOpacity onPress={() => console.log("Plus")}>
+                <Icons
+                  name="plus-circle"
+                  size={20}
+                  color="black"
+                  style={styles.IconBack}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => console.log("Disturb")}>
+                <Icons
+                  name="do-not-disturb"
+                  size={20}
+                  color="black"
+                  style={styles.IconBack}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => console.log("Delete")}>
+                <Icons
+                  name="delete"
+                  size={20}
+                  color="black"
+                  style={styles.IconBack}
+                />
+              </TouchableOpacity>
             </Block>
           </Block>
         </Block>
@@ -146,39 +147,43 @@ function CartScreen(props) {
 
   return (
     <>
-      <Block flex style={styles.container}>
-        <StatusBar barStyle="default" />
-        {/* View */}
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <Block space="between" style={styles.paddedTop}>
-            {renderImage}
-          </Block>
-        </ScrollView>
-      </Block>
-      <Block row style={{ backgroundColor: "white" }}>
-        <Text style={styles.totalPrice}>Total Price</Text>
-        <Text style={styles.totalPrices}>{totalPrice}฿</Text>
-      </Block>
-      <Block space="between" style={styles.paddeds}>
-        <Button
-          shadowless
-          style={styles.button}
-          color={"black"}
-          onPress={() => {
-            setModalVisible(true);
-          }}
-        >
-          Confirm
-        </Button>
-        <Button
-          shadowless
-          style={styles.button}
-          color={"black"}
-          onPress={() => props.navigation.navigate("Home")}
-        >
-          Back
-        </Button>
-      </Block>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <Block flex style={styles.container}>
+          <StatusBar barStyle="default" />
+          {/* View */}
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Block space="between" style={styles.paddedTop}>
+              {renderImage}
+            </Block>
+          </ScrollView>
+        </Block>
+        <Block row style={{ backgroundColor: "white" }}>
+          <Text style={styles.totalPrice}>Total Price</Text>
+          <Text style={styles.totalPrices}>{totalPrice}฿</Text>
+        </Block>
+        <Block space="between" style={styles.paddeds}>
+          <Button
+            shadowless
+            style={styles.button}
+            color={"black"}
+            onPress={() => {
+              setModalVisible(true);
+            }}
+          >
+            Confirm
+          </Button>
+          <Button
+            shadowless
+            style={styles.button}
+            color={"black"}
+            onPress={() => props.navigation.navigate("Home")}
+          >
+            Back
+          </Button>
+        </Block>
+        <WangdekInfo />
+      </ScrollView>
+
       {modal}
     </>
   );
@@ -229,7 +234,7 @@ const styles = StyleSheet.create({
   },
   IconBack: {
     color: "black",
-    paddingLeft: 20
+    paddingLeft: 20,
   },
   titleText: {
     fontSize: 15,
@@ -257,11 +262,11 @@ const styles = StyleSheet.create({
     textAlign: "right",
     padding: 10,
   },
-  IconControl:{
+  IconControl: {
     alignSelf: "flex-start",
     position: "relative",
-    flexDirection: "row"
-  }
+    flexDirection: "row",
+  },
 });
 
 //Style Modal Confirm

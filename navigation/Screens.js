@@ -7,16 +7,19 @@ import ProfileScreen from "../screens/Profile";
 import SettingsScreen from "../screens/Settings";
 import SignInScreen from "../screens/auth/SignIn";
 import SignUpScreen from "../screens/auth/SignUp";
-import ProductsScreen from "../screens/ProductScreen";
+import EditProfileScreen from "../screens/auth/EditProfile";
+import ProductsScreen from "../screens/product-cart/ProductScreen";
+import CartScreen from "../screens/product-cart/CartScreen";
 import PaymentScreen from "../screens/payment/PaymentScreen";
 import PaymentNotifications from "../screens/payment/PaymentNotifications";
-import ContactScreen from "../screens/Contact";
-import CartScreen from "../screens/CartScreen";
+import ContactScreen from "../screens/about/Contact";
 import ForgetPasswordScreen from "../screens/auth/ForgetPassword";
 import ChangePasswordScreen from "../screens/auth/ChangePassword";
 import FlashsaleProductScreen from "../screens/FlashsaleProduct";
-import NotificationsScreen from "../screens/Notifications";
-import AboutUsScreen from "../screens/AboutUs";
+import NotificationsScreen from "../screens/notifications/Notifications";
+import HowToScreen from "../screens/notifications/HowTo";
+import NewsScreen from "../screens/notifications/News";
+import AboutUsScreen from "../screens/about/AboutUs";
 import { Header } from "../components";
 import { connect, useSelector } from "react-redux";
 import * as ActionLogin from "../actions/action-actives/ActionLogin";
@@ -141,6 +144,28 @@ function SignUpStack() {
   );
 }
 
+function EditProfileStack() {
+  return (
+    <Stack.Navigator mode="card" headerMode="screen">
+      <Stack.Screen
+        name="Edit Profile"
+        component={EditProfileScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              title="Edit Profile"
+              search
+              tabs
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 function ForgetPasswordStack() {
   return (
     <Stack.Navigator mode="card" headerMode="screen">
@@ -203,6 +228,13 @@ function ProductStack() {
           ),
         }}
       />
+    </Stack.Navigator>
+  );
+}
+
+function CartStack() {
+  return (
+    <Stack.Navigator mode="card" headerMode="screen">
       <Stack.Screen
         name="Cart"
         component={CartScreen}
@@ -358,6 +390,50 @@ function AboutUsStack() {
   );
 }
 
+function NewsStack() {
+  return (
+    <Stack.Navigator mode="card" headerMode="screen">
+      <Stack.Screen
+        name="News"
+        component={NewsScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="News"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function HowToStack() {
+  return (
+    <Stack.Navigator mode="card" headerMode="screen">
+      <Stack.Screen
+        name="HowTo"
+        component={HowToScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="HowTo"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 function HomeStack() {
   return (
     <Stack.Navigator mode="card" headerMode="screen">
@@ -413,13 +489,13 @@ function MyTabs() {
         }}
       />
       <Tab.Screen
-        name="Promotion"
-        component={SettingsStack}
+        name="Product"
+        component={ProfileStack}
         style={{ color: "black" }}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Image
-              source={require("../assets/images/menubar/promotion.png")}
+              source={require("../assets/images/menubar/product.png")}
               style={Style.menuBar}
             />
           ),
@@ -450,7 +526,7 @@ function MyTabs() {
         }}
       />
       <Tab.Screen
-        name="Payment"
+        name="Payment Notifications"
         component={PaymentNotificationStack}
         options={{
           tabBarIcon: ({ size }) => (
@@ -558,6 +634,11 @@ function OnboardingStack(props) {
           options={{ header: () => null }}
         />
         <Stack.Screen
+          name="Cart"
+          component={CartStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
           name="Products"
           component={ProductStack}
           options={{ header: () => null }}
@@ -570,6 +651,11 @@ function OnboardingStack(props) {
         <Stack.Screen
           name="Sign Up"
           component={SignUpStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Edit Profile"
+          component={EditProfileStack}
           options={{ header: () => null }}
         />
         <Stack.Screen
@@ -595,6 +681,16 @@ function OnboardingStack(props) {
          <Stack.Screen
           name="About Us"
           component={AboutUsStack}
+          options={{ header: () => null }}
+        />
+          <Stack.Screen
+          name="News"
+          component={NewsStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="HowTo"
+          component={HowToStack}
           options={{ header: () => null }}
         />
          <Stack.Screen

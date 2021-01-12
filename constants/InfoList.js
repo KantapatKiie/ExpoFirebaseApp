@@ -7,12 +7,12 @@ export default [
   {
     key: "2",
     text: "วิธีการสั่งซื้อสินค้า",
-    page: "About Us",
+    page: "HowTo",
   },
   {
     key: "3",
     text: "วิธีการชำระเงิน",
-    page: "About Us",
+    page: "Payment",
   },
   {
     key: "4",
@@ -22,7 +22,7 @@ export default [
   {
     key: "5",
     text: "Term & Conditions",
-    page: "About Us",
+    page: "Notifications",
   },
   {
     key: "6",

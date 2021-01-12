@@ -1,18 +1,13 @@
 import React, { useState } from "react";
 import {
   StyleSheet,
-  Switch,
-  FlatList,
-  Platform,
-  TouchableOpacity,
   View,
   Dimensions,
 } from "react-native";
 import { Block, Text, theme, Icon } from "galio-framework";
-import materialTheme from "../constants/Theme";
-import { Picker } from "@react-native-picker/picker";
 import { connect } from "react-redux";
 import * as i18n from "../store/ducks/i18n";
+import DropDownPicker from "react-native-dropdown-picker";
 // import { formatTr } from "../i18n/I18nProvider";
 
 const { width } = Dimensions.get("screen");
@@ -22,101 +17,71 @@ function Settings(props) {
   const toggleSwitch = (switchNumber) =>
     setState({ [switchNumber]: !state[switchNumber] });
 
-  const renderItem = ({ item }) => {
-    // const { navigate } = this.props.navigation;
-
-    switch (item.type) {
-      case "switch":
-        return (
-          <Block row middle space="between" style={styles.rows}>
-            <Text size={14}>{item.title}</Text>
-            <Switch
-              onValueChange={() => toggleSwitch(item.id)}
-              ios_backgroundColor={materialTheme.COLORS.SWITCH_OFF}
-              thumbColor={
-                Platform.OS === "android"
-                  ? materialTheme.COLORS.SWITCH_OFF
-                  : null
-              }
-              trackColor={{
-                false: materialTheme.COLORS.SWITCH_OFF,
-                true: materialTheme.COLORS.SWITCH_ON,
-              }}
-              value={state[item.id]}
-            />
-          </Block>
-        );
-      case "button":
-        return (
-          <Block style={styles.rows}>
-            {/* <TouchableOpacity onPress={() => props.navigate('Pro')}> */}
-            <TouchableOpacity>
-              <Block row middle space="between" style={{ paddingTop: 7 }}>
-                <Text size={14}>{item.title}</Text>
-                <Icon
-                  name="angle-right"
-                  family="font-awesome"
-                  style={{ paddingRight: 5 }}
-                />
-              </Block>
-            </TouchableOpacity>
-          </Block>
-        );
-      default:
-        break;
-    }
-  };
-  // var title1 = formatTr("hello1").toString();
-  const recommended = [
-    { title: "Use FaceID to sign in", id: "face", type: "switch" },
-    { title: "Auto-Lock security", id: "autolock", type: "switch" },
-    { title: "Notifications", id: "Notifications", type: "button" },
+  const [language, setLanguage] = useState("th-TH");
+  const itemLanguage = [
+    {
+      label: "Thai",
+      value: "th-TH",
+      hidden: true,
+    },
+    {
+      label: "English",
+      value: "en-US",
+    },
   ];
+  const onChangeLanguage = (item) => {
+    setLanguage(item.value);
+    props.setLanguage(item.value);
+  };
+
   return (
     <View
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.settings}
     >
-      <FlatList
-        data={recommended}
-        keyExtractor={(item, index) => item.id}
-        renderItem={renderItem}
-        ListHeaderComponent={
-          <Block style={styles.title}>
-            <Text
-              bold
-              center
-              size={theme.SIZES.BASE}
-              style={{ paddingBottom: 5 }}
-            >
-              Recommended Settings
-            </Text>
-            <Text center muted size={12}>
-              These are the most important settings
-            </Text>
-          </Block>
-        }
-      />
       {/* Select Language */}
       <Block style={styles.title}>
-        <Text bold center size={theme.SIZES.BASE} style={{ paddingBottom: 5 }}>
+        <Text
+          bold
+          center
+          size={theme.SIZES.BASE}
+          style={{ paddingBottom: 5, fontFamily: "kanitRegular" }}
+        >
           Language Settings
         </Text>
-        <Text center muted size={12}>
+        <Text center muted size={13} style={{ fontFamily: "kanitRegular" }}>
           Please select your language
         </Text>
       </Block>
-      <Picker
-        selectedValue={props.lang}
-        style={{ height: 50, width: width }}
-        itemStyle={{ fontSize: 12 }}
-        onValueChange={(value) => {
-          props.setLanguage(value);
+      <DropDownPicker
+        items={itemLanguage}
+        containerStyle={{ height: 40, width: width - 20, marginTop:10 }}
+        style={{ backgroundColor: "#fafafa", marginLeft: 20 }}
+        itemStyle={{
+          justifyContent: "flex-start",
         }}
-      >
-        <Picker.Item label="Thai" value="th" />
-        <Picker.Item label="English" value="en" />
-      </Picker>
+        dropDownStyle={{ backgroundColor: "#fafafa" }}
+        placeholderStyle={{
+          textAlign: "left",
+          color: "gray",
+          fontFamily: "kanitRegular",
+        }}
+        placeholder={"- โปรดเลือก -"}
+        labelStyle={{
+          textAlign: "left",
+          color: "#000",
+          fontFamily: "kanitRegular",
+        }}
+        arrowColor={"white"}
+        arrowSize={18}
+        arrowStyle={{
+          backgroundColor: "#02d483",
+          borderRadius: 20,
+          color: "white",
+        }}
+        defaultValue={language}
+        onChangeItem={onChangeLanguage}
+      />
     </View>
   );
 }

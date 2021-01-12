@@ -12,19 +12,13 @@ import {
   Image,
   Dimensions,
 } from "react-native";
-import * as ActionForgetPassword from "../actions/action-forgetPassword/ActionForgetPassword";
 import { Block } from "galio-framework";
-import { Icon } from "../components";
-import { formatTr } from "../i18n/I18nProvider";
-import WangdekInfo from "../components/WangdekInfo";
+import { formatTr } from "../../i18n/I18nProvider";
+import WangdekInfo from "../../components/WangdekInfo";
 
 const { height, width } = Dimensions.get("screen");
 
 function Notifications(props) {
-  const { objForgetPassword } = useSelector((state) => ({
-    objForgetPassword: state.actionForgetPassword.objForgetPassword,
-  }));
-
   const [stateObj, setStateObj] = useState({
     email: "",
     password: "",
@@ -33,7 +27,7 @@ function Notifications(props) {
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Block style={{height:height /2, backgroundColor:"white"}}>
+        <Block style={{ height: height / 2, backgroundColor: "white" }}>
           {/* Title */}
           <Block
             row
@@ -56,51 +50,55 @@ function Notifications(props) {
               {"<  "}Notifications
             </Text>
           </Block>
-          <Block
-            style={{
-              width: width,
-              height: 45,
-              paddingTop: 10,
-              backgroundColor: "white",
-              borderBottomWidth: 1,
-              borderBottomColor: "#e0e0e0",
-            }}
-          >
-            <Text
+          <TouchableOpacity onPress={() => props.navigation.navigate("News")}>
+            <Block
               style={{
-                fontSize: 15,
-                fontFamily: "kanitRegular",
-                color: "black",
-                textAlign: "left",
-                marginLeft: 40,
+                width: width,
+                height: 45,
+                paddingTop: 10,
+                backgroundColor: "white",
+                borderBottomWidth: 1,
+                borderBottomColor: "#e0e0e0",
               }}
             >
-              News
-            </Text>
-          </Block>
-          <Block
-            style={{
-              width: width,
-              height: 45,
-              paddingTop: 10,
-              backgroundColor: "white",
-              borderBottomWidth: 1,
-              borderBottomColor: "#e0e0e0",
-            }}
-          >
-            <Text
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontFamily: "kanitRegular",
+                  color: "black",
+                  textAlign: "left",
+                  marginLeft: 40,
+                }}
+              >
+                News
+              </Text>
+            </Block>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => props.navigation.navigate("News")}>
+            <Block
               style={{
-                fontSize: 15,
-                fontFamily: "kanitRegular",
-                color: "black",
-                textAlign: "left",
-                marginLeft: 15,
-                marginLeft: 40,
+                width: width,
+                height: 45,
+                paddingTop: 10,
+                backgroundColor: "white",
+                borderBottomWidth: 1,
+                borderBottomColor: "#e0e0e0",
               }}
             >
-              Activities
-            </Text>
-          </Block>
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontFamily: "kanitRegular",
+                  color: "black",
+                  textAlign: "left",
+                  marginLeft: 15,
+                  marginLeft: 40,
+                }}
+              >
+                Activities
+              </Text>
+            </Block>
+          </TouchableOpacity>
         </Block>
         <WangdekInfo />
       </ScrollView>
