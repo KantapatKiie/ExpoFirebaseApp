@@ -585,7 +585,7 @@ function SignIn(props) {
               <Block row>
                 <TouchableOpacity
                   style={{ paddingLeft: "5%" }}
-                  onPress={checkFunction}
+                  onPress={() => props.navigation.navigate("Edit Profile")}
                 >
                   <Image
                     source={require("../../assets/iconSignIn/edit-icon.png")}
@@ -679,7 +679,7 @@ function SignIn(props) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ paddingLeft: "15%" }}
-                  onPress={checkFunction}
+                  onPress={() => props.navigation.navigate("Setting")}
                 >
                   <Image
                     source={require("../../assets/iconSignIn/languag-icon.png")}

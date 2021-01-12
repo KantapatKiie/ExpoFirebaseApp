@@ -15,14 +15,15 @@ import {
   ImageBackground,
 } from "react-native";
 import * as ActionFlashsaleProduct from "../actions//action-flashsale-product/ActionFlashsaleProduct";
-import { Icon } from "../components/";
 import { formatTr } from "../i18n/I18nProvider";
 import moment from "moment";
+import 'moment-duration-format';
 import { Block, Text } from "galio-framework";
 import WangdekInfo from "../components/WangdekInfo";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { ProgressBar, Colors } from 'react-native-paper';
+import CountDown from "react-native-countdown-component";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -32,7 +33,6 @@ function FlashsaleProduct(props) {
   }));
 
   useEffect(() => {
-    CountdownTime();
   }, []);
 
   //FlatList Coupon
@@ -48,32 +48,6 @@ function FlashsaleProduct(props) {
       </Block>
     );
   };
-
-  //#region CountDown-Date
-  const [stateTime, setStateTime] = useState({
-    eventDate: moment.duration().add({ hours: 12, minutes: 34, seconds: 56 }), // add 9 full days, 3 hours, 40 minutes and 50 seconds
-    hours: 0,
-    mins: 0,
-    secs: 0,
-  });
-  const CountdownTime = async () => {
-    await setInterval(() => {
-      let { eventDate } = stateTime;
-      eventDate = eventDate.subtract(1, "s");
-      const hours = eventDate.hours();
-      const mins = eventDate.minutes();
-      const secs = eventDate.seconds();
-
-      setStateTime({
-        hours,
-        mins,
-        secs,
-        eventDate,
-      });
-    }, 1000);
-  };
-  //#endregion
-
   const [progressValue ,setProgressValue] = useState(0.65);
   const onLoadMoreProduct = () => {
       console.log("load More");
@@ -119,10 +93,11 @@ function FlashsaleProduct(props) {
                     <Image
                       source={require("../assets/images/flashsale_head.png")}
                       style={{
-                        width: width - 200,
-                        height: 25,
+                        width: width - 180,
+                        height: 28,
                         alignSelf: "center",
                         marginTop: 20,
+                        marginLeft:20
                       }}
                     />
                     <Text
@@ -138,60 +113,42 @@ function FlashsaleProduct(props) {
                       </Text>
                     {/* CountDownTime */}
                     <Block row>
-                      <Block style={linerStyle.BlockTime}>
-                        {/* HH */}
-                        <Block style={timeStyle.timerow1}>
-                          <Text style={timeStyle.timeText}>
-                            {stateTime.hours.toString().substring(1, 2) !== ""
-                              ? stateTime.hours.toString().substring(0, 1)
-                              : "0"}
-                          </Text>
-                        </Block>
-                        <Block style={timeStyle.timerow2}>
-                          <Text style={timeStyle.timeText}>
-                            {stateTime.hours.toString().substring(1, 2) !== ""
-                              ? stateTime.hours.toString().substring(1, 2)
-                              : stateTime.hours.toString().substring(0, 1)}
-                          </Text>
-                        </Block>
-                        <Text style={timeStyle.timeTextBlock}>:</Text>
-                        {/* MM */}
-                        <Block style={timeStyle.timerow3}>
-                          <Text style={timeStyle.timeText}>
-                            {stateTime.mins.toString().substring(1, 2) !== ""
-                              ? stateTime.mins.toString().substring(0, 1)
-                              : "0"}
-                          </Text>
-                        </Block>
-                        <Block style={timeStyle.timerow4}>
-                          <Text style={timeStyle.timeText}>
-                            {stateTime.mins.toString().substring(1, 2) !== ""
-                              ? stateTime.mins.toString().substring(1, 2)
-                              : stateTime.mins.toString().substring(0, 1)}
-                          </Text>
-                        </Block>
-                        <Text style={timeStyle.timeTextBlock}>:</Text>
-                        {/* SS */}
-                        <Block style={timeStyle.timerow5}>
-                          <Text style={timeStyle.timeText}>
-                            {stateTime.secs.toString().substring(1, 2) !== ""
-                              ? stateTime.secs.toString().substring(0, 1)
-                              : "0"}
-                          </Text>
-                        </Block>
-                        <View style={timeStyle.timerow6}>
-                          <Text style={timeStyle.timeText}>
-                            {stateTime.secs.toString().substring(1, 2) !== ""
-                              ? stateTime.secs.toString().substring(1, 2)
-                              : stateTime.secs.toString().substring(0, 1)}
-                          </Text>
-                        </View>
+                    <Block style={linerStyle.BlockTime}>
+                        <CountDown
+                          size={22}
+                          until={60000}
+                          digitStyle={{
+                            backgroundColor: "#ff4545",
+                            height: 30,
+                            width: 40,
+                          }}
+                          style={{
+                            marginLeft: 20,
+                            marginBottom: 20,
+                          }}
+                          digitTxtStyle={{
+                            color: "white",
+                            fontSize: 18,
+                            fontFamily: "kanitRegular",
+                          }}
+                          timeToShow={["H", "M", "S"]}
+                          timeLabelStyle={{
+                            color: "white",
+                            fontWeight: "bold",
+                          }}
+                          timeLabels={{ d: null, h: null, m: null, s: null }}
+                          separatorStyle={{ color: "white", marginBottom:3.5 }}
+                          showSeparator
+                          // onFinish={() => alert("Finished")}
+                        />
+                        <Text style={timeStyle.timeTextArrow}>{">"}</Text>
                       </Block>
                       
                       <Block
                         style={{
                           borderLeftWidth: 1,
                           borderLeftColor: "#e0e0e0",
+                          marginTop:10
                         }}
                       >
                         <Text
@@ -408,7 +365,7 @@ const linerStyle = StyleSheet.create({
   },
   linearGradient: {
     justifyContent: "flex-start",
-    height: 150,
+    height: 165,
   },
   BlockTime: {
     flexDirection: "row",
@@ -420,87 +377,22 @@ const linerStyle = StyleSheet.create({
 });
 
 const timeStyle = StyleSheet.create({
-  timerow1: {
-    width: 20,
-    height: 30,
-    backgroundColor: "#00a9d4",
-    borderRadius: 8,
-    marginLeft: 25,
-    marginBottom: 5,
-    shadowOffset: { width: 12, height: 12 },
-    shadowColor: "black",
-    shadowOpacity: 1,
-  },
-  timerow2: {
-    width: 20,
-    height: 30,
-    backgroundColor: "#1efac2",
-    borderRadius: 8,
-    marginLeft: 2,
-    marginBottom: 5,
-    shadowOffset: { width: 12, height: 12 },
-    shadowColor: "black",
-    shadowOpacity: 1,
-  },
-  timerow3: {
-    width: 20,
-    height: 30,
-    backgroundColor: "#ebdb02",
-    borderRadius: 8,
-    marginLeft: 1,
-    marginBottom: 5,
-    shadowOffset: { width: 12, height: 12 },
-    shadowColor: "black",
-    shadowOpacity: 1,
-  },
-  timerow4: {
-    width: 20,
-    height: 30,
-    backgroundColor: "#e6ad00",
-    borderRadius: 8,
-    marginLeft: 2,
-    marginBottom: 5,
-    shadowOffset: { width: 12, height: 12 },
-    shadowColor: "black",
-    shadowOpacity: 1,
-  },
-  timerow5: {
-    width: 20,
-    height: 30,
-    backgroundColor: "#9700ab",
-    borderRadius: 8,
-    marginLeft: 1,
-    marginBottom: 5,
-    shadowOffset: { width: 12, height: 12 },
-    shadowColor: "black",
-    shadowOpacity: 1,
-  },
-  timerow6: {
-    width: 20,
-    height: 30,
-    backgroundColor: "#d10092",
-    borderRadius: 8,
-    marginLeft: 2,
-    marginBottom: 5,
-    shadowOffset: { width: 12, height: 12 },
-    shadowColor: "black",
-    shadowOpacity: 1,
-    overflow: "hidden",
-  },
   timeText: {
     fontWeight: "800",
     fontSize: 22,
     color: "white",
     marginBottom: 5,
     textAlign: "center",
+    fontFamily:"kanitRegular"
   },
   timeTextArrow: {
     fontWeight: "500",
     fontSize: 22,
     color: "white",
     paddingLeft: 10,
-    paddingRight: 3,
-    marginBottom: 7,
+    paddingRight: 1.5,
+    marginTop: 2.5,
+    fontFamily:"kanitRegular"
   },
   timeTextBlock: {
     fontWeight: "bold",
@@ -509,6 +401,7 @@ const timeStyle = StyleSheet.create({
     paddingLeft: 3,
     paddingRight: 3,
     marginBottom: 7,
+    fontFamily:"kanitRegular"
   },
 });
 

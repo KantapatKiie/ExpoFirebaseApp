@@ -57,7 +57,7 @@ const ModalNotification = ({ isWhite, style }) => {
           setModalVisible(true);
         }}
       >
-        <Icons name="notifications" color={"black"} size={20} />
+        <Icons name="notifications" color={"#383838"} size={20} />
         <Block middle style={styles.notify} />
       </TouchableOpacity>
     </>
@@ -96,7 +96,7 @@ const ModalSearch = ({ isWhite, style }) => {
           setModalVisible(true);
         }}
       >
-        <Icons name="search" color={"black"} size={20} />
+        <Icons name="search" color={"#383838"} size={20} />
         <Block middle style={styles.notify} />
       </TouchableOpacity>
     </>
@@ -135,7 +135,7 @@ const ModalMessage = ({ isWhite, style }) => {
           setModalVisible(true);
         }}
       >
-        <Icons name="favorite" color={"black"} size={20} />
+        <Icons name="favorite" color={"#383838"} size={20} />
         <Block middle style={styles.notify} />
       </TouchableOpacity>
     </>
@@ -146,9 +146,10 @@ const BasketButton = ({ isWhite, style, navigation }) => {
     <>
       <TouchableOpacity
         style={[styles.button, style]}
-        onPress={() => navigation.navigate("Basket")}
+        onPress={() => navigation.navigate("Cart")}
       >
-        <Icons name="store" color={"black"} size={20} />
+        {/* <Icons name="shopping_cart" color={"black"} size={20} /> */}
+        <Image source={require("../assets/icons/cart.png")} style={{width:20, height:20}}/>
         <Block middle style={styles.notify} />
       </TouchableOpacity>
     </>
@@ -163,10 +164,12 @@ function Header(props) {
   const renderLogo = () => {
     return (
       <Block flex center>
+        <TouchableOpacity onPress={() => props.navigation.navigate("Flash Sale")}>
         <Image
           source={require("../assets/images/logo.png")}
           style={{ height: 50, width: 100 }}
         />
+        </TouchableOpacity>
       </Block>
     );
   };

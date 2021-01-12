@@ -10,20 +10,23 @@ import {
   TouchableHighlight,
   TouchableOpacity,
   ImageBackground,
+  Modal,
+  ScrollView,
 } from "react-native";
 import { withNavigation } from "@react-navigation/compat";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
-import 'moment-duration-format';
+import "moment-duration-format";
 import { StatusBar } from "expo-status-bar";
-import { Block, Text, Button, theme } from "galio-framework";
-import { Icon, Product } from "../components/";
+import { Block, Text, theme } from "galio-framework";
+import { Product } from "../components/";
 import products from "../constants/products";
-import CountDown from "react-native-countdown-component";
 import { LinearGradient } from "expo-linear-gradient";
 import { formatTr } from "../i18n/I18nProvider";
 import * as ActionHome from "../actions/action-home/ActionHome";
 import WangdekInfo from "../components/WangdekInfo";
+import CountDown from "react-native-countdown-component";
+import Icons from "react-native-vector-icons/MaterialIcons";
 
 const { width } = Dimensions.get("screen");
 
@@ -42,7 +45,7 @@ function Home(props) {
   //#endregion
 
   useEffect(() => {
-    CountdownTime();
+    setModalVisible(true);
   }, []);
 
   //Time Everthing
@@ -90,7 +93,7 @@ function Home(props) {
                 style={{
                   color: "white",
                   fontFamily: "kanitRegular",
-                  fontSize: 27,
+                  fontSize: 26,
                   fontWeight: "bold",
                   textAlign: "center",
                 }}
@@ -101,7 +104,7 @@ function Home(props) {
                 style={{
                   color: "white",
                   fontFamily: "kanitRegular",
-                  fontSize: 17,
+                  fontSize: 15,
                   fontWeight: "bold",
                   textAlign: "center",
                 }}
@@ -111,12 +114,10 @@ function Home(props) {
             </Block>
           </ImageBackground>
           {/* Detail */}
-          <Block
-            style={{ backgroundColor: item.color, padding: 15, width: 300 }}
-          >
+          <Block style={{ backgroundColor: "white", padding: 15, width: 300 }}>
             <Text
               style={{
-                color: "white",
+                color: "black",
                 fontFamily: "kanitBold",
               }}
             >
@@ -153,28 +154,63 @@ function Home(props) {
     );
   };
 
-  //#region CountDown-Date
-  const [stateTime, setStateTime] = useState({
-    eventDate: moment.duration().add({ hours: 12, minutes: 34, seconds: 56 }), // add 9 full days, 3 hours, 40 minutes and 50 seconds
-    hours: 0,
-    mins: 0,
-    secs: 0,
-  });
-  const CountdownTime = async () => {
-    await setInterval(() => {
-      let { eventDate } = stateTime;
-      eventDate = eventDate.subtract(1, "s");
-      const hours = eventDate.hours();
-      const mins = eventDate.minutes();
-      const secs = eventDate.seconds();
-
-      setStateTime({
-        hours,
-        mins,
-        secs,
-        eventDate,
-      });
-    }, 1000);
+  //#region ModalCoupon
+  const [modalVisible, setModalVisible] = useState(false);
+  const ModalNotification = () => {
+    return (
+      <>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(false);
+          }}
+        >
+          <Block style={styles.centeredView}>
+            <Block style={styles.modalView}>
+              <TouchableOpacity
+                onPress={() => {
+                  setModalVisible(false);
+                }}
+                style={{ alignSelf: "flex-end" }}
+              >
+                <Icons name="clear" size={20} color="black" />
+              </TouchableOpacity>
+              <Text style={styles.modalText}>You have received coupons</Text>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <Block row style={{ marginBottom: 15 }}>
+                  <Image
+                    source={require("../assets/images/coupon/coupon-1.png")}
+                    style={{ width: 130, height: 55 }}
+                  />
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: "#00e099",
+                      width: 80,
+                      height: 24,
+                      borderRadius: 20,
+                      alignSelf: "center",
+                      marginLeft: 5,
+                    }}
+                  >
+                    <Text style={styles.fontCoupon}>COLLECT</Text>
+                  </TouchableOpacity>
+                </Block>
+              </ScrollView>
+              <TouchableOpacity
+                style={{ ...styles.openButton, backgroundColor: "#4a5aed" }}
+                onPress={() => {
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>OK</Text>
+              </TouchableOpacity>
+            </Block>
+          </Block>
+        </Modal>
+      </>
+    );
   };
   //#endregion
 
@@ -233,77 +269,34 @@ function Home(props) {
                       />
                       {/* CountDownTime */}
                       <Block style={linerStyle.BlockTime}>
-                        <Text style={{ textAlign: "center", width: 150 }}>
-                          {" "}
-                        </Text>
-                        {/* HH */}
-                        <Block style={timeStyle.timerow1}>
-                          <Text style={timeStyle.timeText}>
-                            {stateTime.hours.toString().substring(1, 2) !== ""
-                              ? stateTime.hours.toString().substring(0, 1)
-                              : "0"}
-                          </Text>
-                        </Block>
-                        <Block style={timeStyle.timerow2}>
-                          <Text style={timeStyle.timeText}>
-                            {stateTime.hours.toString().substring(1, 2) !== ""
-                              ? stateTime.hours.toString().substring(1, 2)
-                              : stateTime.hours.toString().substring(0, 1)}
-                          </Text>
-                        </Block>
-                        <Text style={timeStyle.timeTextBlock}>:</Text>
-                        {/* MM */}
-                        <Block style={timeStyle.timerow3}>
-                          <Text style={timeStyle.timeText}>
-                            {stateTime.mins.toString().substring(1, 2) !== ""
-                              ? stateTime.mins.toString().substring(0, 1)
-                              : "0"}
-                          </Text>
-                        </Block>
-                        <Block style={timeStyle.timerow4}>
-                          <Text style={timeStyle.timeText}>
-                            {stateTime.mins.toString().substring(1, 2) !== ""
-                              ? stateTime.mins.toString().substring(1, 2)
-                              : stateTime.mins.toString().substring(0, 1)}
-                          </Text>
-                        </Block>
-                        <Text style={timeStyle.timeTextBlock}>:</Text>
-                        {/* SS */}
-                        <Block style={timeStyle.timerow5}>
-                          <Text style={timeStyle.timeText}>
-                            {stateTime.secs.toString().substring(1, 2) !== ""
-                              ? stateTime.secs.toString().substring(0, 1)
-                              : "0"}
-                          </Text>
-                        </Block>
-                        <View style={timeStyle.timerow6}>
-                          <Text style={timeStyle.timeText}>
-                            {stateTime.secs.toString().substring(1, 2) !== ""
-                              ? stateTime.secs.toString().substring(1, 2)
-                              : stateTime.secs.toString().substring(0, 1)}
-                          </Text>
-                        </View>
-                        <Text style={timeStyle.timeTextArrow}>{">"}</Text>
                         <CountDown
                           size={22}
-                          until={4500}
+                          until={70000}
                           digitStyle={{
-                            backgroundColor: "#ffb700",
+                            backgroundColor: "#ff4545",
                             height: 30,
-                            width: 45,
+                            width: 40,
                           }}
-                          style={{ marginLeft: 20, marginBottom: 20 }}
-                          digitTxtStyle={{ color: "black" }}
+                          style={{
+                            marginLeft: 20,
+                            marginBottom: 20,
+                          }}
+                          digitTxtStyle={{
+                            color: "white",
+                            fontSize: 18,
+                            fontFamily: "kanitRegular",
+                          }}
                           timeToShow={["H", "M", "S"]}
                           timeLabelStyle={{
-                            color: "black",
+                            color: "white",
                             fontWeight: "bold",
                           }}
                           timeLabels={{ d: null, h: null, m: null, s: null }}
-                          separatorStyle={{ color: "black" }}
+                          separatorStyle={{ color: "white", marginBottom: 3.5 }}
                           showSeparator
                           // onFinish={() => alert("Finished")}
                         />
+                        <Text style={timeStyle.timeTextArrow}>{">"}</Text>
                       </Block>
                     </LinearGradient>
                   </TouchableHighlight>
@@ -393,10 +386,12 @@ function Home(props) {
                       <Text
                         style={{
                           alignSelf: "center",
-                          paddingBottom: 25,
                           marginTop: 10,
                           color: "black",
-                          fontFamily:"kanitRegular"
+                          fontFamily: "kanitRegular",
+                          borderBottomWidth: 5,
+                          borderBottomColor: "#00bcd1",
+                          borderRadius: 2,
                         }}
                       >
                         {VIEW_ALL + " >"}
@@ -404,7 +399,10 @@ function Home(props) {
                     </TouchableOpacity>
                   </Block>
                   {/* Public relations */}
-                  <Block flex style={{ backgroundColor: "#F3F3F3" }}>
+                  <Block
+                    flex
+                    style={{ backgroundColor: "#f7f7f7", marginBottom: 25 }}
+                  >
                     <Text
                       style={{
                         fontSize: 25,
@@ -445,26 +443,26 @@ function Home(props) {
                         }}
                       />
                     </SafeAreaView>
-                    <TouchableOpacity
-                      onPress={() => props.navigation.navigate("Basket")}
-                      style={{ marginTop: 25 }}
-                    >
-                      <Text
-                        style={{
-                          alignSelf: "center",
-                          paddingBottom: 25,
-                          color: "black",
-                          fontFamily:"kanitRegular"
-                          // borderBottomWidth: 2,
-                          // borderBottomColor: "#00bcd1",
-                        }}
-                        size={14}
-                        color={theme.COLORS.PRIMARY}
-                      >
-                        {VIEW_ALL + " >"}
-                      </Text>
-                    </TouchableOpacity>
                   </Block>
+                  <TouchableOpacity
+                    onPress={() => props.navigation.navigate("Basket")}
+                    style={{ marginBottom: 15 }}
+                  >
+                    <Text
+                      style={{
+                        alignSelf: "center",
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        borderBottomWidth: 5,
+                        borderBottomColor: "#00bcd1",
+                        borderRadius: 2,
+                      }}
+                      size={14}
+                      color={theme.COLORS.PRIMARY}
+                    >
+                      {VIEW_ALL + " >"}
+                    </Text>
+                  </TouchableOpacity>
                   {/* Bottom info */}
                   <WangdekInfo />
                 </>
@@ -479,6 +477,7 @@ function Home(props) {
           </SafeAreaView>
         </View>
       </Block>
+      <ModalNotification />
     </>
   );
 }
@@ -601,6 +600,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     marginTop: 25,
     padding: 5,
+    marginBottom: 25,
   },
   search: {
     height: 48,
@@ -650,6 +650,61 @@ const styles = StyleSheet.create({
     backgroundColor: "#f7f7f7",
     height: 20,
     alignItems: "stretch",
+  },
+  // Modal CSS
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalView: {
+    width: "75%",
+    height: "50%",
+    borderRadius: 5,
+    padding: 15,
+    alignItems: "center",
+    shadowColor: "black",
+    shadowOffset: {
+      width: 2,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+    backgroundColor: "white",
+  },
+  openButton: {
+    backgroundColor: "#F194FF",
+    padding: 10,
+    elevation: 2,
+    borderRadius: 50,
+    width: "100%",
+    height: 38,
+  },
+  textStyle: {
+    color: "white",
+    textAlign: "center",
+    fontFamily: "kanitRegular",
+  },
+  modalText: {
+    marginBottom: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+    fontFamily: "kanitRegular",
+  },
+  fontCoupon: {
+    fontFamily: "kanitRegular",
+    color: "white",
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: 2.5,
+    shadowColor: "black",
+    shadowOffset: {
+      width: 12,
+      height: 12,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
   },
 });
 
@@ -704,7 +759,7 @@ const styles2 = StyleSheet.create({
     marginTop: 5,
   },
   TextActivity: {
-    color: "white",
+    color: "black",
     fontFamily: "kanitRegular",
   },
 });
@@ -723,92 +778,29 @@ const linerStyle = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "flex-end",
-    alignSelf: "stretch",
+    alignSelf: "flex-end",
+    marginBottom: 5,
+    marginRight: 10,
   },
 });
 
 const timeStyle = StyleSheet.create({
-  timerow1: {
-    width: 25,
-    height: 35,
-    backgroundColor: "#00a9d4",
-    borderRadius: 8,
-    marginLeft: 25,
-    marginBottom: 5,
-    shadowOffset: { width: 12, height: 12 },
-    shadowColor: "black",
-    shadowOpacity: 1,
-  },
-  timerow2: {
-    width: 25,
-    height: 35,
-    backgroundColor: "#1efac2",
-    borderRadius: 8,
-    marginLeft: 2,
-    marginBottom: 5,
-    shadowOffset: { width: 12, height: 12 },
-    shadowColor: "black",
-    shadowOpacity: 1,
-  },
-  timerow3: {
-    width: 25,
-    height: 35,
-    backgroundColor: "#ebdb02",
-    borderRadius: 8,
-    marginLeft: 1,
-    marginBottom: 5,
-    shadowOffset: { width: 12, height: 12 },
-    shadowColor: "black",
-    shadowOpacity: 1,
-  },
-  timerow4: {
-    width: 25,
-    height: 35,
-    backgroundColor: "#e6ad00",
-    borderRadius: 8,
-    marginLeft: 2,
-    marginBottom: 5,
-    shadowOffset: { width: 12, height: 12 },
-    shadowColor: "black",
-    shadowOpacity: 1,
-  },
-  timerow5: {
-    width: 25,
-    height: 35,
-    backgroundColor: "#9700ab",
-    borderRadius: 8,
-    marginLeft: 1,
-    marginBottom: 5,
-    shadowOffset: { width: 12, height: 12 },
-    shadowColor: "black",
-    shadowOpacity: 1,
-  },
-  timerow6: {
-    width: 25,
-    height: 35,
-    backgroundColor: "#d10092",
-    borderRadius: 8,
-    marginLeft: 2,
-    marginBottom: 5,
-    shadowOffset: { width: 12, height: 12 },
-    shadowColor: "black",
-    shadowOpacity: 1,
-    overflow: "hidden",
-  },
   timeText: {
     fontWeight: "800",
     fontSize: 24,
     color: "white",
     marginBottom: 5,
     textAlign: "center",
+    fontFamily: "kanitRegular",
   },
   timeTextArrow: {
     fontWeight: "500",
-    fontSize: 24,
+    fontSize: 22,
     color: "white",
     paddingLeft: 10,
     paddingRight: 3,
-    marginBottom: 7,
+    marginBottom: 5,
+    fontFamily: "kanitRegular",
   },
   timeTextBlock: {
     fontWeight: "bold",
@@ -817,5 +809,31 @@ const timeStyle = StyleSheet.create({
     paddingLeft: 3,
     paddingRight: 3,
     marginBottom: 7,
+    fontFamily: "kanitRegular",
   },
 });
+
+// //#region CountDown-Date
+// const [stateTime, setStateTime] = useState({
+//   eventDate: moment.duration().add({ hours: 12, minutes: 34, seconds: 56 }), // add 9 full days, 3 hours, 40 minutes and 50 seconds
+//   hours: 0,
+//   mins: 0,
+//   secs: 0,
+// });
+// const CountdownTime = async () => {
+//   await setInterval(() => {
+//     let { eventDate } = stateTime;
+//     eventDate = eventDate.subtract(1, "s");
+//     const hours = eventDate.hours();
+//     const mins = eventDate.minutes();
+//     const secs = eventDate.seconds();
+
+//     setStateTime({
+//       hours,
+//       mins,
+//       secs,
+//       eventDate,
+//     });
+//   }, 1000);
+// };
+// //#endregion

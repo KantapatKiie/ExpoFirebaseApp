@@ -6,15 +6,15 @@ import {
   Dimensions,
   Platform,
   TouchableOpacity,
-  AsyncStorage,
+  ScrollView,
 } from "react-native";
 import { Block, Button, Text, theme } from "galio-framework";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
-import { LinearGradient } from "expo-linear-gradient";
-import { HeaderHeight } from "../constants/utils";
+import { HeaderHeight } from "../../constants/utils";
 import { connect, useSelector } from "react-redux";
-import { actions as ActionProduct } from "../actions/action-product/ActionProduct";
-import { actions as ActionCart } from "../actions/action-cart/ActionCart";
+import { actions as ActionProduct } from "../../actions/action-product/ActionProduct";
+import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
+import WangdekInfo from "../../components/WangdekInfo";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -64,99 +64,88 @@ function ProductScreen(props) {
 
   return (
     <>
-      <Block flex style={styles.container}>
-        <StatusBar barStyle="default" />
-        {/* View */}
-        <Block space="between" style={styles.paddedTop}>
-          {/* <Block row>
-            <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
-              <Icons
-                name="arrow-left"
-                size={20}
-                color="black"
-                style={styles.IconBack}
-              />
-            </TouchableOpacity>
-          </Block> */}
-          {/* Title */}
-          <Block>
-            <Text style={styles.titleText}>{objProductActivity.TITLE}</Text>
-          </Block>
-          {/* Image */}
-          <Block
-            row
-            style={{
-              marginTop: theme.SIZES.BASE * 1.5,
-              marginBottom: theme.SIZES.BASE * 1.5,
-            }}
-          >
-            <Image
-              source={{
-                uri: objProductActivity.IMAGE,
-              }}
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <Block flex style={styles.container}>
+          <StatusBar barStyle="default" />
+          {/* View */}
+          <Block space="between" style={styles.paddedTop}>
+            {/* Title */}
+            <Block>
+              <Text style={styles.titleText}>{objProductActivity.TITLE}</Text>
+            </Block>
+            {/* Image */}
+            <Block
+              row
               style={{
-                height: 200,
-                width: 360,
+                marginTop: theme.SIZES.BASE * 1.5,
+                marginBottom: theme.SIZES.BASE * 1.5,
               }}
-            />
-          </Block>
-        </Block>
-        {/* Detail */}
-        <Block>
-          <Text style={styles.descTitle}>Description : </Text>
-          <Text style={styles.descTitles}>{objProductActivity.DETAIL}</Text>
-        </Block>
-        {/* Price */}
-        <Block row>
-          <Text style={styles.priceTitle}>Price</Text>
-          <Text style={styles.priceTitles}>{objProductActivity.PRICE}฿</Text>
-        </Block>
-        <Block row>
-          <Text style={styles.priceTitle}>Total Price</Text>
-          <Text style={styles.priceTitles}>
-            {objProductActivity.TOTAL_PRICE}฿
-          </Text>
-        </Block>
-        {/* Button */}
-        <Block space="between" style={styles.padded}>
-          <Block row style={styles.blockbutton}>
-            <Button
-              shadowless
-              style={styles.buttonAdd}
-              color={"black"}
-              onPress={onChangeProductInsert}
             >
-              +
-            </Button>
-            <Text style={styles.countCart}>
-              &nbsp;&nbsp;{objProductActivity.COUNT}&nbsp;&nbsp;
-              {/* &nbsp;&nbsp;{count}&nbsp;&nbsp; */}
+              <Image
+                source={{
+                  uri: objProductActivity.IMAGE,
+                }}
+                style={{
+                  height: 200,
+                  width: 360,
+                }}
+              />
+            </Block>
+          </Block>
+          {/* Detail */}
+          <Block>
+            <Text style={styles.descTitle}>Description : </Text>
+            <Text style={styles.descTitles}>{objProductActivity.DETAIL}</Text>
+          </Block>
+          {/* Price */}
+          <Block row>
+            <Text style={styles.priceTitle}>Price</Text>
+            <Text style={styles.priceTitles}>{objProductActivity.PRICE}฿</Text>
+          </Block>
+          <Block row>
+            <Text style={styles.priceTitle}>Total Price</Text>
+            <Text style={styles.priceTitles}>
+              {objProductActivity.TOTAL_PRICE}฿
             </Text>
-            <Button
-              shadowless
-              style={styles.buttonAdd}
-              color={"black"}
-              onPress={onChangeProductDelete}
-            >
-              -
-            </Button>
           </Block>
-          <Block flex>
-            <Button
-              shadowless
-              style={styles.button}
-              color={"black"}
-              onPress={onclickAddProduct}
-            >
-              ADD TO CART
-            </Button>
+          {/* Button */}
+          <Block style={styles.padded}>
+            <Block row style={styles.blockbutton}>
+              <Button
+                shadowless
+                style={styles.buttonAdd}
+                color={"black"}
+                onPress={onChangeProductInsert}
+              >
+                +
+              </Button>
+              <Text style={styles.countCart}>
+                &nbsp;&nbsp;{objProductActivity.COUNT}&nbsp;&nbsp;
+                {/* &nbsp;&nbsp;{count}&nbsp;&nbsp; */}
+              </Text>
+              <Button
+                shadowless
+                style={styles.buttonAdd}
+                color={"black"}
+                onPress={onChangeProductDelete}
+              >
+                -
+              </Button>
+            </Block>
+            <Block flex>
+              <Button
+                shadowless
+                style={styles.button}
+                color={"black"}
+                onPress={onclickAddProduct}
+              >
+                ADD TO CART
+              </Button>
+            </Block>
           </Block>
         </Block>
-      </Block>
-      <LinearGradient
-        style={styles.gradient}
-        colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.5)"]}
-      />
+        <WangdekInfo />
+      </ScrollView>
     </>
   );
 }
@@ -179,19 +168,16 @@ export default connect(null, mapActions)(ProductScreen);
 const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.COLORS.BUTTON_COLOR,
-    marginTop: Platform.OS === "android" ? -HeaderHeight : 0,
   },
   padded: {
     paddingHorizontal: theme.SIZES.BASE * 2,
     zIndex: 3,
-    position: "absolute",
+    position: "relative",
     bottom:
       Platform.OS === "android" ? theme.SIZES.BASE * 2 : theme.SIZES.BASE * 3,
   },
   paddedTop: {
     alignSelf: "center",
-    paddingTop: 100,
-    zIndex: 3,
     position: "relative",
   },
   button: {
@@ -208,6 +194,7 @@ const styles = StyleSheet.create({
   },
   blockbutton: {
     alignSelf: "center",
+    marginTop: 20,
   },
   IconBack: {
     color: "black",
