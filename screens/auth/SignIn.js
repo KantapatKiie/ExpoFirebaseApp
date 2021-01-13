@@ -599,7 +599,7 @@ function SignIn(props) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ paddingLeft: "15%" }}
-                  onPress={checkFunction}
+                  onPress={() => props.navigation.navigate("Coupon View")}
                 >
                   <Image
                     source={require("../../assets/iconSignIn/coupon-icon.png")}
@@ -613,7 +613,7 @@ function SignIn(props) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ paddingLeft: "15%" }}
-                  onPress={checkFunction}
+                  onPress={() => props.navigation.navigate("Favorite View")}
                 >
                   <Image
                     source={require("../../assets/iconSignIn/favorite-icon.png")}
@@ -630,7 +630,7 @@ function SignIn(props) {
               <Block row style={{ paddingTop: 25 }}>
                 <TouchableOpacity
                   style={{ paddingLeft: "5%" }}
-                  onPress={checkFunction}
+                  onPress={() => props.navigation.navigate("History Order View")}
                 >
                   <Image
                     source={require("../../assets/iconSignIn/history1-icon.png")}
@@ -654,7 +654,7 @@ function SignIn(props) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ paddingLeft: "15%" }}
-                  onPress={checkFunction}
+                  onPress={() => props.navigation.navigate("History View")}
                 >
                   <Image
                     source={require("../../assets/iconSignIn/history2-icon.png")}
@@ -665,7 +665,6 @@ function SignIn(props) {
                     }}
                   />
                   <Text style={styles.fontMenuMainList}>ประวัติการ</Text>
-
                   <Text
                     style={{
                       fontFamily: "kanitRegular",

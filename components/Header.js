@@ -764,7 +764,7 @@ const sectionProductType = [
       {
         key: "1",
         icon: require("../assets/iconMain/icon-01.png"),
-        sectionPage: "Basket",
+        sectionPage: "Product Toys",
       },
       {
         key: "2",
