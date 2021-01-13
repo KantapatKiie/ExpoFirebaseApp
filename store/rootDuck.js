@@ -13,6 +13,12 @@ import * as actionContact from "../actions/action-contact/ActionContact";
 import * as actionForgetPassword from "../actions/action-forgetPassword/ActionForgetPassword";
 import * as actionChangepassword from "../actions/action-change-password/ActionChangepassword";
 import * as actionFlashsaleProduct from "../actions/action-flashsale-product/ActionFlashsaleProduct";
+import * as actionHistoryView from "../actions/action-history-view/ActionHistoryView";
+import * as actionFavoriteView from "../actions/action-favorite-view/ActionFavoriteView";
+import * as actionPromotions from "../actions/action-promotions/ActionPromotions";
+import * as actionProductAll from "../actions/action-product-all/ActionProductAll";
+import * as actionProductToys from "../actions/action-product-toys/ActionProductToys";
+
 import * as i18n from "./ducks/i18n";
 
 export const rootReducer = combineReducers({
@@ -25,11 +31,16 @@ export const rootReducer = combineReducers({
   actionProduct: actionProduct.reducer,
   actionHomeHD: actionHomeHD.reducer,
   actionPayment: actionPayment.reducer,
-  actionPaymentNotifications:actionPaymentNotifications.reducer,
+  actionPaymentNotifications: actionPaymentNotifications.reducer,
   actionContact: actionContact.reducer,
   actionForgetPassword: actionForgetPassword.reducer,
   actionChangepassword: actionChangepassword.reducer,
   actionFlashsaleProduct: actionFlashsaleProduct.reducer,
+  actionHistoryView: actionHistoryView.reducer,
+  actionFavoriteView: actionFavoriteView.reducer,
+  actionPromotions: actionPromotions.reducer,
+  actionProductAll: actionProductAll.reducer,
+  actionProductToys: actionProductToys.reducer,
 });
 
 export function* rootSaga() {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { connect, useSelector } from "react-redux";
-import * as auth from "../store/ducks/auth.duck";
+import * as auth from "../../store/ducks/auth.duck";
 import {
   StyleSheet,
   View,
@@ -14,12 +14,12 @@ import {
   TouchableHighlight,
   ImageBackground,
 } from "react-native";
-import * as ActionFlashsaleProduct from "../actions//action-flashsale-product/ActionFlashsaleProduct";
-import { formatTr } from "../i18n/I18nProvider";
+import * as ActionFlashsaleProduct from "../../actions/action-flashsale-product/ActionFlashsaleProduct";
+import { formatTr } from "../../i18n/I18nProvider";
 import moment from "moment";
 import 'moment-duration-format';
 import { Block, Text } from "galio-framework";
-import WangdekInfo from "../components/WangdekInfo";
+import WangdekInfo from "../../components/WangdekInfo";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { ProgressBar, Colors } from 'react-native-paper';
@@ -66,7 +66,7 @@ function FlashsaleProduct(props) {
                 {/* Coupon */}
                 <Block style={styles.containerHeader}>
                   <Image
-                    source={require("../assets/images/coupon/couponhead.png")}
+                    source={require("../../assets/images/coupon/couponhead.png")}
                     style={{
                       width: width - 200,
                       height: 25,
@@ -91,7 +91,7 @@ function FlashsaleProduct(props) {
                     style={linerStyle.linearGradient}
                   >
                     <Image
-                      source={require("../assets/images/flashsale_head.png")}
+                      source={require("../../assets/images/flashsale_head.png")}
                       style={{
                         width: width - 180,
                         height: 28,
@@ -177,7 +177,7 @@ function FlashsaleProduct(props) {
                 <Block flex style={{ backgroundColor: "white", marginTop: 15 }}>
                   <Block row style={{ margin: 10 }}>
                     <ImageBackground
-                      source={require("../assets/images/bg-p.jpg")}
+                      source={require("../../assets/images/bg-p.jpg")}
                       style={{
                         width: 120,
                         height: 100,
@@ -412,11 +412,11 @@ const COUPON_LIST = [
     data: [
       {
         key: "1",
-        uri: require("../assets/images/coupon/coupon-1.png"),
+        uri: require("../../assets/images/coupon/coupon-1.png"),
       },
       {
         key: "2",
-        uri: require("../assets/images/coupon/coupon-2.png"),
+        uri: require("../../assets/images/coupon/coupon-2.png"),
       },
     ],
   },

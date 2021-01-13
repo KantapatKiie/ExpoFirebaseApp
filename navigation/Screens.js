@@ -1,7 +1,13 @@
 import React from "react";
-import { Dimensions, Image, StyleSheet } from "react-native";
+import { Image, StyleSheet } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Header } from "../components";
+import { connect } from "react-redux";
+import * as ActionLogin from "../actions/action-actives/ActionLogin";
+import * as firebase from "firebase";
+import * as Notifications from "expo-notifications";
+// Screen //
 import HomeScreen from "../screens/Home";
 import ProfileScreen from "../screens/Profile";
 import SettingsScreen from "../screens/Settings";
@@ -15,19 +21,20 @@ import PaymentNotifications from "../screens/payment/PaymentNotifications";
 import ContactScreen from "../screens/about/Contact";
 import ForgetPasswordScreen from "../screens/auth/ForgetPassword";
 import ChangePasswordScreen from "../screens/auth/ChangePassword";
-import FlashsaleProductScreen from "../screens/FlashsaleProduct";
+import FlashsaleProductScreen from "../screens/notifications/FlashsaleProduct";
+import HistoryViewScreen from "../screens/HistoryView";
+import FavoriteViewScreen from "../screens/FavoriteView";
+import ProductAllScreen from "../screens/product-cart/ProductAll";
+import PromotionsScreen from "../screens/notifications/Promotions";
+// Product-Type
+import ProductToysScreen from "../screens/product-type/ProductToys";
+// Etc //
 import NotificationsScreen from "../screens/notifications/Notifications";
 import HowToScreen from "../screens/notifications/HowTo";
 import NewsScreen from "../screens/notifications/News";
 import AboutUsScreen from "../screens/about/AboutUs";
-import { Header } from "../components";
-import { connect, useSelector } from "react-redux";
-import * as ActionLogin from "../actions/action-actives/ActionLogin";
-import * as firebase from "firebase";
-import * as Notifications from "expo-notifications";
-// import { createDrawerNavigator } from "@react-navigation/drawer";
-// import { NavigationContainer } from "@react-navigation/native";
-// import Icons from "react-native-vector-icons/MaterialIcons";
+import NewsRelationScreen from "../screens/notifications/NewsRelation";
+import NewsRelationDetailScreen from "../screens/notifications/NewsRelationDetail";
 
 //SET FIREBASE-CONFIG
 const firebaseConfig = {
@@ -52,10 +59,8 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const { width } = Dimensions.get("screen");
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
-// const Drawer = createDrawerNavigator();
 
 function ProfileStack() {
   return (
@@ -74,6 +79,28 @@ function ProfileStack() {
             />
           ),
           headerTransparent: true,
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function HomeStack() {
+  return (
+    <Stack.Navigator initialRouteName="Home" mode="card" headerMode="screen">
+      <Stack.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Home"
+              navigation={navigation}
+              scene={scene}
+            />
+          ),
         }}
       />
     </Stack.Navigator>
@@ -102,7 +129,7 @@ function SettingsStack() {
 
 function SignInStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator initialRouteName="Sign In" mode="card" headerMode="screen">
       <Stack.Screen
         name="Sign In"
         component={SignInScreen}
@@ -124,7 +151,7 @@ function SignInStack() {
 
 function SignUpStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator initialRouteName="Sign Up" mode="card" headerMode="screen">
       <Stack.Screen
         name="Sign Up"
         component={SignUpScreen}
@@ -146,7 +173,11 @@ function SignUpStack() {
 
 function EditProfileStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator
+      initialRouteName="Edit Profile"
+      mode="card"
+      headerMode="screen"
+    >
       <Stack.Screen
         name="Edit Profile"
         component={EditProfileScreen}
@@ -168,7 +199,11 @@ function EditProfileStack() {
 
 function ForgetPasswordStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator
+      initialRouteName="Forgot Password"
+      mode="card"
+      headerMode="screen"
+    >
       <Stack.Screen
         name="Forget Password"
         component={ForgetPasswordScreen}
@@ -190,7 +225,11 @@ function ForgetPasswordStack() {
 
 function ChangePasswordStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator
+      initialRouteName="Change Password"
+      mode="card"
+      headerMode="screen"
+    >
       <Stack.Screen
         name="Change Password"
         component={ChangePasswordScreen}
@@ -212,7 +251,11 @@ function ChangePasswordStack() {
 
 function ProductStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator
+      initialRouteName="Products"
+      mode="card"
+      headerMode="screen"
+    >
       <Stack.Screen
         name="Products"
         component={ProductsScreen}
@@ -234,7 +277,7 @@ function ProductStack() {
 
 function CartStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator initialRouteName="Cart" mode="card" headerMode="screen">
       <Stack.Screen
         name="Cart"
         component={CartScreen}
@@ -256,7 +299,7 @@ function CartStack() {
 
 function PaymentStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator initialRouteName="Payment" mode="card" headerMode="screen">
       <Stack.Screen
         name="Payment"
         component={PaymentScreen}
@@ -280,7 +323,11 @@ function PaymentStack() {
 
 function PaymentNotificationStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator
+      initialRouteName="Payment Notifications"
+      mode="card"
+      headerMode="screen"
+    >
       <Stack.Screen
         name="Payment Notifications"
         component={PaymentNotifications}
@@ -304,7 +351,7 @@ function PaymentNotificationStack() {
 
 function ContactStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator initialRouteName="Contact" mode="card" headerMode="screen">
       <Stack.Screen
         name="Contact"
         component={ContactScreen}
@@ -326,7 +373,11 @@ function ContactStack() {
 
 function FlashsaleProductStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator
+      initialRouteName="Flashsale Product"
+      mode="card"
+      headerMode="screen"
+    >
       <Stack.Screen
         name="Flashsale Product"
         component={FlashsaleProductScreen}
@@ -348,7 +399,11 @@ function FlashsaleProductStack() {
 
 function NotificationsStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator
+      initialRouteName="Notifications"
+      mode="card"
+      headerMode="screen"
+    >
       <Stack.Screen
         name="Notifications"
         component={NotificationsScreen}
@@ -370,7 +425,11 @@ function NotificationsStack() {
 
 function AboutUsStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator
+      initialRouteName="About Us"
+      mode="card"
+      headerMode="screen"
+    >
       <Stack.Screen
         name="About Us"
         component={AboutUsScreen}
@@ -390,31 +449,9 @@ function AboutUsStack() {
   );
 }
 
-function NewsStack() {
-  return (
-    <Stack.Navigator mode="card" headerMode="screen">
-      <Stack.Screen
-        name="News"
-        component={NewsScreen}
-        options={{
-          header: ({ navigation, scene }) => (
-            <Header
-              search
-              tabs
-              title="News"
-              scene={scene}
-              navigation={navigation}
-            />
-          ),
-        }}
-      />
-    </Stack.Navigator>
-  );
-}
-
 function HowToStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator initialRouteName="HowTo" mode="card" headerMode="screen">
       <Stack.Screen
         name="HowTo"
         component={HowToScreen}
@@ -434,20 +471,202 @@ function HowToStack() {
   );
 }
 
-function HomeStack() {
+function NewsStack() {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator initialRouteName="News" mode="card" headerMode="screen">
       <Stack.Screen
-        name="Home"
-        component={HomeScreen}
+        name="News"
+        component={NewsScreen}
         options={{
           header: ({ navigation, scene }) => (
             <Header
               search
               tabs
-              title="Home"
-              navigation={navigation}
+              title="News"
               scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function NewsRelationStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="News Relation"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="News Relation"
+        component={NewsRelationScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="News Relation"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function NewsRelationDetailStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="News Realtion Detail"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="News Realtion Detail"
+        component={NewsRelationDetailScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="News Realtion Detail"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function HistoryViewStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="History View"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="History View"
+        component={HistoryViewScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="History View"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function FavoriteViewStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Favorite View"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Favorite View"
+        component={FavoriteViewScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Favorite View"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function ProductAllStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Product All"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Product All"
+        component={ProductAllScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Product All"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function PromotiosnStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Promotions"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Promotions"
+        component={PromotionsScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Promotions"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function ProductToysStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Product Toys"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Product Toys"
+        component={ProductToysScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Product Toys"
+              scene={scene}
+              navigation={navigation}
             />
           ),
         }}
@@ -490,7 +709,7 @@ function MyTabs() {
       />
       <Tab.Screen
         name="Product"
-        component={ProfileStack}
+        component={ProductAllStack}
         style={{ color: "black" }}
         options={{
           tabBarIcon: ({ color, size }) => (
@@ -503,7 +722,7 @@ function MyTabs() {
       />
       <Tab.Screen
         name="News"
-        component={ContactStack}
+        component={NewsRelationStack}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Image
@@ -678,12 +897,12 @@ function OnboardingStack(props) {
           component={NotificationsStack}
           options={{ header: () => null }}
         />
-         <Stack.Screen
+        <Stack.Screen
           name="About Us"
           component={AboutUsStack}
           options={{ header: () => null }}
         />
-          <Stack.Screen
+        <Stack.Screen
           name="News"
           component={NewsStack}
           options={{ header: () => null }}
@@ -693,9 +912,39 @@ function OnboardingStack(props) {
           component={HowToStack}
           options={{ header: () => null }}
         />
-         <Stack.Screen
+        <Stack.Screen
           name="Payment"
           component={PaymentStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="News Relation"
+          component={NewsRelationStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="News Relation Detail"
+          component={NewsRelationDetailStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="History View"
+          component={HistoryViewStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Favorite View"
+          component={FavoriteViewStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Promotions"
+          component={PromotiosnStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Product Toys"
+          component={ProductToysStack}
           options={{ header: () => null }}
         />
       </Stack.Navigator>

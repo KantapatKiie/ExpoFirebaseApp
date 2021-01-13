@@ -53,7 +53,7 @@ function Product(props) {
       >
         {/* Source Image */}
         <TouchableWithoutFeedback>
-          <Block flex >
+          <Block flex>
             <Image source={{ uri: product.image }} style={imageStyles} />
           </Block>
         </TouchableWithoutFeedback>
@@ -65,7 +65,7 @@ function Product(props) {
               muted={!priceColor}
               color={priceColor}
             >
-              {product.price}฿
+              ราคา : ฿{product.price}
             </Text>
           </Block>
         </TouchableOpacity>
@@ -83,27 +83,27 @@ const styles = StyleSheet.create({
     backgroundColor: theme.COLORS.WHITE,
     marginVertical: theme.SIZES.BASE,
     borderWidth: 0,
-    minHeight: 114,
+    minHeight: 120,
   },
   productTitle: {
     flex: 1,
     flexWrap: "wrap",
     paddingBottom: 6,
-    fontSize: 11.5,
+    fontSize: 12,
+    fontFamily: "kanitRegular",
   },
   productPrice: {
     flexWrap: "wrap",
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: 15,
+    fontFamily: "kanitRegular",
   },
   productDescription: {
-    padding: theme.SIZES.BASE / 2,
+    padding: theme.SIZES.BASE / 1.5,
   },
   imageContainer: {
     elevation: 1,
   },
   image: {
-    // marginHorizontal: theme.SIZES.BASE / 1.5,
     borderRadius: 4,
     marginTop: -20,
   },

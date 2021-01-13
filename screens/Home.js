@@ -40,12 +40,11 @@ function Home(props) {
   var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
   var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
   var NEWS_RELEASE = formatTr("NEWS_RELEASE").toString();
-  var WANGDEK_INFO = formatTr("WANGDEK_INFO").toString();
   var READ_MORE = formatTr("READ_MORE").toString();
   //#endregion
 
   useEffect(() => {
-    setModalVisible(true);
+    setModalVisible(false); // Popup Coupon
   }, []);
 
   //Time Everthing
@@ -445,7 +444,7 @@ function Home(props) {
                     </SafeAreaView>
                   </Block>
                   <TouchableOpacity
-                    onPress={() => props.navigation.navigate("Basket")}
+                    onPress={() => props.navigation.navigate("News Relation")}
                     style={{ marginBottom: 15 }}
                   >
                     <Text
