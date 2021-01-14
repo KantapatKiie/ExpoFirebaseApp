@@ -20,6 +20,8 @@ const initialState = {
     PRICE: 0,
     COUNT: 1,
     TOTAL_PRICE: 0,
+
+    FLASHSALE: false
   },
   // listTrProductActivity: [],
   // disabledInput: false,

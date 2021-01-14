@@ -291,8 +291,7 @@ function Contact(props) {
           style={{
             padding: 15,
             paddingTop: 35,
-            paddingBottom: 20,
-            height: 190,
+            height: 180,
           }}
         >
           <Text

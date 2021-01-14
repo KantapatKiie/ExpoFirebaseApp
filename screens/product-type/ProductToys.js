@@ -9,7 +9,7 @@ import {
   ScrollView,
   Dimensions,
 } from "react-native";
-import * as ActionProductToys from "../../actions/action-product-toys/ActionProductToys";
+import * as ActionProduct from "../../actions/action-product/ActionProduct";
 import { Block, Text, theme, Input } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
@@ -19,8 +19,8 @@ import products2 from "../../constants/products2";
 const { height, width } = Dimensions.get("screen");
 
 function ProductToys(props) {
-  const { objProductToys } = useSelector((state) => ({
-    objProductToys: state.actionProductToys.objProductToys,
+  const { objProductActivity } = useSelector((state) => ({
+    objProductActivity: state.actionProduct.objProductActivity,
   }));
 
   useEffect(() => {
@@ -46,37 +46,51 @@ function ProductToys(props) {
     setStateObj(newConcatState);
   };
 
+  const onSelectProduct = (product) => {
+    let newObj = Object.assign({}, objProductActivity);
+    newObj.TITLE = product.title;
+    newObj.IMAGE = product.image;
+    newObj.PRICE = product.price;
+    newObj.DETAIL = product.detail;
+    newObj.TOTAL_PRICE = product.price;
+    newObj.COUNT = 1;
+    newObj.FLASHSALE = false;
+    props.setObjProductActivity(newObj);
+    props.navigation.navigate("Products", { params: product });
+  };
+
   const [numColumns] = useState(2);
   const renderProduct = ({ item }) => {
     return (
       <Block flex style={styles.textContainerBlock1}>
-        <ImageBackground
-          source={{
-            uri: item.image,
-          }}
-          style={styles.imageProduct}
-        >
-        </ImageBackground>
-        <TouchableOpacity onPress={onClickProducts} style={styles.productText}>
-          <Block flex space="between" style={styles.productDescription}>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 13,
-              }}
-            >
-              {item.title}
-            </Text>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 14,
-              }}
-            >
-              ราคา : ฿{item.price}
-            </Text>
+        <TouchableOpacity onPress={() => onSelectProduct(item)}>
+          <ImageBackground
+            source={{
+              uri: item.image,
+            }}
+            style={styles.imageProduct}
+          ></ImageBackground>
+          <Block style={styles.productText}>
+            <Block flex space="between" style={styles.productDescription}>
+              <Text
+                style={{
+                  color: "black",
+                  fontFamily: "kanitRegular",
+                  fontSize: 13,
+                }}
+              >
+                {item.title}
+              </Text>
+              <Text
+                style={{
+                  color: "black",
+                  fontFamily: "kanitRegular",
+                  fontSize: 14,
+                }}
+              >
+                ราคา : ฿{item.price}
+              </Text>
+            </Block>
           </Block>
         </TouchableOpacity>
       </Block>
@@ -110,6 +124,7 @@ function ProductToys(props) {
             </Text>
           </Block>
         </TouchableOpacity>
+        {/* Filter */}
         <Block row style={{ marginLeft: 10 }}>
           <Image
             style={{ width: 35, height: 35, marginTop: 8 }}
@@ -127,9 +142,11 @@ function ProductToys(props) {
             >
               {"ตัวกรอง"}
             </Text>
-            <TouchableOpacity style={{
-                  marginLeft: "67%",
-                }}>
+            <TouchableOpacity
+              style={{
+                marginLeft: "67%",
+              }}
+            >
               <Image
                 style={{
                   width: 34,
@@ -147,6 +164,7 @@ function ProductToys(props) {
           renderItem={renderProduct}
           numColumns={numColumns}
         />
+        {/* Load More */}
         <TouchableOpacity
           onPress={onClickProducts}
           style={{ marginBottom: 15 }}
@@ -165,7 +183,7 @@ function ProductToys(props) {
   );
 }
 
-export default connect(null, ActionProductToys.actions)(ProductToys);
+export default connect(null, ActionProduct.actions)(ProductToys);
 
 const styles = StyleSheet.create({
   container: {
@@ -230,8 +248,8 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     borderWidth: 1.5,
     borderRadius: 1,
-    backgroundColor:"#f0f0f0",
-    borderColor:"#f0f0f0",
-    marginLeft:10
+    backgroundColor: "#f0f0f0",
+    borderColor: "#f0f0f0",
+    marginLeft: 10,
   },
 });

@@ -6,6 +6,7 @@ export default [
     image: 'https://source.unsplash.com/NDPBK-d-03M/840x840',
     price: 180,
     horizontal: true,
+    favorite: true,
   },
   {
     key:"2",
@@ -14,6 +15,7 @@ export default [
     image: 'https://source.unsplash.com/sc5sTPMrVfk/840x840',
     price: 220,
     horizontal: true,
+    favorite: false,
   },
   {
     key:"3",
@@ -22,6 +24,7 @@ export default [
     image: 'https://source.unsplash.com/X92WLoaQ1_o/840x840',
     price: 40,
     horizontal: true,
+    favorite: true,
   },
   {
     key:"4",
@@ -30,6 +33,7 @@ export default [
     image: 'https://source.unsplash.com/ruwO7jEKNbs/840x840',
     price: 188,
     horizontal: true,
+    favorite: true,
   },
   {
     key:"5",
@@ -38,6 +42,7 @@ export default [
     image: 'https://source.unsplash.com/t05q7TZObzc/840x840',
     price: 180,
     horizontal: true,
+    favorite: false,
   },
   {
     key:"6",
@@ -46,6 +51,7 @@ export default [
     image: 'https://source.unsplash.com/o-EmieeOtrs/840x840',
     price: 190,
     horizontal: true,
+    favorite: true,
   },
   {
     key:"7",
@@ -54,6 +60,7 @@ export default [
     image: 'https://source.unsplash.com/jNkdYswZ61o/840x840',
     price: 320,
     horizontal: true,
+    favorite: false,
   },
   {
     key:"8",
@@ -62,6 +69,7 @@ export default [
     image: 'https://source.unsplash.com/LwQEYcsgOMA/840x840',
     price: 240,
     horizontal: true,
+    favorite: false,
   },
   {
     key:"9",
@@ -70,6 +78,7 @@ export default [
     image: 'https://source.unsplash.com/Jk4Q1pFJI2s/840x840',
     price: 280,
     horizontal: true,
+    favorite: true,
   },
   {
     key:"10",
@@ -78,5 +87,6 @@ export default [
     image: 'https://source.unsplash.com/nRkp7M39UhA/840x840',
     price: 210,
     horizontal: true,
+    favorite: false,
   }
 ];

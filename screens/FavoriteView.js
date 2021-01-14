@@ -67,7 +67,7 @@ function FavoriteView(props) {
         >
           <TouchableOpacity onPress={onFavoriteProduct}>
             <Image
-              source={favorite ? require("../assets/iconSignIn/like-icon2.png") : require("../assets/iconSignIn/like-icon1.png")}
+              source={item.favorite ? require("../assets/iconSignIn/like-icon2.png") : require("../assets/iconSignIn/like-icon1.png")}
               style={{ width: 40, height: 40, alignSelf:"flex-end", marginRight:5,marginTop:"58%"}}
             />
             </TouchableOpacity>

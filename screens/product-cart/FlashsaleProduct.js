@@ -14,10 +14,8 @@ import {
   TouchableHighlight,
   ImageBackground,
 } from "react-native";
-import * as ActionFlashsaleProduct from "../../actions/action-flashsale-product/ActionFlashsaleProduct";
+import * as ActionProduct from "../../actions/action-product/ActionProduct";
 import { formatTr } from "../../i18n/I18nProvider";
-import moment from "moment";
-import 'moment-duration-format';
 import { Block, Text } from "galio-framework";
 import WangdekInfo from "../../components/WangdekInfo";
 import { StatusBar } from "expo-status-bar";
@@ -28,8 +26,8 @@ import CountDown from "react-native-countdown-component";
 const { height, width } = Dimensions.get("screen");
 
 function FlashsaleProduct(props) {
-  const { objFlashsaleProductHD } = useSelector((state) => ({
-    objFlashsaleProductHD: state.actionFlashsaleProduct.objFlashsaleProductHD,
+  const { objProductActivity } = useSelector((state) => ({
+    objProductActivity: state.actionProduct.objProductActivity,
   }));
 
   useEffect(() => {
@@ -49,6 +47,13 @@ function FlashsaleProduct(props) {
     );
   };
   const [progressValue ,setProgressValue] = useState(0.65);
+  const onSelectProduct = () => {
+    let newObj = Object.assign({}, objProductActivity);
+    newObj.FLASHSALE = true;
+    props.setObjProductActivity(newObj);
+    props.navigation.navigate("Products");
+    // navigation.navigate("Products", { params: product });
+  };
   const onLoadMoreProduct = () => {
       console.log("load More");
   }
@@ -97,23 +102,23 @@ function FlashsaleProduct(props) {
                         height: 28,
                         alignSelf: "center",
                         marginTop: 20,
-                        marginLeft:20
+                        marginLeft: 20,
                       }}
                     />
                     <Text
-                        style={{
-                          fontFamily: "kanitRegular",
-                          color: "white",
-                          fontSize: 18,
-                          marginLeft: 25,
-                          marginTop: 17,
-                        }}
-                      >
-                        Ends in
-                      </Text>
+                      style={{
+                        fontFamily: "kanitRegular",
+                        color: "white",
+                        fontSize: 18,
+                        marginLeft: 25,
+                        marginTop: 17,
+                      }}
+                    >
+                      Ends in
+                    </Text>
                     {/* CountDownTime */}
                     <Block row>
-                    <Block style={linerStyle.BlockTime}>
+                      <Block style={linerStyle.BlockTime}>
                         <CountDown
                           size={22}
                           until={60000}
@@ -137,18 +142,18 @@ function FlashsaleProduct(props) {
                             fontWeight: "bold",
                           }}
                           timeLabels={{ d: null, h: null, m: null, s: null }}
-                          separatorStyle={{ color: "white", marginBottom:3.5 }}
+                          separatorStyle={{ color: "white", marginBottom: 3.5 }}
                           showSeparator
                           // onFinish={() => alert("Finished")}
                         />
                         <Text style={timeStyle.timeTextArrow}>{">"}</Text>
                       </Block>
-                      
+
                       <Block
                         style={{
                           borderLeftWidth: 1,
                           borderLeftColor: "#e0e0e0",
-                          marginTop:10
+                          marginTop: 10,
                         }}
                       >
                         <Text
@@ -160,7 +165,7 @@ function FlashsaleProduct(props) {
                             borderBottomWidth: 5,
                             borderBottomColor: "yellow",
                             borderRadius: 4,
-                            alignItems:"flex-start"
+                            alignItems: "flex-start",
                           }}
                         >
                           00:00 พรุ่งนี้
@@ -175,77 +180,86 @@ function FlashsaleProduct(props) {
               <>
                 {/* Product List */}
                 <Block flex style={{ backgroundColor: "white", marginTop: 15 }}>
-                  <Block row style={{ margin: 10 }}>
-                    <ImageBackground
-                      source={require("../../assets/images/bg-p.jpg")}
-                      style={{
-                        width: 120,
-                        height: 100,
-                        alignSelf: "center",
-                      }}
-                    >
-                      <Block
+                  <TouchableOpacity  onPress={() => onSelectProduct()}>
+                    <Block row style={{ margin: 10 }}>
+                      <ImageBackground
+                        source={require("../../assets/images/bg-p.jpg")}
                         style={{
-                          backgroundColor: "#ff0000",
-                          width: 40,
-                          height: 37,
-                          alignSelf: "flex-end",
+                          width: 120,
+                          height: 100,
+                          alignSelf: "center",
                         }}
                       >
-                        <Text
+                        <Block
                           style={{
-                            fontFamily: "kanitBold",
-                            color: "white",
-                            fontSize: 12.5,
-                            textAlign: "center",
-                            marginTop: 9,
+                            backgroundColor: "#ff0000",
+                            width: 40,
+                            height: 37,
+                            alignSelf: "flex-end",
                           }}
                         >
-                          -50%
+                          <Text
+                            style={{
+                              fontFamily: "kanitBold",
+                              color: "white",
+                              fontSize: 12.5,
+                              textAlign: "center",
+                              marginTop: 9,
+                            }}
+                          >
+                            -50%
+                          </Text>
+                        </Block>
+                      </ImageBackground>
+                      {/* Detaill */}
+                      <Block flex style={{ marginLeft: 10 }}>
+                        <Text
+                          style={{
+                            fontFamily: "kanitRegular",
+                            color: "black",
+                            fontSize: 15,
+                          }}
+                        >
+                          Enchantimals Starling Startfish
+                        </Text>
+                        <Text
+                          style={{
+                            fontFamily: "kanitRegular",
+                            color: "black",
+                            fontSize: 15,
+                            borderBottomWidth: 1,
+                            marginTop: 5,
+                            borderBottomColor: "#e0e0e0",
+                          }}
+                        >
+                          ราคา : ฿6,990
+                        </Text>
+                        <ProgressBar
+                          progress={progressValue}
+                          color={
+                            progressValue === 1 ? Colors.red800 : "#00b1ba"
+                          }
+                          style={{
+                            borderRadius: 20,
+                            height: 10,
+                            marginTop: 15,
+                          }}
+                        />
+                        <Text
+                          style={{
+                            fontFamily: "kanitRegular",
+                            color: "black",
+                            fontSize: 15,
+                            textAlign: "right",
+                            marginTop: 5,
+                          }}
+                        >
+                          ขายแล้ว 250 ชิ้น
                         </Text>
                       </Block>
-                    </ImageBackground>
-                    {/* Detaill */}
-                    <Block flex style={{ marginLeft: 10 }}>
-                      <Text
-                        style={{
-                          fontFamily: "kanitRegular",
-                          color: "black",
-                          fontSize: 15,
-                        }}
-                      >
-                        Enchantimals Starling Startfish
-                      </Text>
-                      <Text
-                        style={{
-                          fontFamily: "kanitRegular",
-                          color: "black",
-                          fontSize: 15,
-                          borderBottomWidth: 1,
-                          marginTop: 5,
-                          borderBottomColor: "#e0e0e0",
-                        }}
-                      >
-                        ราคา : ฿6,990
-                      </Text>
-                      <ProgressBar
-                        progress={progressValue}
-                        color={progressValue === 1 ? Colors.red800 : "#00b1ba"}
-                        style={{ borderRadius: 20, height: 10, marginTop: 15 }}
-                      />
-                      <Text
-                        style={{
-                          fontFamily: "kanitRegular",
-                          color: "black",
-                          fontSize: 15,
-                          textAlign: "right",
-                          marginTop: 5,
-                        }}
-                      >
-                        ขายแล้ว 250 ชิ้น
-                      </Text>
                     </Block>
-                  </Block>
+                  </TouchableOpacity>
+                  {/* Load More */}
                   <TouchableOpacity onPress={onLoadMoreProduct}>
                     <Block style={{ width: 90, alignSelf: "center" }}>
                       <Text
@@ -282,7 +296,7 @@ function FlashsaleProduct(props) {
   );
 }
 
-export default connect(null, ActionFlashsaleProduct.actions)(FlashsaleProduct);
+export default connect(null, ActionProduct.actions)(FlashsaleProduct);
 
 const styles = StyleSheet.create({
   container: {
@@ -392,15 +406,6 @@ const timeStyle = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 1.5,
     marginTop: 2.5,
-    fontFamily:"kanitRegular"
-  },
-  timeTextBlock: {
-    fontWeight: "bold",
-    fontSize: 22,
-    color: "white",
-    paddingLeft: 3,
-    paddingRight: 3,
-    marginBottom: 7,
     fontFamily:"kanitRegular"
   },
 });

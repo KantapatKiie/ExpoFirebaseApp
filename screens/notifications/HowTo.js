@@ -28,25 +28,27 @@ function HowTo(props) {
       <ScrollView showsVerticalScrollIndicator={false}>
         <Block style={{ backgroundColor: "white" }}>
           {/* Title */}
-          <Block
-            row
-            style={{
-              paddingTop: 20,
-              paddingLeft: 20,
-              paddingBottom: 20,
-              backgroundColor: "white",
-            }}
-          >
-            <Text
+          <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
+            <Block
+              row
               style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
+                paddingTop: 20,
+                paddingLeft: 20,
+                paddingBottom: 20,
+                backgroundColor: "white",
               }}
             >
-              {"<  "}วิธีการสั่งซื้อสินค้า
-            </Text>
-          </Block>
+              <Text
+                style={{
+                  color: "black",
+                  fontFamily: "kanitRegular",
+                  fontSize: 18,
+                }}
+              >
+                {"<  "}วิธีการสั่งซื้อสินค้า
+              </Text>
+            </Block>
+          </TouchableOpacity>
           <Block
             style={{
               width: width,

@@ -14,14 +14,14 @@ import SettingsScreen from "../screens/Settings";
 import SignInScreen from "../screens/auth/SignIn";
 import SignUpScreen from "../screens/auth/SignUp";
 import EditProfileScreen from "../screens/auth/EditProfile";
-import ProductsScreen from "../screens/product-cart/ProductScreen";
+import ProductsScreen from "../screens/product-cart/ProductDetail";
 import CartScreen from "../screens/product-cart/CartScreen";
 import PaymentScreen from "../screens/payment/PaymentScreen";
 import PaymentNotifications from "../screens/payment/PaymentNotifications";
 import ContactScreen from "../screens/about/Contact";
 import ForgetPasswordScreen from "../screens/auth/ForgetPassword";
 import ChangePasswordScreen from "../screens/auth/ChangePassword";
-import FlashsaleProductScreen from "../screens/notifications/FlashsaleProduct";
+import FlashsaleProductScreen from "../screens/product-cart/FlashsaleProduct";
 import HistoryViewScreen from "../screens/HistoryView";
 import FavoriteViewScreen from "../screens/FavoriteView";
 import ProductAllScreen from "../screens/product-cart/ProductAll";
@@ -35,6 +35,7 @@ import NewsScreen from "../screens/notifications/News";
 import AboutUsScreen from "../screens/about/AboutUs";
 import NewsRelationScreen from "../screens/notifications/NewsRelation";
 import NewsRelationDetailScreen from "../screens/notifications/NewsRelationDetail";
+import MyCouponScreen from "../screens/coupon/MyCoupon";
 
 //SET FIREBASE-CONFIG
 const firebaseConfig = {
@@ -675,6 +676,32 @@ function ProductToysStack() {
   );
 }
 
+function MyCouponStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="My Coupo"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="My Coupon"
+        component={MyCouponScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="My Coupo"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 function MyTabs() {
   return (
     <Tab.Navigator
@@ -945,6 +972,11 @@ function OnboardingStack(props) {
         <Stack.Screen
           name="Product Toys"
           component={ProductToysStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="My Coupon"
+          component={MyCouponStack}
           options={{ header: () => null }}
         />
       </Stack.Navigator>
