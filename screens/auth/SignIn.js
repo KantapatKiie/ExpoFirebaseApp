@@ -599,7 +599,7 @@ function SignIn(props) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ paddingLeft: "15%" }}
-                  onPress={() => props.navigation.navigate("Coupon View")}
+                  onPress={() => props.navigation.navigate("My Coupon")}
                 >
                   <Image
                     source={require("../../assets/iconSignIn/coupon-icon.png")}

@@ -26,25 +26,27 @@ function AboutUs(props) {
       <ScrollView showsVerticalScrollIndicator={false}>
         <Block style={{ backgroundColor: "white" }}>
           {/* Title */}
-          <Block
-            row
-            style={{
-              paddingTop: 20,
-              paddingLeft: 20,
-              paddingBottom: 20,
-              backgroundColor: "white",
-            }}
-          >
-            <Text
+          <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
+            <Block
+              row
               style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
+                paddingTop: 20,
+                paddingLeft: 20,
+                paddingBottom: 20,
+                backgroundColor: "white",
               }}
             >
-              {"<  "}เกี่ยวกับเรา
-            </Text>
-          </Block>
+              <Text
+                style={{
+                  color: "black",
+                  fontFamily: "kanitRegular",
+                  fontSize: 18,
+                }}
+              >
+                {"<  "}เกี่ยวกับเรา
+              </Text>
+            </Block>
+          </TouchableOpacity>
           <Block style={{ marginLeft: 20 }}>
             <Image
               source={require("../../assets/images/logo.png")}

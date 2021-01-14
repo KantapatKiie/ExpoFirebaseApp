@@ -18,7 +18,7 @@ import * as actionFavoriteView from "../actions/action-favorite-view/ActionFavor
 import * as actionPromotions from "../actions/action-promotions/ActionPromotions";
 import * as actionProductAll from "../actions/action-product-all/ActionProductAll";
 import * as actionProductToys from "../actions/action-product-toys/ActionProductToys";
-
+import * as actionMyCoupon from "../actions/action-my-coupon/ActionMyCoupon";
 import * as i18n from "./ducks/i18n";
 
 export const rootReducer = combineReducers({
@@ -41,6 +41,7 @@ export const rootReducer = combineReducers({
   actionPromotions: actionPromotions.reducer,
   actionProductAll: actionProductAll.reducer,
   actionProductToys: actionProductToys.reducer,
+  actionMyCoupon: actionMyCoupon.reducer,
 });
 
 export function* rootSaga() {

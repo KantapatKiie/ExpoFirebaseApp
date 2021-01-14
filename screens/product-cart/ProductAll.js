@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { connect, useSelector } from "react-redux";
 import {
-  FlatList,
   Image,
-  ImageBackground,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
@@ -14,7 +12,7 @@ import { Block, Text, theme } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
 import products from "../../constants/products";
-import { Product } from "../../components/";
+import { Product } from "../../components";
 
 const { height, width } = Dimensions.get("screen");
 

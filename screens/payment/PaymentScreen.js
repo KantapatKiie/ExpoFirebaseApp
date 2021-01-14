@@ -45,6 +45,7 @@ function PaymentScreen(props) {
         showsVerticalScrollIndicator={false}
       >
         {/* Title */}
+        <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
         <Block
           row
           style={{
@@ -65,6 +66,7 @@ function PaymentScreen(props) {
             {"<  "}ชำระเงิน
           </Text>
         </Block>
+        </TouchableOpacity>
         <Block style={styles.blockStyle}>
           <Text
             style={{

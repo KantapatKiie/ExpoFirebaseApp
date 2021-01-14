@@ -40,6 +40,7 @@ function Product(props) {
     newObj.DETAIL = product.detail;
     newObj.TOTAL_PRICE = product.price;
     newObj.COUNT = 1;
+    newObj.FLASHSALE = false;
     props.setObjProductActivity(newObj);
   };
 
