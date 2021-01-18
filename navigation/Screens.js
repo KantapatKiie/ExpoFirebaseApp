@@ -23,9 +23,12 @@ import ForgetPasswordScreen from "../screens/auth/ForgetPassword";
 import ChangePasswordScreen from "../screens/auth/ChangePassword";
 import FlashsaleProductScreen from "../screens/product-cart/FlashsaleProduct";
 import HistoryViewScreen from "../screens/HistoryView";
+import HistoryOrderScreen from "../screens/order-status/HistoryOrder";
 import FavoriteViewScreen from "../screens/FavoriteView";
 import ProductAllScreen from "../screens/product-cart/ProductAll";
 import PromotionsScreen from "../screens/notifications/Promotions";
+import FilterSearchScreen from "../screens/filter-search/FilterSearch";
+import OrderStatusScreen from "../screens/order-status/OrderStatus";
 // Product-Type
 import ProductToysScreen from "../screens/product-type/ProductToys";
 // Etc //
@@ -572,6 +575,58 @@ function HistoryViewStack() {
   );
 }
 
+function HistoryOrderStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="History Order"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="History Order"
+        component={HistoryOrderScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="History Order"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function OrderStatusStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Order Status"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Order Status"
+        component={OrderStatusScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Order Status"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 function FavoriteViewStack() {
   return (
     <Stack.Navigator
@@ -692,6 +747,32 @@ function MyCouponStack() {
               search
               tabs
               title="My Coupo"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function FilterSearchStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Filter Search"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Filter Search"
+        component={FilterSearchScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Filter Search"
               scene={scene}
               navigation={navigation}
             />
@@ -960,6 +1041,11 @@ function OnboardingStack(props) {
           options={{ header: () => null }}
         />
         <Stack.Screen
+          name="History Order"
+          component={HistoryOrderStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
           name="Favorite View"
           component={FavoriteViewStack}
           options={{ header: () => null }}
@@ -977,6 +1063,16 @@ function OnboardingStack(props) {
         <Stack.Screen
           name="My Coupon"
           component={MyCouponStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Filter Search"
+          component={FilterSearchStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Order Status"
+          component={OrderStatusStack}
           options={{ header: () => null }}
         />
       </Stack.Navigator>

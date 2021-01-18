@@ -97,16 +97,10 @@ function MyCoupon(props) {
                   source={require("../../assets/images/coupon/coupon-1.png")}
                   style={{ height: 120, width: width - 160, marginTop: 15 }}
                 />
-                <Image
-                  source={require("../../assets/images/coupon/coupon-2.png")}
-                  style={{ height: 120, width: width - 160, marginTop: 15 }}
-                />
+              </TouchableOpacity>
+              <TouchableOpacity>
                 <Image
                   source={require("../../assets/images/coupon/coupon-1.png")}
-                  style={{ height: 120, width: width - 160, marginTop: 15 }}
-                />
-                <Image
-                  source={require("../../assets/images/coupon/coupon-2.png")}
                   style={{ height: 120, width: width - 160, marginTop: 15 }}
                 />
               </TouchableOpacity>
@@ -130,14 +124,8 @@ function MyCoupon(props) {
                   source={require("../../assets/images/coupon/coupon2.png")}
                   style={{ height: 120, width: width - 160, marginTop: 15 }}
                 />
-                <Image
-                  source={require("../../assets/images/coupon/coupon2.png")}
-                  style={{ height: 120, width: width - 160, marginTop: 15 }}
-                />
-                <Image
-                  source={require("../../assets/images/coupon/coupon2.png")}
-                  style={{ height: 120, width: width - 160, marginTop: 15 }}
-                />
+              </TouchableOpacity>
+              <TouchableOpacity>
                 <Image
                   source={require("../../assets/images/coupon/coupon2.png")}
                   style={{ height: 120, width: width - 160, marginTop: 15 }}

@@ -630,7 +630,7 @@ function SignIn(props) {
               <Block row style={{ paddingTop: 25 }}>
                 <TouchableOpacity
                   style={{ paddingLeft: "5%" }}
-                  onPress={() => props.navigation.navigate("History Order View")}
+                  onPress={() => props.navigation.navigate("History Order")}
                 >
                   <Image
                     source={require("../../assets/iconSignIn/history1-icon.png")}
@@ -654,7 +654,7 @@ function SignIn(props) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ paddingLeft: "15%" }}
-                  onPress={() => props.navigation.navigate("History View")}
+                  onPress={() => props.navigation.navigate("History Order")}
                 >
                   <Image
                     source={require("../../assets/iconSignIn/history2-icon.png")}
