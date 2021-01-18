@@ -8,7 +8,7 @@ import { Block, Text, theme, Icon } from "galio-framework";
 import { connect } from "react-redux";
 import * as i18n from "../store/ducks/i18n";
 import DropDownPicker from "react-native-dropdown-picker";
-// import { formatTr } from "../i18n/I18nProvider";
+import { formatTr } from "../i18n/I18nProvider";
 
 const { width } = Dimensions.get("screen");
 

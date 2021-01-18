@@ -24,7 +24,7 @@ const { height, width } = Dimensions.get("window");
 // const iPhoneX = () =>
 //   Platform.OS === "ios" &&
 //   (height === 812 || width === 812 || height === 896 || width === 896);
-const ModalNotification = ({ isWhite, style }) => {
+const ModalNotification = ({ style }) => {
   const [modalVisible, setModalVisible] = useState(false);
   return (
     <>
@@ -63,7 +63,7 @@ const ModalNotification = ({ isWhite, style }) => {
     </>
   );
 };
-const ModalSearch = ({ isWhite, style }) => {
+const ModalSearch = ({ style, navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   return (
     <>
@@ -92,9 +92,7 @@ const ModalSearch = ({ isWhite, style }) => {
 
       <TouchableOpacity
         style={[styles.button, style]}
-        onPress={() => {
-          setModalVisible(true);
-        }}
+        onPress={() => navigation.navigate("Filter Search")}
       >
         <Icons name="search" color={"#383838"} size={20} />
         <Block middle style={styles.notify} />
@@ -102,7 +100,7 @@ const ModalSearch = ({ isWhite, style }) => {
     </>
   );
 };
-const ModalMessage = ({ isWhite, style }) => {
+const ModalMessage = ({ style }) => {
   const [modalVisible, setModalVisible] = useState(false);
   return (
     <>
@@ -141,7 +139,7 @@ const ModalMessage = ({ isWhite, style }) => {
     </>
   );
 };
-const BasketButton = ({ isWhite, style, navigation }) => {
+const BasketButton = ({ style, navigation }) => {
   return (
     <>
       <TouchableOpacity
@@ -149,7 +147,10 @@ const BasketButton = ({ isWhite, style, navigation }) => {
         onPress={() => navigation.navigate("Cart")}
       >
         {/* <Icons name="shopping_cart" color={"black"} size={20} /> */}
-        <Image source={require("../assets/icons/cart.png")} style={{width:20, height:20}}/>
+        <Image
+          source={require("../assets/icons/cart.png")}
+          style={{ width: 20, height: 20 }}
+        />
         <Block middle style={styles.notify} />
       </TouchableOpacity>
     </>
@@ -164,11 +165,13 @@ function Header(props) {
   const renderLogo = () => {
     return (
       <Block flex center>
-        <TouchableOpacity onPress={() => props.navigation.navigate("Flash Sale")}>
-        <Image
-          source={require("../assets/images/logo.png")}
-          style={{ height: 50, width: 100 }}
-        />
+        <TouchableOpacity
+          onPress={() => props.navigation.navigate("Flash Sale")}
+        >
+          <Image
+            source={require("../assets/images/logo.png")}
+            style={{ height: 50, width: 100 }}
+          />
         </TouchableOpacity>
       </Block>
     );
@@ -290,7 +293,7 @@ function Header(props) {
             isWhite={white}
           />,
         ];
-        case "Sign In":
+      case "Sign In":
         return [
           <ModalNotification
             key="chat-search"
@@ -303,6 +306,46 @@ function Header(props) {
             isWhite={white}
           />,
         ];
+      case "Filter Search":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+        case "History View":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+        case "History Order":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+
       default:
         break;
     }
@@ -425,6 +468,45 @@ function Header(props) {
           />,
         ];
       case "Sign In":
+        return [
+          <ModalMessage
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Filter Search":
+        return [
+          <ModalMessage
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+        case "History View":
+        return [
+          <ModalMessage
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+        case "History Order":
         return [
           <ModalMessage
             key="chat-search"

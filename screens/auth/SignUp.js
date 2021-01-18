@@ -1123,7 +1123,7 @@ function SignUp(props) {
             />
           </Block>
         </Block>
-        {/* Info */}
+        
         <WangdekInfo />
       </ScrollView>
       <ModalLoading loading={loading} />
