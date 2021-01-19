@@ -3,17 +3,17 @@ import AsyncStorage from "react-native";
 import moment from "moment";
 
 const actionTypes = {
-  setObjCartBasketins: "OBJ_CART_BASKET_HD",
-  clearObjCartBasket: "CLEAR_OBJ_CART_BASKET",
+  setObjCartScreenins: "OBJ_CART_BASKET_HD",
+  clearObjCartScreen: "CLEAR_OBJ_CART_BASKET",
   setDisabledInput: "SET_DISABLED_INPUT_CART_BASKET",
-  pushListTrCartBasket: "PUSH_LIST_TR_CART_BASKET",
-  setListTrCartBasket: "SET_LIST_TR_CART_BASKET",
-  removeListTrCartBasket: "REMOVE_LIST_TR_CART_BASKET",
+  pushListTrCartScreen: "PUSH_LIST_TR_CART_BASKET",
+  setListTrCartScreen: "SET_LIST_TR_CART_BASKET",
+  removeListTrCartScreen: "REMOVE_LIST_TR_CART_BASKET",
   setEditable: "SET_EDITABLE_CART_BASKET"
 };
 
 const initialState = {
-  objCartBasket: {
+  objCartScreen: {
     CART_ID: "CRTID001",
     TITLE: "",
     DETAIL: "",
@@ -23,24 +23,24 @@ const initialState = {
     TOTAL_PRICE: 0,
     INSERT_DT: moment(new Date()).format("YYYY-MM-DDT00:00:00"),
   },
-  listTrCartBasket: [],
+  listTrCartScreen: [],
   disabledInput: false,
   editable: false,
 };
 
 export const reducer = persistReducer(
-  { storage: AsyncStorage, key: "cartBasket" },
+  { storage: AsyncStorage, key: "CartScreen" },
   (state = initialState, action) => {
     switch (action.type) {
-      case actionTypes.setObjCartBasketins: {
+      case actionTypes.setObjCartScreenins: {
         return {
           ...state,
-          objCartBasket: action.payload.obj,
+          objCartScreen: action.payload.obj,
           editable: false
         };
       }
 
-      case actionTypes.clearObjCartBasket: {
+      case actionTypes.clearObjCartScreen: {
         return initialState;
       }
 
@@ -48,15 +48,15 @@ export const reducer = persistReducer(
         return { ...state, disabledInput: action.payload.bool };
       }
 
-      case actionTypes.pushListTrCartBasket: {
+      case actionTypes.pushListTrCartScreen: {
         return {
           ...state,
-          listTrCartBasket: [...state.listTrCartBasket, action.payload.obj]
+          listTrCartScreen: [...state.listTrCartScreen, action.payload.obj]
         };
       }
 
-      case actionTypes.setListTrCartBasket: {
-        return { ...state, listTrCartBasket: action.payload.obj };
+      case actionTypes.setListTrCartScreen: {
+        return { ...state, listTrCartScreen: action.payload.obj };
       }
 
       case actionTypes.setEditable: {
@@ -70,23 +70,23 @@ export const reducer = persistReducer(
 );
 
 export const actions = {
-  setObjCartBasket: obj => ({
-    type: actionTypes.setObjCartBasketins,
+  setObjCartScreen: obj => ({
+    type: actionTypes.setObjCartScreenins,
     payload: { obj }
   }),
 
-  clearObjCartBasket: () => ({ type: actionTypes.clearObjCartBasket }),
+  clearObjCartScreen: () => ({ type: actionTypes.clearObjCartScreen }),
 
   setDisabledInput: bool => ({
     type: actionTypes.setDisabledInput,
     payload: { bool }
   }),
-  pushListTrCartBasket: obj => ({
-    type: actionTypes.pushListTrCartBasket,
+  pushListTrCartScreen: obj => ({
+    type: actionTypes.pushListTrCartScreen,
     payload: { obj }
   }),
-  setListTrCartBasket: obj => ({
-    type: actionTypes.setListTrCartBasket,
+  setListTrCartScreen: obj => ({
+    type: actionTypes.setListTrCartScreen,
     payload: { obj }
   }),
 

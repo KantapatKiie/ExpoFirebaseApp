@@ -29,6 +29,11 @@ import ProductAllScreen from "../screens/product-cart/ProductAll";
 import PromotionsScreen from "../screens/notifications/Promotions";
 import FilterSearchScreen from "../screens/filter-search/FilterSearch";
 import OrderStatusScreen from "../screens/order-status/OrderStatus";
+//Order Screen & Notification-order
+import OrderScreen from "../screens/product-cart/OrderScreen";
+import UseCouponScreen from "../screens/product-cart/notification-order-screen/UseCoupon";
+import UseDeliveryScreen from "../screens/product-cart/notification-order-screen/UseDelivery";
+import UseAddressDeliveryScreen from "../screens/product-cart/notification-order-screen/UseAddressDelivery";
 // Product-Type
 import ProductToysScreen from "../screens/product-type/ProductToys";
 // Etc //
@@ -783,6 +788,108 @@ function FilterSearchStack() {
   );
 }
 
+//Order Screen
+function OrderScreenStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Order Screen"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Order Screen"
+        component={OrderScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Order Screen"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+function UseCouponStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Use Coupon"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Use Coupon"
+        component={UseCouponScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Use Coupon"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+function UseDeliveryStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Use Delivery"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Use Delivery"
+        component={UseDeliveryScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Use Delivery"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+function UseAddressDeliveryStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Use Address Delivery"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Use Address Delivery"
+        component={UseAddressDeliveryScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Use Address Delivery"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 function MyTabs() {
   return (
     <Tab.Navigator
@@ -1073,6 +1180,26 @@ function OnboardingStack(props) {
         <Stack.Screen
           name="Order Status"
           component={OrderStatusStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Order Screen"
+          component={OrderScreenStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Use Coupon"
+          component={UseCouponStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Use Delivery"
+          component={UseDeliveryStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Use Address Delivery"
+          component={UseAddressDeliveryStack}
           options={{ header: () => null }}
         />
       </Stack.Navigator>

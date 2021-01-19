@@ -8,49 +8,44 @@ import {
   TouchableOpacity,
   Dimensions,
   ScrollView,
-  ToastAndroid,
 } from "react-native";
+import axios from "axios";
 import moment from "moment";
+import * as ActionSignUp from "../../actions/action-actives/ActionSignUp";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import ModalLoading from "../../components/ModalLoading";
-import * as auth from "../../store/ducks/auth.duck";
 import { createAccount } from "../../store/mock/mock";
-import { signup } from "../../store/crud/auth.crud";
 import { Block, Input } from "galio-framework";
 import WangdekInfo from "../../components/WangdekInfo";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { RadioButton } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
-import { Button } from "react-native-elements";
-import { CheckBox } from "react-native-elements";
+import { Button, CheckBox } from "react-native-elements";
+// import { signup } from "../../store/crud/auth.crud";
+// import * as auth from "../../store/ducks/auth.duck";
 
 const { height, width } = Dimensions.get("screen");
 
 function SignUp(props) {
-  useEffect(() => {}, []);
+  const { objSignUpHD } = useSelector((state) => ({
+    objSignUpHD: state.actionSignUp.objSignUpHD,
+  }));
+
+  useEffect(() => {
+    props.clearObjSignUp();
+    getProvinces();
+  }, []);
 
   const [loading, setLoading] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
-  const [stateObj, setStateObj] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password1: "",
-    password2: "",
-    phone: "",
-    birth_date: moment(new Date()).format("DD/MM/YYYY"),
-    postCode: "",
-    postCodeOrder: "",
-    phoneOrder: "",
-  });
+  const [isConfirm, setConfirm] = useState(false);
 
   // #1
   const [visiblePass1, setVisiblePass1] = useState(true);
   const [visiblePass2, setVisiblePass2] = useState(true);
-  const onChangePassword1 = (e) => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.password = e;
-    setStateObj(newObj);
+  const onChangePassword1 = (value) => {
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.PASSWORD_1 = value;
+    props.setObjSignUp(newObj);
   };
   const changeVisiblePassword1 = () => {
     if (visiblePass1 === false) {
@@ -59,10 +54,10 @@ function SignUp(props) {
       setVisiblePass1(false);
     }
   };
-  const onChangePassword2 = (e) => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.password2 = e;
-    setStateObj(newObj);
+  const onChangePassword2 = (value) => {
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.PASSWORD_2 = value;
+    props.setObjSignUp(newObj);
   };
   const changeVisiblePassword2 = () => {
     if (visiblePass2 === false) {
@@ -74,28 +69,28 @@ function SignUp(props) {
 
   // #2
   const onChangeFirstName = (e) => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.firstName = e;
-    setStateObj(newObj);
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.FIRST_NAME = e;
+    props.setObjSignUp(newObj);
   };
   const onChangeLastName = (e) => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.lastName = e;
-    setStateObj(newObj);
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.LAST_NAME = e;
+    props.setObjSignUp(newObj);
   };
   const onChangePhone = (e) => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.phone = e;
-    setStateObj(newObj);
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.PHONE_NUMBER = e;
+    props.setObjSignUp(newObj);
   };
   const onChangeEmail = (e) => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.email = e;
-    setStateObj(newObj);
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.EMAIL = e;
+    props.setObjSignUp(newObj);
   };
 
   //Gender
-  const [checked, setChecked] = useState("male");
+  const [checkedGender, setCheckedGender] = useState("Male");
   //MailBox
   const [checkedMail, setCheckedMail] = useState("yesMail");
   //DatePicker
@@ -107,97 +102,241 @@ function SignUp(props) {
     setDatePickerVisibility(false);
   };
   const handleConfirm = (date) => {
-    let newObj = Object.assign({}, stateObj);
+    let newObj = Object.assign({}, objSignUpHD);
     if (date === null) {
       newObj.birth_date = moment(new Date()).format();
     } else {
       newObj.birth_date = moment(date).format("DD/MM/YYYY");
     }
-    setStateObj(newObj);
+    setobjSignUpHD(newObj);
     hideDatePicker();
   };
 
-  // #3
-  const onChangeAdress = () => {};
-  const [tumbol, setTumbol] = useState();
-  const [aumper, setAumper] = useState();
-  const [province, setProvince] = useState();
   const itemTumbol = [
     {
       label: "USA",
       value: "usa",
       hidden: true,
     },
-    {
-      label: "UK",
-      value: "uk",
-    },
   ];
-  const onChangeTumbol = (item) => {
-    setTumbol(item);
+
+  // #3
+  const [province, setProvince] = useState([
+    {
+      label: objSignUpHD.PROVINCE_NAME,
+      value: objSignUpHD.PROVINCE_CODE,
+    },
+  ]);
+  const [district, setDistrict] = useState([
+    {
+      label: objSignUpHD.DISTRICT_NAME,
+      value: objSignUpHD.DISTRICT_CODE,
+    },
+  ]);
+  const [subDistrict, setSubDistrict] = useState([
+    {
+      label: objSignUpHD.SUB_DISTRICT_NAME,
+      value: objSignUpHD.SUB_DISTRICT_CODE,
+    },
+  ]);
+  const getProvinces = async () => {
+    await axios
+      .get("http://wangdek.am2bmarketing.co.th/api/v1/provinces")
+      .then(function (response) {
+        let newlstBin = response.data.data.map(function (item) {
+          item.label = item.name_th;
+          item.value = item.id;
+          return item;
+        });
+        if (newlstBin !== null || newlstBin !== "") {
+          setProvince(newlstBin);
+          setProvinceOrder(newlstBin);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
-  const onChangeAumper = (item) => {
-    setAumper(item);
+  const onChangeAdress = (value) => {
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.ADDRESS_NAME = value;
+    props.setObjSignUp(newObj);
   };
   const onChangeProvince = (item) => {
-    setProvince(item);
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.PROVINCE_CODE = item.value;
+    newObj.PROVINCE_NAME = item.label;
+    props.setObjSignUp(newObj);
+    if (item.value !== null) {
+      axios
+        .get("http://wangdek.am2bmarketing.co.th/api/v1/districts", {
+          params: {
+            province_id: item.id,
+          },
+        })
+        .then(function (response) {
+          let newlstBin = response.data.data.map(function (item) {
+            item.label = item.name_th;
+            item.value = item.id;
+            return item;
+          });
+          setDistrict(newlstBin);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   };
-  const onChangePostCode = () => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.postCode = e;
-    setStateObj(newObj);
+  const onChangeDistrict = (item) => {
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.DISTRICT_CODE = item.value;
+    newObj.DISTRICT_NAME = item.label;
+    props.setObjSignUp(newObj);
+    if (item !== null) {
+      axios
+        .get("http://wangdek.am2bmarketing.co.th/api/v1/sub_districts", {
+          params: {
+            district_id: item.id,
+          },
+        })
+        .then(function (response) {
+          let newlstBin = response.data.data.map(function (item) {
+            item.label = item.name_th;
+            item.value = item.id;
+            return item;
+          });
+          setSubDistrict(newlstBin);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+  };
+  const onChangeSubDistrict = (item) => {
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.SUB_DISTRICT_CODE = item.value;
+    newObj.SUB_DISTRICT_NAME = item.label;
+    newObj.ZIP_CODE = item.zip_code.toString();
+    props.setObjSignUp(newObj);
   };
 
   // #4
-  const onChangeAdressOrder = () => {};
-  const [tumbolOrder, setTumbolOrder] = useState();
-  const [aumperOrder, setAumperOrder] = useState();
-  const [provinceOrder, setProvinceOrder] = useState();
-
-  const onChangeTumbolOrder = (item) => {
-    setTumbolOrder(item);
-  };
-  const onChangeAumperOrder = (item) => {
-    setAumperOrder(item);
+  const [provinceOrder, setProvinceOrder] = useState([
+    {
+      label: objSignUpHD.PROVINCE_NAME_ORDER,
+      value: objSignUpHD.PROVINCE_CODE_ORDER,
+    },
+  ]);
+  const [districtOrder, setDistrictOrder] = useState([
+    {
+      label: objSignUpHD.DISTRICT_NAME_ORDER,
+      value: objSignUpHD.DISTRICT_CODE_ORDER,
+    },
+  ]);
+  const [subDistrictOrder, setSubDistrictOrder] = useState([
+    {
+      label: objSignUpHD.SUB_DISTRICT_NAME_ORDER,
+      value: objSignUpHD.SUB_DISTRICT_CODE_ORDER,
+    },
+  ]);
+  const onChangeAdressOrder = (e) => {
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.ADDRESS_NAME_ORDER = e;
+    props.setObjSignUp(newObj);
   };
   const onChangeProvinceOrder = (item) => {
-    setProvinceOrder(item);
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.PROVINCE_CODE_ORDER = item.value;
+    newObj.PROVINCE_NAME_ORDER = item.label;
+    props.setObjSignUp(newObj);
+    if (item.value !== null) {
+      axios
+        .get("http://wangdek.am2bmarketing.co.th/api/v1/districts", {
+          params: {
+            province_id: item.id,
+          },
+        })
+        .then(function (response) {
+          let newlstBin = response.data.data.map(function (item) {
+            item.label = item.name_th;
+            item.value = item.id;
+            return item;
+          });
+          setDistrictOrder(newlstBin);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   };
-  const onChangePostCodeOrder = () => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.postCodeOrder = e;
-    setStateObj(newObj);
+  const onChangeDistrictOrder = (item) => {
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.DISTRICT_CODE_ORDER = item.value;
+    newObj.DISTRICT_NAME_ORDER = item.label;
+    props.setObjSignUp(newObj);
+    if (item !== null) {
+      axios
+        .get("http://wangdek.am2bmarketing.co.th/api/v1/sub_districts", {
+          params: {
+            district_id: item.id,
+          },
+        })
+        .then(function (response) {
+          let newlstBin = response.data.data.map(function (item) {
+            item.label = item.name_th;
+            item.value = item.id;
+            return item;
+          });
+          setSubDistrictOrder(newlstBin);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   };
-  const onChangePhoneOrder = () => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.phoneOrder = e;
-    setStateObj(newObj);
+  const onChangeSubDistrictOrder = (item) => {
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.SUB_DISTRICT_CODE_ORDER = item.value;
+    newObj.SUB_DISTRICT_NAME_ORDER = item.label;
+    newObj.ZIP_CODE_ORDER = item.zip_code.toString();
+    props.setObjSignUp(newObj);
+  };
+  const onChangePhoneOrder = (e) => {
+    let newObj = Object.assign({}, objSignUpHD);
+    newObj.PHONE_NUMBER_ORDER = e;
+    props.setObjSignUp(newObj);
   };
 
-  // Signup
+  // SignUp
+  const onClearObjSignup = () => {
+    props.clearObjSignUp();
+  }
   const onClickSignUp = () => {
     setLoading(true);
     if (
-      stateObj.firstName !== "" &&
-      stateObj.lastName !== "" &&
-      stateObj.password !== "" &&
-      stateObj.password2 !== "" &&
-      stateObj.email !== ""
+      objSignUpHD.EMAIL !== "" 
+      // objSignUpHD.FIRST_NAME !== "" &&
+      // objSignUpHD.LAST_NAME !== "" &&
+      // objSignUpHD.PASSWORD_1 !== "" &&
+      // objSignUpHD.PASSWORD_2 !== "" &&
+      // objSignUpHD.ADDRESS_NAME !== "" &&
+      // objSignUpHD.PROVINCE_CODE !== "" &&
+      // objSignUpHD.DISTRICT_CODE !== "" &&
+      // objSignUpHD.PROVINCE_CODE_ORDER !== "" &&
+      // objSignUpHD.DISTRICT_CODE_ORDER !== "" &&
+      // objSignUpHD.SUB_DISTRICT_CODE !== "" &&
+      // objSignUpHD.SUB_DISTRICT_CODE_ORDER !== ""
     ) {
       createAccount("firstName", "lastName", "test@test.ca", "12345")
         .then((val) => {
           console.log(val);
           setLoading(false);
-          props.navigation.navigate("Sign In");
+          // props.navigation.navigate("Sign In");
         })
         .catch((err) => console.log("error:", err.message));
     } else {
       setLoading(false);
     }
-  };
-
-  const showToast = () => {
-    ToastAndroid.show("Test ToastAndriod React Native !", ToastAndroid.SHORT);
   };
 
   return (
@@ -248,6 +387,7 @@ function SignUp(props) {
               ข้อมูลบัญชี
             </Text>
           </Block>
+          {/* User */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -263,10 +403,11 @@ function SignUp(props) {
           <Block style={styles.inputView}>
             <TextInput
               style={styles.inputText}
-              placeholder={"กรอกชื่อบัญชี"}
+              placeholder={"example@email.com"}
               placeholderTextColor="#808080"
-              value={stateObj.email}
+              value={objSignUpHD.EMAIL}
               onChangeText={onChangeEmail}
+              keyboardType="email-address"
             />
           </Block>
           {/* Password1 */}
@@ -295,8 +436,8 @@ function SignUp(props) {
               style={styles.inputTextPassword}
               placeholder="กรอกรหัสผ่าน"
               placeholderTextColor="#808080"
-              value={stateObj.password}
-              onChangeText={onChangePassword1}
+              value={objSignUpHD.PASSWORD_1}
+              onChangeText={(value) => onChangePassword1(value)}
               secureTextEntry={visiblePass1}
             />
             <TouchableOpacity
@@ -353,8 +494,8 @@ function SignUp(props) {
               style={styles.inputTextPassword}
               placeholder="กรอกรหัสผ่าน"
               placeholderTextColor="#808080"
-              value={stateObj.password2}
-              onChangeText={onChangePassword2}
+              value={objSignUpHD.PASSWORD_2}
+              onChangeText={(value) => onChangePassword2(value)}
               secureTextEntry={visiblePass2}
             />
             <TouchableOpacity
@@ -411,6 +552,7 @@ function SignUp(props) {
               ข้อมูลส่วนบุคคล
             </Text>
           </Block>
+          {/* First Name */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -428,10 +570,11 @@ function SignUp(props) {
               style={styles.inputText}
               placeholder={""}
               placeholderTextColor="#808080"
-              value={stateObj.firstName}
+              value={objSignUpHD.FIRST_NAME}
               onChangeText={onChangeFirstName}
             />
           </Block>
+          {/* Last Name */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -449,10 +592,11 @@ function SignUp(props) {
               style={styles.inputText}
               placeholder={""}
               placeholderTextColor="#808080"
-              value={stateObj.lastName}
+              value={objSignUpHD.LAST_NAME}
               onChangeText={onChangeLastName}
             />
           </Block>
+          {/* Gender */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -469,8 +613,8 @@ function SignUp(props) {
             <Block row>
               <RadioButton
                 value="male"
-                status={checked === "male" ? "checked" : "unchecked"}
-                onPress={() => setChecked("male")}
+                status={checkedGender === "Male" ? "checked" : "unchecked"}
+                onPress={() => setCheckedGender("Male")}
               />
               <Text
                 style={{
@@ -485,9 +629,9 @@ function SignUp(props) {
             </Block>
             <Block row style={{ marginLeft: 50 }}>
               <RadioButton
-                value="female"
-                status={checked === "female" ? "checked" : "unchecked"}
-                onPress={() => setChecked("female")}
+                value="Female"
+                status={checkedGender === "Female" ? "checked" : "unchecked"}
+                onPress={() => setCheckedGender("Female")}
               />
               <Text
                 style={{
@@ -518,7 +662,7 @@ function SignUp(props) {
               right
               color="black"
               style={styles.search}
-              value={stateObj.birth_date}
+              value={objSignUpHD.BIRTH_DATE}
               iconContent={
                 <TouchableOpacity onPress={showDatePicker}>
                   <Icons name="calendar-range" size={20} color="black" />
@@ -532,6 +676,7 @@ function SignUp(props) {
               onCancel={hideDatePicker}
             />
           </Block>
+          {/* Phone */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -548,11 +693,12 @@ function SignUp(props) {
               style={styles.inputText}
               placeholder=""
               placeholderTextColor="#808080"
-              value={stateObj.phone}
+              value={objSignUpHD.PHONE_NUMBER}
               onChangeText={onChangePhone}
               keyboardType={"number-pad"}
             />
           </Block>
+          {/* Email */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -569,7 +715,7 @@ function SignUp(props) {
               style={styles.inputText}
               placeholder="example@gmail.com"
               placeholderTextColor="#808080"
-              value={stateObj.email}
+              value={objSignUpHD.EMAIL}
               onChangeText={onChangeEmail}
             />
           </Block>
@@ -599,6 +745,7 @@ function SignUp(props) {
               ข้อมูลที่อยู่
             </Text>
           </Block>
+          {/* Address */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -614,14 +761,13 @@ function SignUp(props) {
           <Block style={styles.inputView}>
             <TextInput
               style={styles.inputText}
-              placeholder={""}
-              placeholderTextColor="#808080"
-              value={stateObj.firstName}
-              onChangeText={onChangeAdress}
+              value={objSignUpHD.ADDRESS_NAME}
+              onChangeText={(value) => onChangeAdress(value)}
+              keyboardType="phone-pad"
             />
           </Block>
 
-          {/* Tumbol */}
+          {/* Province */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -631,10 +777,10 @@ function SignUp(props) {
                 color: "black",
               }}
             >
-              แขวง/ตำบล
+              จังหวัด
             </Text>
             <DropDownPicker
-              items={itemTumbol}
+              items={province}
               containerStyle={{ height: 40, width: width - 45 }}
               style={{ backgroundColor: "#fafafa" }}
               itemStyle={{
@@ -650,89 +796,7 @@ function SignUp(props) {
               labelStyle={{
                 textAlign: "left",
                 color: "#000",
-                fontFamily:"kanitRegular"
-              }}
-              arrowColor={"white"}
-              arrowSize={18}
-              arrowStyle={{
-                backgroundColor: "#02d483",
-                borderRadius: 20,
-                color: "white",
-              }}
-              onChangeItem={onChangeTumbol}
-            />
-          </Block>
-          {/* Aumper */}
-          <Block style={{ marginBottom: 5, marginTop: 20 }}>
-            <Text
-              style={{
-                alignSelf: "flex-start",
                 fontFamily: "kanitRegular",
-                fontSize: 18,
-                color: "black",
-              }}
-            >
-              อำเภอ
-            </Text>
-            <DropDownPicker
-              items={itemTumbol}
-              containerStyle={{ height: 40, width: width - 45 }}
-              style={{ backgroundColor: "#fafafa" }}
-              itemStyle={{
-                justifyContent: "flex-start",
-              }}
-              dropDownStyle={{ backgroundColor: "#fafafa" }}
-              placeholderStyle={{
-                textAlign: "left",
-                color: "gray",
-                fontFamily: "kanitRegular",
-              }}
-              placeholder={"- โปรดเลือก -"}
-                              labelStyle={{
-                textAlign: "left",
-                color: "#000",
-                fontFamily:"kanitRegular"
-              }}
-              arrowColor={"white"}
-              arrowSize={18}
-              arrowStyle={{
-                backgroundColor: "#02d483",
-                borderRadius: 20,
-                color: "white",
-              }}
-              onChangeItem={onChangeAumper}
-            />
-          </Block>
-          {/* Province */}
-          <Block style={{ marginBottom: 5, marginTop: 20 }}>
-            <Text
-              style={{
-                alignSelf: "flex-start",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                color: "black",
-              }}
-            >
-              จังหวัด
-            </Text>
-            <DropDownPicker
-              items={itemTumbol}
-              containerStyle={{ height: 40, width: width - 45 }}
-              style={{ backgroundColor: "#fafafa" }}
-              itemStyle={{
-                justifyContent: "flex-start",
-              }}
-              dropDownStyle={{ backgroundColor: "#fafafa" }}
-              placeholderStyle={{
-                textAlign: "left",
-                color: "gray",
-                fontFamily: "kanitRegular",
-              }}
-              placeholder={"- โปรดเลือก -"}
-                              labelStyle={{
-                textAlign: "left",
-                color: "#000",
-                fontFamily:"kanitRegular"
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -742,6 +806,88 @@ function SignUp(props) {
                 color: "white",
               }}
               onChangeItem={onChangeProvince}
+            />
+          </Block>
+          {/* Districts */}
+          <Block style={{ marginBottom: 5, marginTop: 20 }}>
+            <Text
+              style={{
+                alignSelf: "flex-start",
+                fontFamily: "kanitRegular",
+                fontSize: 18,
+                color: "black",
+              }}
+            >
+              เขต/อำเภอ
+            </Text>
+            <DropDownPicker
+              items={district}
+              containerStyle={{ height: 40, width: width - 45 }}
+              style={{ backgroundColor: "#fafafa" }}
+              itemStyle={{
+                justifyContent: "flex-start",
+              }}
+              dropDownStyle={{ backgroundColor: "#fafafa" }}
+              placeholderStyle={{
+                textAlign: "left",
+                color: "gray",
+                fontFamily: "kanitRegular",
+              }}
+              placeholder={"- โปรดเลือก -"}
+              labelStyle={{
+                textAlign: "left",
+                color: "#000",
+                fontFamily: "kanitRegular",
+              }}
+              arrowColor={"white"}
+              arrowSize={18}
+              arrowStyle={{
+                backgroundColor: "#02d483",
+                borderRadius: 20,
+                color: "white",
+              }}
+              onChangeItem={onChangeDistrict}
+            />
+          </Block>
+          {/* Sub-Districts */}
+          <Block style={{ marginBottom: 5, marginTop: 20 }}>
+            <Text
+              style={{
+                alignSelf: "flex-start",
+                fontFamily: "kanitRegular",
+                fontSize: 18,
+                color: "black",
+              }}
+            >
+              แขวง/ตำบล
+            </Text>
+            <DropDownPicker
+              items={subDistrict}
+              containerStyle={{ height: 40, width: width - 45 }}
+              style={{ backgroundColor: "#fafafa" }}
+              itemStyle={{
+                justifyContent: "flex-start",
+              }}
+              dropDownStyle={{ backgroundColor: "#fafafa" }}
+              placeholderStyle={{
+                textAlign: "left",
+                color: "gray",
+                fontFamily: "kanitRegular",
+              }}
+              placeholder={"- โปรดเลือก -"}
+              labelStyle={{
+                textAlign: "left",
+                color: "#000",
+                fontFamily: "kanitRegular",
+              }}
+              arrowColor={"white"}
+              arrowSize={18}
+              arrowStyle={{
+                backgroundColor: "#02d483",
+                borderRadius: 20,
+                color: "white",
+              }}
+              onChangeItem={onChangeSubDistrict}
             />
           </Block>
 
@@ -761,11 +907,8 @@ function SignUp(props) {
           <Block style={styles.inputView}>
             <TextInput
               style={styles.inputText}
-              placeholder={""}
-              placeholderTextColor="#808080"
-              value={stateObj.postCode}
-              onChangeText={onChangePostCode}
-              keyboardType="number-pad"
+              value={objSignUpHD.ZIP_CODE}
+              editable={false}
             />
           </Block>
         </Block>
@@ -794,6 +937,7 @@ function SignUp(props) {
               ข้อมูลที่อยู่ในการจัดส่ง
             </Text>
           </Block>
+          {/* Address */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -811,93 +955,11 @@ function SignUp(props) {
               style={styles.inputText}
               placeholder={""}
               placeholderTextColor="#808080"
-              value={stateObj.firstName}
+              value={objSignUpHD.ADDRESS_NAME_ORDER}
               onChangeText={onChangeAdressOrder}
             />
           </Block>
 
-          {/* Tumbol */}
-          <Block style={{ marginBottom: 5, marginTop: 20 }}>
-            <Text
-              style={{
-                alignSelf: "flex-start",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                color: "black",
-              }}
-            >
-              แขวง/ตำบล
-            </Text>
-            <DropDownPicker
-              items={itemTumbol}
-              containerStyle={{ height: 40, width: width - 45 }}
-              style={{ backgroundColor: "#fafafa" }}
-              itemStyle={{
-                justifyContent: "flex-start",
-              }}
-              dropDownStyle={{ backgroundColor: "#fafafa" }}
-              placeholderStyle={{
-                textAlign: "left",
-                color: "gray",
-                fontFamily: "kanitRegular",
-              }}
-              placeholder={"- โปรดเลือก -"}
-                              labelStyle={{
-                textAlign: "left",
-                color: "#000",
-                fontFamily:"kanitRegular"
-              }}
-              arrowColor={"white"}
-              arrowSize={18}
-              arrowStyle={{
-                backgroundColor: "#02d483",
-                borderRadius: 20,
-                color: "white",
-              }}
-              onChangeItem={onChangeTumbolOrder}
-            />
-          </Block>
-          {/* Aumper */}
-          <Block style={{ marginBottom: 5, marginTop: 20 }}>
-            <Text
-              style={{
-                alignSelf: "flex-start",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                color: "black",
-              }}
-            >
-              อำเภอ
-            </Text>
-            <DropDownPicker
-              items={itemTumbol}
-              containerStyle={{ height: 40, width: width - 45 }}
-              style={{ backgroundColor: "#fafafa" }}
-              itemStyle={{
-                justifyContent: "flex-start",
-              }}
-              dropDownStyle={{ backgroundColor: "#fafafa" }}
-              placeholderStyle={{
-                textAlign: "left",
-                color: "gray",
-                fontFamily: "kanitRegular",
-              }}
-              placeholder={"- โปรดเลือก -"}
-                              labelStyle={{
-                textAlign: "left",
-                color: "#000",
-                fontFamily:"kanitRegular"
-              }}
-              arrowColor={"white"}
-              arrowSize={18}
-              arrowStyle={{
-                backgroundColor: "#02d483",
-                borderRadius: 20,
-                color: "white",
-              }}
-              onChangeItem={onChangeAumperOrder}
-            />
-          </Block>
           {/* Province */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
@@ -911,7 +973,7 @@ function SignUp(props) {
               จังหวัด
             </Text>
             <DropDownPicker
-              items={itemTumbol}
+              items={provinceOrder}
               containerStyle={{ height: 40, width: width - 45 }}
               style={{ backgroundColor: "#fafafa" }}
               itemStyle={{
@@ -924,10 +986,10 @@ function SignUp(props) {
                 fontFamily: "kanitRegular",
               }}
               placeholder={"- โปรดเลือก -"}
-                              labelStyle={{
+              labelStyle={{
                 textAlign: "left",
                 color: "#000",
-                fontFamily:"kanitRegular"
+                fontFamily: "kanitRegular",
               }}
               arrowColor={"white"}
               arrowSize={18}
@@ -937,6 +999,88 @@ function SignUp(props) {
                 color: "white",
               }}
               onChangeItem={onChangeProvinceOrder}
+            />
+          </Block>
+          {/* District */}
+          <Block style={{ marginBottom: 5, marginTop: 20 }}>
+            <Text
+              style={{
+                alignSelf: "flex-start",
+                fontFamily: "kanitRegular",
+                fontSize: 18,
+                color: "black",
+              }}
+            >
+              เขต/อำเภอ
+            </Text>
+            <DropDownPicker
+              items={districtOrder}
+              containerStyle={{ height: 40, width: width - 45 }}
+              style={{ backgroundColor: "#fafafa" }}
+              itemStyle={{
+                justifyContent: "flex-start",
+              }}
+              dropDownStyle={{ backgroundColor: "#fafafa" }}
+              placeholderStyle={{
+                textAlign: "left",
+                color: "gray",
+                fontFamily: "kanitRegular",
+              }}
+              placeholder={"- โปรดเลือก -"}
+              labelStyle={{
+                textAlign: "left",
+                color: "#000",
+                fontFamily: "kanitRegular",
+              }}
+              arrowColor={"white"}
+              arrowSize={18}
+              arrowStyle={{
+                backgroundColor: "#02d483",
+                borderRadius: 20,
+                color: "white",
+              }}
+              onChangeItem={onChangeDistrictOrder}
+            />
+          </Block>
+          {/* Sub-District */}
+          <Block style={{ marginBottom: 5, marginTop: 20 }}>
+            <Text
+              style={{
+                alignSelf: "flex-start",
+                fontFamily: "kanitRegular",
+                fontSize: 18,
+                color: "black",
+              }}
+            >
+              แขวง/ตำบล
+            </Text>
+            <DropDownPicker
+              items={subDistrictOrder}
+              containerStyle={{ height: 40, width: width - 45 }}
+              style={{ backgroundColor: "#fafafa" }}
+              itemStyle={{
+                justifyContent: "flex-start",
+              }}
+              dropDownStyle={{ backgroundColor: "#fafafa" }}
+              placeholderStyle={{
+                textAlign: "left",
+                color: "gray",
+                fontFamily: "kanitRegular",
+              }}
+              placeholder={"- โปรดเลือก -"}
+              labelStyle={{
+                textAlign: "left",
+                color: "#000",
+                fontFamily: "kanitRegular",
+              }}
+              arrowColor={"white"}
+              arrowSize={18}
+              arrowStyle={{
+                backgroundColor: "#02d483",
+                borderRadius: 20,
+                color: "white",
+              }}
+              onChangeItem={onChangeSubDistrictOrder}
             />
           </Block>
 
@@ -956,13 +1100,12 @@ function SignUp(props) {
           <Block style={styles.inputView}>
             <TextInput
               style={styles.inputText}
-              placeholder={""}
-              placeholderTextColor="#808080"
-              value={stateObj.postCode}
-              onChangeText={onChangePostCodeOrder}
-              keyboardType="number-pad"
+              value={objSignUpHD.ZIP_CODE_ORDER}
+              editable={false}
             />
           </Block>
+
+          {/* Phone */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -977,10 +1120,8 @@ function SignUp(props) {
           </Block>
           <Block style={styles.inputView}>
             <TextInput
-              style={styles.inputText2}
-              placeholder={""}
-              placeholderTextColor="#808080"
-              value={stateObj.phoneOrder}
+              style={styles.inputText}
+              value={objSignUpHD.PHONE_NUMBER_ORDER}
               onChangeText={onChangePhoneOrder}
               keyboardType="number-pad"
             />
@@ -998,132 +1139,131 @@ function SignUp(props) {
           </Block>
         </Block>
 
-        {/* Block 5 */}
-        <Block>
-          {/* Radio Check */}
-          <Block style={{ width: 340, alignSelf: "center" }}>
-            <Text
-              style={{
-                alignSelf: "flex-start",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                color: "black",
-                textAlign: "left",
-              }}
-            >
-              จดหมายข่าวต้องการรับข่าวสารจากทางร้าน :
-            </Text>
-            <Block row style={{ margin: 10 }}>
-              <Block row>
-                <RadioButton
-                  value="yesMail"
-                  status={checkedMail === "yesMail" ? "checked" : "unchecked"}
-                  onPress={() => setCheckedMail("yesMail")}
-                />
-                <Text
-                  style={{
-                    fontFamily: "kanitRegular",
-                    fontSize: 18,
-                    color: "black",
-                    marginTop: 2,
-                  }}
-                >
-                  ต้องการ
-                </Text>
-              </Block>
-              <Block row style={{ marginLeft: 50 }}>
-                <RadioButton
-                  value="notMail"
-                  status={checkedMail === "notMail" ? "checked" : "unchecked"}
-                  onPress={() => setCheckedMail("notMail")}
-                />
-                <Text
-                  style={{
-                    fontFamily: "kanitRegular",
-                    fontSize: 18,
-                    color: "black",
-                    marginTop: 2,
-                  }}
-                >
-                  ไม่ต้องการ
-                </Text>
-              </Block>
-            </Block>
-          </Block>
-          {/* Block Blue */}
-          <Block
+        {/* Radio Check */}
+        <Block style={{ width: 340, alignSelf: "center" }}>
+          <Text
             style={{
-              width: width - 15,
-              height: 115,
-              alignSelf: "center",
-              backgroundColor: "#475ed1",
+              alignSelf: "flex-start",
+              fontFamily: "kanitRegular",
+              fontSize: 18,
+              color: "black",
+              textAlign: "left",
             }}
           >
-            <Block row style={{height:55}}>
-              <CheckBox
-                containerStyle={{ marginTop: 20 }}
-                checked={isChecked}
-                onPress={() => setIsChecked(!isChecked)}
-                checkedColor="#71D58E"
+            จดหมายข่าวต้องการรับข่าวสารจากทางร้าน :
+          </Text>
+          <Block row style={{ margin: 10 }}>
+            <Block row>
+              <RadioButton
+                value="yesMail"
+                status={checkedMail === "yesMail" ? "checked" : "unchecked"}
+                onPress={() => setCheckedMail("yesMail")}
               />
               <Text
                 style={{
-                  color: "white",
                   fontFamily: "kanitRegular",
-                  fontSize: 20,
-                  marginTop: 27,
-                  marginLeft:5
+                  fontSize: 18,
+                  color: "black",
+                  marginTop: 2,
                 }}
               >
-                ฉันได้อ่านและยอมรับเงื่อนไข
+                ต้องการ
               </Text>
             </Block>
-            <Block row style={{ marginLeft: 70, marginBottom: 10 }}>
+            <Block row style={{ marginLeft: 50 }}>
+              <RadioButton
+                value="notMail"
+                status={checkedMail === "notMail" ? "checked" : "unchecked"}
+                onPress={() => setCheckedMail("notMail")}
+              />
               <Text
                 style={{
-                  color: "white",
                   fontFamily: "kanitRegular",
-                  fontSize: 20,
+                  fontSize: 18,
+                  color: "black",
+                  marginTop: 2,
                 }}
               >
-                ข้อตกลง
-              </Text>
-              <Text
-                style={{
-                  color: "white",
-                  fontFamily: "kanitBold",
-                  fontSize: 19,
-                  marginLeft:  10,
-                  color:"#00c6ed",
-                  borderBottomColor:"#00c6ed",
-                  borderBottomWidth:1
-                }}
-              >
-                Privacy Policy
+                ไม่ต้องการ
               </Text>
             </Block>
-          </Block>
-          {/* Button */}
-          <Block row style={{ paddingTop: 49, paddingBottom: 40 }}>
-            <Button
-              titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-              title={"รีเซ็ทข้อมูล"}
-              type="solid"
-              onPress={() => props.navigation.navigate("Flash Sale")}
-              containerStyle={styles.blockButton1}
-              buttonStyle={styles.buttonStyle1}
-            />
-            <Button
-              titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-              title={"ยืนยัน"}
-              type="solid"
-              containerStyle={styles.blockButton2}
-              buttonStyle={styles.buttonStyle2}
-              onPress={() => showToast()}
-            />
           </Block>
         </Block>
-        
+
+        {/* Confirm */}
+        <Block
+          style={{
+            width: width - 15,
+            height: 115,
+            alignSelf: "center",
+            backgroundColor: "#475ed1",
+          }}
+        >
+          <Block row style={{ height: 55 }}>
+            <CheckBox
+              containerStyle={{ marginTop: 20 }}
+              checked={isConfirm}
+              onPress={() => setConfirm(!isConfirm)}
+              checkedColor="#71D58E"
+            />
+            <Text
+              style={{
+                color: "white",
+                fontFamily: "kanitRegular",
+                fontSize: 20,
+                marginTop: 27,
+                marginLeft: 5,
+              }}
+            >
+              ฉันได้อ่านและยอมรับเงื่อนไข
+            </Text>
+          </Block>
+          <Block row style={{ marginLeft: 70, marginBottom: 10 }}>
+            <Text
+              style={{
+                color: "white",
+                fontFamily: "kanitRegular",
+                fontSize: 20,
+              }}
+            >
+              ข้อตกลง
+            </Text>
+            <Text
+              style={{
+                color: "white",
+                fontFamily: "kanitBold",
+                fontSize: 19,
+                marginLeft: 10,
+                color: "#00c6ed",
+                borderBottomColor: "#00c6ed",
+                borderBottomWidth: 1,
+              }}
+            >
+              Privacy Policy
+            </Text>
+          </Block>
+        </Block>
+
+        {/* Button */}
+        <Block row style={{ paddingTop: 49, paddingBottom: 40 }}>
+          <Button
+            titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+            title={"รีเซ็ทข้อมูล"}
+            type="solid"
+            onPress={onClearObjSignup}
+            containerStyle={styles.blockButton1}
+            buttonStyle={styles.buttonStyle1}
+          />
+          <Button
+            titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+            title={"ยืนยัน"}
+            type="solid"
+            containerStyle={styles.blockButton2}
+            buttonStyle={styles.buttonStyle2}
+            onPress={onClickSignUp}
+          />
+        </Block>
+
         <WangdekInfo />
       </ScrollView>
       <ModalLoading loading={loading} />
@@ -1131,7 +1271,7 @@ function SignUp(props) {
   );
 }
 
-export default connect(null, auth.actions)(SignUp);
+export default connect(null, ActionSignUp.actions)(SignUp);
 
 const styles = StyleSheet.create({
   container: {
