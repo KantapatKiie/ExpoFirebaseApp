@@ -3,13 +3,13 @@ import AsyncStorage from "react-native";
 import moment from "moment";
 
 const actionTypes = {
-  setObjMyCouponins: "OBJ_HISTORY_VIEW_HD",
-  clearObjMyCoupon: "CLEAR_OBJ_HISTORY_VIEW",
-  setDisabledInput: "SET_DISABLED_INPUT_HISTORY_VIEW",
-  pushListTrMyCoupon: "PUSH_LIST_TR_HISTORY_VIEW",
-  setListTrMyCoupon: "SET_LIST_TR_HISTORY_VIEW",
-  removeListTrMyCoupon: "REMOVE_LIST_TR_HISTORY_VIEW",
-  setEditable: "SET_EDITABLE_HISTORY_VIEW",
+  setObjMyCouponins: "OBJ_MY_COUPON_HD_HD",
+  clearObjMyCoupon: "CLEAR_OBJ_MY_COUPON_HD",
+  setDisabledInput: "SET_DISABLED_INPUT_MY_COUPON_HD",
+  pushListTrMyCoupon: "PUSH_LIST_TR_MY_COUPON_HD",
+  setListTrMyCoupon: "SET_LIST_TR_MY_COUPON_HD",
+  removeListTrMyCoupon: "REMOVE_LIST_TR_MY_COUPON_HD",
+  setEditable: "SET_EDITABLE_MY_COUPON_HD",
 };
 
 const initialState = {

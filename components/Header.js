@@ -319,7 +319,7 @@ function Header(props) {
             isWhite={white}
           />,
         ];
-        case "History View":
+      case "History View":
         return [
           <ModalNotification
             key="chat-search"
@@ -332,7 +332,59 @@ function Header(props) {
             isWhite={white}
           />,
         ];
-        case "History Order":
+      case "History Order":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Order Screen":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Use Coupon":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Use Delivery":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Use Address Delivery":
         return [
           <ModalNotification
             key="chat-search"
@@ -493,7 +545,7 @@ function Header(props) {
             isWhite={white}
           />,
         ];
-        case "History View":
+      case "History View":
         return [
           <ModalMessage
             key="chat-search"
@@ -506,7 +558,59 @@ function Header(props) {
             isWhite={white}
           />,
         ];
-        case "History Order":
+      case "History Order":
+        return [
+          <ModalMessage
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Order Screen":
+        return [
+          <ModalMessage
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Use Coupon":
+        return [
+          <ModalMessage
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Use Delivery":
+        return [
+          <ModalMessage
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Use Address Delivery":
         return [
           <ModalMessage
             key="chat-search"

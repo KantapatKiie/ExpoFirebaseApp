@@ -1,44 +1,105 @@
 import React, { useState, useEffect } from "react";
 import {
+  View,
   Image,
   StyleSheet,
   Dimensions,
   ScrollView,
+  Modal,
   TouchableOpacity,
 } from "react-native";
 import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
-import * as ActionCart from "../../actions/action-cart/ActionCart";
+import * as ActionOrder from "../../actions/action-order-status/ActionOrder";
 import products from "../../constants/products";
 import WangdekInfo from "../../components/WangdekInfo";
-import NumericInput from "react-native-numeric-input";
+import { Icon } from "../../components/";
 import { Button } from "react-native-elements";
 import commaNumber from "comma-number";
 
 const { height, width } = Dimensions.get("screen");
 
-function CartScreen(props) {
-  const { objCartScreen } = useSelector((state) => ({
-    objCartScreen: state.actionCart.objCartScreen,
+function OrderScreen(props) {
+  const { objOrderScreen } = useSelector((state) => ({
+    objOrderScreen: state.actionOrder.objOrderScreen,
   }));
 
   useEffect(() => {
-    // props.clearObjCartScreen();
+    // props.clearObjOrderScreen();
   }, []);
 
   const onChangeValue = (value) => {
-    let newObj = Object.assign({}, objCartScreen);
+    let newObj = Object.assign({}, objOrderScreen);
     newObj.COUNT = value;
-    props.setObjCartScreen(newObj);
+    props.setObjOrderScreen(newObj);
   };
+
+  //#region modalConfirm
+  const [modalVisible, setModalVisible] = useState(false);
+  const handleConfirm = (e) => {
+    setModalVisible(false);
+  };
+  const modalHeader = (
+    <View style={styles2.modalHeader}>
+      <Text style={styles2.title}>Notifications 📢</Text>
+      <View style={styles2.divider}></View>
+    </View>
+  );
+  const modalBody = (
+    <View style={styles2.modalBody}>
+      <Text style={styles2.bodyText}>
+        Are you sure you want to product confirm ?
+      </Text>
+    </View>
+  );
+  const modalFooter = (
+    <View style={styles2.modalFooter}>
+      <View style={styles2.divider}></View>
+      <View style={{ flexDirection: "row-reverse", margin: 10 }}>
+        <TouchableOpacity
+          style={{ ...styles2.actions, backgroundColor: "#ed6868" }}
+          onPress={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <Text style={styles2.actionText}>No</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ ...styles2.actions, backgroundColor: "#54bf6d" }}
+          onPress={(e) => handleConfirm(e)}
+        >
+          <Text style={styles2.actionText}>Yes</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+  const modalContainer = (
+    <View style={styles2.modalContainer}>
+      {modalHeader}
+      {modalBody}
+      {modalFooter}
+    </View>
+  );
+  const modal = (
+    <Modal
+      transparent={true}
+      visible={modalVisible}
+      onRequestClose={() => {
+        Alert.alert("Modal has been closed.");
+      }}
+    >
+      <View style={styles2.modal}>
+        <View>{modalContainer}</View>
+      </View>
+    </Modal>
+  );
+  //#endregion
 
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Title */}
-        <TouchableOpacity
-        // onPress={() => props.navigation.navigate("Home")}
-        >
+        <TouchableOpacity onPress={() => props.navigation.navigate("Cart")}>
           <Block row style={styles.container}>
             <Text
               style={{
@@ -47,7 +108,7 @@ function CartScreen(props) {
                 fontSize: 18,
               }}
             >
-              {"<  "}ตะกร้าสินค้า
+              {"<  "}คำสั่งซื้อ
             </Text>
           </Block>
         </TouchableOpacity>
@@ -62,53 +123,54 @@ function CartScreen(props) {
                 />
               </Block>
               <Block style={styles.blockSemiImage2}>
-                <Block style={{ height: "55%", width: "78%" }}>
+                <Block style={{ height: "60%", width: "80%" }}>
                   <Text style={styles.fontTitleProduct}>{item.title}</Text>
                 </Block>
+
                 <Block row>
                   <Text style={styles.detailText}>จำนวน : </Text>
-                  <NumericInput
-                    value={objCartScreen.COUNT}
-                    onChange={(value) => onChangeValue(value)}
-                    totalWidth={110}
-                    totalHeight={35}
-                    iconSize={18}
-                    step={1}
-                    valueType="real"
-                    type="plus-minus"
-                    rounded={false}
-                    textColor="black"
-                    iconStyle={{ color: "white" }}
-                    inputStyle={{ fontFamily: "kanitRegular" }}
-                    leftButtonBackgroundColor="#adadad"
-                    rightButtonBackgroundColor="#09db99"
-                    containerStyle={{
-                      marginLeft: 20,
-                      fontFamily: "kanitRegular",
-                    }}
-                  />
+                  <Text style={styles.detailText}>1</Text>
                 </Block>
               </Block>
             </Block>
+
             <Block row style={{ width: "90%", alignSelf: "center" }}>
-              <Block style={{ width: "40%", alignSelf: "center" }}>
+              <Block style={{ width: "75%", alignSelf: "center" }}>
                 <Text style={styles.fontPriceProduct}>฿{commaNumber(item.price)}</Text>
               </Block>
-              <Block style={{ width: "40%", alignSelf: "center" }}>
+              <Block style={{ width: "25%", alignSelf: "center" }}>
                 <Text style={styles.fontPriceProduct}>฿{commaNumber(item.price)}</Text>
-              </Block>
-              <Block style={{ marginLeft: 25 }}>
-                <TouchableOpacity>
-                  <Image
-                    source={require("../../assets/images/order-filter/delete-icon.png")}
-                    style={{ height: 35, width: 35, borderRadius: 25 }}
-                  />
-                </TouchableOpacity>
               </Block>
             </Block>
           </Block>
         ))}
-        
+
+        {infoItem.map((item) => (
+          <Block style={styles.blockHeaderInfo} key={item.key}>
+            <TouchableOpacity
+              onPress={() => props.navigation.navigate(item.page)}
+            >
+              <Block row middle space="between" style={{ paddingTop: 7 }}>
+                <Text
+                  style={{
+                    textAlign: "left",
+                    color: "black",
+                    fontSize: 17,
+                    fontFamily: "kanitRegular",
+                  }}
+                >
+                  {item.text}
+                </Text>
+                <Icon
+                  name="angle-right"
+                  family="font-awesome"
+                  style={{ paddingRight: 5 }}
+                />
+              </Block>
+            </TouchableOpacity>
+          </Block>
+        ))}
+
         {/* Button */}
         <Block
           row
@@ -128,17 +190,18 @@ function CartScreen(props) {
             type="solid"
             containerStyle={styles.blockButton2}
             buttonStyle={styles.buttonStyle2}
-            onPress={() => props.navigation.navigate("Order Screen")}
+            onPress={() => props.navigation.navigate("Product Order")}
           />
         </Block>
 
         <WangdekInfo />
       </ScrollView>
+      {modal}
     </>
   );
 }
 
-export default connect(null, ActionCart.actions)(CartScreen);
+export default connect(null, ActionOrder.actions)(OrderScreen);
 
 const styles = StyleSheet.create({
   container: {
@@ -195,6 +258,14 @@ const styles = StyleSheet.create({
     width: 150,
     alignSelf: "center",
   },
+  blockHeaderInfo: {
+    paddingLeft: 25,
+    paddingTop:8,
+    backgroundColor: "#f7f7f7",
+    height:55,
+    borderBottomWidth:1,
+    borderBottomColor:"#e0e0e0"
+  },
 });
 
 //Style Modal
@@ -248,3 +319,22 @@ const styles2 = StyleSheet.create({
     marginTop: 10,
   },
 });
+
+const infoItem = [
+  {
+    key: "1",
+    text: "ใช้ส่วนลด",
+    page: "Use Coupon",
+  },
+  {
+    key: "2",
+    text: "ช่องทางการจัดส่ง",
+    page: "Use Delivery",
+  },
+  {
+    key: "3",
+    text: "ที่อยู่ในการจัดส่ง",
+    page: "Use Address Delivery",
+  },
+];
+
