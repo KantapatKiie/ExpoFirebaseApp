@@ -27,7 +27,6 @@ import { Button, CheckBox } from "react-native-elements";
 
 const { height, width } = Dimensions.get("screen");
 
-moment.locale("uk");
 function Events(props) {
   const { objEventsHD } = useSelector((state) => ({
     objEventsHD: state.actionEvents.objEventsHD,
