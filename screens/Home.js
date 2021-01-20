@@ -295,7 +295,10 @@ function Home(props) {
                           showSeparator
                           // onFinish={() => alert("Finished")}
                         />
-                        <Text style={timeStyle.timeTextArrow}>{">"}</Text>
+                        <Image
+                          source={require("../assets/icons/arrow_right.png")}
+                        />
+                        {/* <Text style={timeStyle.timeTextArrow}>{">"}</Text> */}
                       </Block>
                     </LinearGradient>
                   </TouchableHighlight>
@@ -779,7 +782,7 @@ const linerStyle = StyleSheet.create({
     alignItems: "flex-end",
     alignSelf: "flex-end",
     marginBottom: 5,
-    marginRight: 10,
+    marginRight: 5,
   },
 });
 

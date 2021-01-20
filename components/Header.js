@@ -16,14 +16,11 @@ import { StatusBar } from "expo-status-bar";
 import { Block, NavBar, Input, Text, theme } from "galio-framework";
 import Icon from "./Icon";
 import materialTheme from "../constants/Theme";
-import { API_URL } from "../config/config.app";
 import Icons from "react-native-vector-icons/MaterialIcons";
+// import { API_URL } from "../config/config.app";
 
 const { height, width } = Dimensions.get("window");
 
-// const iPhoneX = () =>
-//   Platform.OS === "ios" &&
-//   (height === 812 || width === 812 || height === 896 || width === 896);
 const ModalNotification = ({ style }) => {
   const [modalVisible, setModalVisible] = useState(false);
   return (
@@ -397,7 +394,19 @@ function Header(props) {
             isWhite={white}
           />,
         ];
-
+      case "Events":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
       default:
         break;
     }
@@ -611,6 +620,19 @@ function Header(props) {
           />,
         ];
       case "Use Address Delivery":
+        return [
+          <ModalMessage
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Events":
         return [
           <ModalMessage
             key="chat-search"

@@ -24,6 +24,7 @@ import * as actionMyCoupon from "../actions/action-my-coupon/ActionMyCoupon";
 import * as actionFilterSearch from "../actions/action-filter-search/ActionFilterSearch";
 import * as actionOrderStatus from "../actions/action-order-status/ActionOrderStatus";
 import * as actionOrder from "../actions/action-order-status/ActionOrder";
+import * as actionEvents from "../actions/action-events/ActionEvents";
 import * as i18n from "./ducks/i18n";
 
 export const rootReducer = combineReducers({
@@ -52,6 +53,7 @@ export const rootReducer = combineReducers({
   actionFilterSearch: actionFilterSearch.reducer,
   actionOrderStatus: actionOrderStatus.reducer,
   actionOrder: actionOrder.reducer,
+  actionEvents: actionEvents.reducer,
 });
 
 export function* rootSaga() {
