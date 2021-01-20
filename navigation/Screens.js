@@ -28,7 +28,7 @@ import FavoriteViewScreen from "../screens/FavoriteView";
 import ProductAllScreen from "../screens/product-cart/ProductAll";
 import PromotionsScreen from "../screens/notifications/Promotions";
 import FilterSearchScreen from "../screens/filter-search/FilterSearch";
-import OrderStatusScreen from "../screens/order-status/OrderStatus";
+import EventsScreen from "../screens/events/Events";
 //Order Screen & Notification-order
 import OrderScreen from "../screens/product-cart/OrderScreen";
 import UseCouponScreen from "../screens/product-cart/notification-order-screen/UseCoupon";
@@ -788,6 +788,32 @@ function FilterSearchStack() {
   );
 }
 
+function EventsStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Events"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Events"
+        component={EventsScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Events"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 //Order Screen
 function OrderScreenStack() {
   return (
@@ -949,7 +975,7 @@ function MyTabs() {
       />
       <Tab.Screen
         name="Events"
-        component={ProfileStack}
+        component={EventsStack}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Image

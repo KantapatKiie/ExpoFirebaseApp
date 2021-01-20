@@ -11,10 +11,6 @@ I18n.translations = {
   en,
   th,
 };
-// const allMessages = {
-//   en,
-//   th,
-// };
 
 export function formatTr(name) {
   const locale = useSelector(({ i18n }) => i18n.lang);

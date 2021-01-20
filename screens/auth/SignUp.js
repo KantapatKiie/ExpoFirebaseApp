@@ -93,6 +93,7 @@ function SignUp(props) {
   const [checkedGender, setCheckedGender] = useState("Male");
   //MailBox
   const [checkedMail, setCheckedMail] = useState("yesMail");
+  
   //DatePicker
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const showDatePicker = () => {

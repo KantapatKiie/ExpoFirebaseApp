@@ -55,8 +55,8 @@ function Settings(props) {
       </Block>
       <DropDownPicker
         items={itemLanguage}
-        containerStyle={{ height: 40, width: width - 20, marginTop:10 }}
-        style={{ backgroundColor: "#fafafa", marginLeft: 20 }}
+        containerStyle={{ height: 40, width: width - 20, marginTop:10,alignSelf:"center" }}
+        style={{ backgroundColor: "#fafafa"}}
         itemStyle={{
           justifyContent: "flex-start",
         }}
