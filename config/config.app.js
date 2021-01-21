@@ -1,10 +1,12 @@
-const {
-  REACT_APP_URL_API,
-  REACT_APP_DELAY_SEARCH
-} = process.env;
+const { REACT_NATIVE_APP_URL_API, REACT_NATIVE_APP_DELAY_SEARCH } = process.env;
 
-export const DELAY_SEARCH = REACT_APP_DELAY_SEARCH;
+export const DELAY_SEARCH = REACT_NATIVE_APP_DELAY_SEARCH;
+
+const { REACT_NATIVE_APP_AUTH_API } = "http://wangdek.am2bmarketing.co.th/api/v1"
 
 export const API_URL = {
-  AP_TEST_TEST : REACT_APP_URL_API + "/API/TEST_TEST",
+  //Authenticate
+  REGISTER_API: REACT_NATIVE_APP_AUTH_API + "/register",
+
+  TEST_API: REACT_NATIVE_APP_URL_API + "/api",
 };

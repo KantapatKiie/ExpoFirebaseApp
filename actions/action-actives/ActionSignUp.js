@@ -40,10 +40,10 @@ const initialState = {
     ZIP_CODE_ORDER: "",
     PHONE_NUMBER_ORDER: "",
 
-    NEWS: true,
-    CONFIRM: false,
+    RECEIVE_INFO: true,
+    PRIVACY_CONFIRM: false,
 
-    INSERT_ID: "User Admin",
+    INSERT_ID: "User",
     INSERT_DT: moment(new Date()).format("YYYY-MM-DDT00:00:00"),
   },
 };

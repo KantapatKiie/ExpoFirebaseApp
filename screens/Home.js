@@ -13,6 +13,7 @@ import {
   Modal,
   ScrollView,
 } from "react-native";
+import axios from "axios";
 import { withNavigation } from "@react-navigation/compat";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
@@ -35,17 +36,23 @@ function Home(props) {
     objHomeHD: state.actionHomeHD.objHomeHD,
     disabledInput: state.actionHomeHD.disabledInput,
   }));
-  //#region Translate
-  var VIEW_ALL = formatTr("VIEW_ALL").toString(); //View all
-  var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
-  var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
-  var NEWS_RELEASE = formatTr("NEWS_RELEASE").toString();
-  var READ_MORE = formatTr("READ_MORE").toString();
-  //#endregion
 
   useEffect(() => {
     setModalVisible(false); // Popup Coupon
+    // FlashsaleOnLoad(); // Flashsale onLoad
   }, []);
+
+  const FlashsaleOnLoad = async () =>{
+    console.log("FlashsaleOnLoad");
+    await  axios
+    .get("http://wangdek.am2bmarketing.co.th/api/v1/flashsales?offset=1&limit=10")
+    .then(function (response) {
+      console.log(response.data);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }
 
   //Time Everthing
   let LeftTime = moment(new Date()).format("HH:mm");
@@ -153,7 +160,7 @@ function Home(props) {
     );
   };
 
-  //#region ModalCoupon
+  //#region PopupCoupon
   const [modalVisible, setModalVisible] = useState(false);
   const ModalNotification = () => {
     return (
@@ -211,6 +218,14 @@ function Home(props) {
       </>
     );
   };
+  //#endregion
+
+  //#region Translate
+  var VIEW_ALL = formatTr("VIEW_ALL").toString(); //View all
+  var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
+  var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
+  var NEWS_RELEASE = formatTr("NEWS_RELEASE").toString();
+  var READ_MORE = formatTr("READ_MORE").toString();
   //#endregion
 
   return (

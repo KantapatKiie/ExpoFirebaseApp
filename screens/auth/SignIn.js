@@ -118,8 +118,15 @@ function SignIn(props) {
 
   // Login
   const LoginAccount = () => {
-    setLoggedinStatus(true);
-    ToastAndroid.show("Logout Account", ToastAndroid.SHORT);
+    const reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (reg.test(stateObj.email) === true) {
+      setLoggedinStatus(true);
+      ToastAndroid.show("Login Account Success", ToastAndroid.SHORT);
+    } else {
+      setLoggedinStatus(false);
+      ToastAndroid.show("Email or Password was Wrong", ToastAndroid.SHORT);
+    }
+    
   };
   // Logout
   const LogoutAccount = () => {
@@ -182,10 +189,6 @@ function SignIn(props) {
     }
   };
 
-  const checkFunction = () => {
-    ToastAndroid.show("Check Function!", ToastAndroid.SHORT);
-  };
-
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -206,7 +209,7 @@ function SignIn(props) {
                 เข้าสู่ระบบ
               </Text>
             </Block>
-            {/* Input */}
+            {/* Email */}
             <Block style={styles.container2}>
               <Block row style={{ marginBottom: 5 }}>
                 <Text

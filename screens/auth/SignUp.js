@@ -8,24 +8,25 @@ import {
   TouchableOpacity,
   Dimensions,
   ScrollView,
+  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
 import * as ActionSignUp from "../../actions/action-actives/ActionSignUp";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import ModalLoading from "../../components/ModalLoading";
-import { createAccount } from "../../store/mock/mock";
+import { Register } from "../../store/crud/auth.crud";
 import { Block, Input } from "galio-framework";
 import WangdekInfo from "../../components/WangdekInfo";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { RadioButton } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Button, CheckBox } from "react-native-elements";
-// import { signup } from "../../store/crud/auth.crud";
+import { API_URL } from "../../config/config.app";
+// import { createAccount } from "../../store/mock/mock";
 // import * as auth from "../../store/ducks/auth.duck";
 
 const { height, width } = Dimensions.get("screen");
-
 function SignUp(props) {
   const { objSignUpHD } = useSelector((state) => ({
     objSignUpHD: state.actionSignUp.objSignUpHD,
@@ -37,7 +38,6 @@ function SignUp(props) {
   }, []);
 
   const [loading, setLoading] = useState(false);
-  const [isConfirm, setConfirm] = useState(false);
 
   // #1
   const [visiblePass1, setVisiblePass1] = useState(true);
@@ -57,6 +57,9 @@ function SignUp(props) {
   const onChangePassword2 = (value) => {
     let newObj = Object.assign({}, objSignUpHD);
     newObj.PASSWORD_2 = value;
+    if (newObj.PASSWORD_2 !== objSignUpHD.PASSWORD_1) {
+      ToastAndroid.show("รหัสผ่านไม่ตรงกัน", ToastAndroid.SHORT);
+    }
     props.setObjSignUp(newObj);
   };
   const changeVisiblePassword2 = () => {
@@ -89,11 +92,6 @@ function SignUp(props) {
     props.setObjSignUp(newObj);
   };
 
-  //Gender
-  const [checkedGender, setCheckedGender] = useState("Male");
-  //MailBox
-  const [checkedMail, setCheckedMail] = useState("yesMail");
-  
   //DatePicker
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const showDatePicker = () => {
@@ -105,11 +103,11 @@ function SignUp(props) {
   const handleConfirm = (date) => {
     let newObj = Object.assign({}, objSignUpHD);
     if (date === null) {
-      newObj.birth_date = moment(new Date()).format();
+      newObj.BIRTH_DATE = moment(new Date()).format();
     } else {
-      newObj.birth_date = moment(date).format("DD/MM/YYYY");
+      newObj.BIRTH_DATE = moment(date).format("DD/MM/YYYY");
     }
-    setobjSignUpHD(newObj);
+    props.setObjSignUp(newObj);
     hideDatePicker();
   };
 
@@ -308,36 +306,82 @@ function SignUp(props) {
     props.setObjSignUp(newObj);
   };
 
+  //Gender
+  const [checkedGender, setCheckedGender] = useState(1);
+  //MailBox
+  const [checkedMail, setCheckedMail] = useState("Yes");
+  //Confirm
+  const [isConfirm, setConfirm] = useState(false);
+
   // SignUp
-  const onClearObjSignup = () => {
-    props.clearObjSignUp();
-  }
+  const [checkPassword, setCheckPassword] = useState(false);
   const onClickSignUp = () => {
-    setLoading(true);
-    if (
-      objSignUpHD.EMAIL !== "" 
-      // objSignUpHD.FIRST_NAME !== "" &&
-      // objSignUpHD.LAST_NAME !== "" &&
-      // objSignUpHD.PASSWORD_1 !== "" &&
-      // objSignUpHD.PASSWORD_2 !== "" &&
-      // objSignUpHD.ADDRESS_NAME !== "" &&
-      // objSignUpHD.PROVINCE_CODE !== "" &&
-      // objSignUpHD.DISTRICT_CODE !== "" &&
-      // objSignUpHD.PROVINCE_CODE_ORDER !== "" &&
-      // objSignUpHD.DISTRICT_CODE_ORDER !== "" &&
-      // objSignUpHD.SUB_DISTRICT_CODE !== "" &&
-      // objSignUpHD.SUB_DISTRICT_CODE_ORDER !== ""
-    ) {
-      createAccount("firstName", "lastName", "test@test.ca", "12345")
-        .then((val) => {
-          console.log(val);
-          setLoading(false);
-          // props.navigation.navigate("Sign In");
-        })
-        .catch((err) => console.log("error:", err.message));
-    } else {
-      setLoading(false);
-    }
+    // setLoading(true);
+    const reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    // if (reg.test(objSignUpHD.EMAIL) === true) {
+      if (
+        objSignUpHD.EMAIL !== "" &&
+        objSignUpHD.FIRST_NAME !== "" &&
+        objSignUpHD.LAST_NAME !== "" &&
+        objSignUpHD.PASSWORD_1 !== "" &&
+        objSignUpHD.PASSWORD_2 !== "" &&
+        objSignUpHD.ADDRESS_NAME !== "" &&
+        objSignUpHD.PROVINCE_CODE !== "" &&
+        objSignUpHD.DISTRICT_CODE !== "" &&
+        objSignUpHD.SUB_DISTRICT_CODE !== "" &&
+        objSignUpHD.PROVINCE_CODE_ORDER !== "" &&
+        objSignUpHD.DISTRICT_CODE_ORDER !== "" &&
+        objSignUpHD.SUB_DISTRICT_CODE_ORDER !== "" &&
+        objSignUpHD.PHONE_NUMBER_ORDER !== ""
+      ) {
+        axios
+          .get(API_URL.REGISTER_API, {
+            params: {
+              first_name: objSignUpHD.FIRST_NAME,
+              last_name: objSignUpHD.LAST_NAME,
+              email: objSignUpHD.EMAIL,
+              password: objSignUpHD.PASSWORD_1,
+              password_confirmation: objSignUpHD.PASSWORD_2,
+              sex: parseInt(checkedGender),
+              birthday: moment(objSignUpHD.BIRTH_DATE).format("YYYY-MM-DD"),
+              telephone: parseInt(objSignUpHD.PHONE_NUMBER),
+
+              address: objSignUpHD.ADDRESS_NAME,
+              province: parseInt(objSignUpHD.PROVINCE_CODE),
+              district: parseInt(objSignUpHD.DISTRICT_CODE),
+              sub_district: parseInt(objSignUpHD.SUB_DISTRICT_CODE),
+              postcode: parseInt(objSignUpHD.ZIP_CODE),
+              current_address: objSignUpHD.ADDRESS_NAME,
+
+              delivery_fullname: objSignUpHD.FIRST_NAME + " " + objSignUpHD.LAST_NAME,
+              delivery_address: objSignUpHD.ADDRESS_NAME,
+              delivery_province: parseInt(objSignUpHD.PROVINCE_CODE_ORDER),
+              delivery_district: parseInt(objSignUpHD.DISTRICT_CODE_ORDER),
+              delivery_sub_district: parseInt(objSignUpHD.SUB_DISTRICT_CODE_ORDER),
+              delivery_postcode: parseInt(objSignUpHD.ZIP_CODE_ORDER),
+              delivery_telephone: parseInt(objSignUpHD.PHONE_NUMBER_ORDER),
+
+              receive_info: checkedMail,
+              privacy_confirm: isConfirm ? "Confirm" : "Do not Confirm",
+            },
+          })
+          .then(function (response) {
+            setLoading(false);
+            console.log(response);
+            // props.navigation.navigate("Sign In");
+          })
+          .catch((err) => {
+            setLoading(false);
+            console.log("error:", err.message);
+          });
+      } else {
+        setLoading(false);
+        setCheckPassword(true);
+        ToastAndroid.show("กรุณากรอกข้อมูลให้ครบถ้วน", ToastAndroid.LONG);
+      }
+    // } else {
+    //   ToastAndroid.show("Email ไม่ถูกต้อง", ToastAndroid.LONG);
+    // }
   };
 
   return (
@@ -483,13 +527,11 @@ function SignUp(props) {
           </Block>
           <Block
             row
-            style={{
-              borderWidth: 1.5,
-              borderColor: "#e0e0e0",
-              backgroundColor: "white",
-              width: width - 45,
-              height: 47,
-            }}
+            style={
+              objSignUpHD.PASSWORD_2 === objSignUpHD.PASSWORD_1
+                ? styles.boxPassword
+                : styles.boxPasswordFeild
+            }
           >
             <TextInput
               style={styles.inputTextPassword}
@@ -518,11 +560,11 @@ function SignUp(props) {
           </Block>
           <Block>
             <Text
-              style={{
-                fontFamily: "kanitRegular",
-                color: "#009ac9",
-                fontSize: 15,
-              }}
+              style={
+                objSignUpHD.PASSWORD_2 === objSignUpHD.PASSWORD_1
+                  ? styles.passwordPass
+                  : styles.passwordBlock
+              }
             >
               กรุณากรอกรหัสผ่านให้ตรงกัน
             </Text>
@@ -613,9 +655,9 @@ function SignUp(props) {
           <Block row>
             <Block row>
               <RadioButton
-                value="male"
-                status={checkedGender === "Male" ? "checked" : "unchecked"}
-                onPress={() => setCheckedGender("Male")}
+                value={1}
+                status={checkedGender === 1 ? "checked" : "unchecked"}
+                onPress={() => setCheckedGender(1)}
               />
               <Text
                 style={{
@@ -630,9 +672,9 @@ function SignUp(props) {
             </Block>
             <Block row style={{ marginLeft: 50 }}>
               <RadioButton
-                value="Female"
-                status={checkedGender === "Female" ? "checked" : "unchecked"}
-                onPress={() => setCheckedGender("Female")}
+                value={2}
+                status={checkedGender === 2 ? "checked" : "unchecked"}
+                onPress={() => setCheckedGender(2)}
               />
               <Text
                 style={{
@@ -1156,9 +1198,9 @@ function SignUp(props) {
           <Block row style={{ margin: 10 }}>
             <Block row>
               <RadioButton
-                value="yesMail"
-                status={checkedMail === "yesMail" ? "checked" : "unchecked"}
-                onPress={() => setCheckedMail("yesMail")}
+                value="Yes"
+                status={checkedMail === "Yes" ? "checked" : "unchecked"}
+                onPress={() => setCheckedMail("Yes")}
               />
               <Text
                 style={{
@@ -1173,9 +1215,9 @@ function SignUp(props) {
             </Block>
             <Block row style={{ marginLeft: 50 }}>
               <RadioButton
-                value="notMail"
-                status={checkedMail === "notMail" ? "checked" : "unchecked"}
-                onPress={() => setCheckedMail("notMail")}
+                value="No"
+                status={checkedMail === "No" ? "checked" : "unchecked"}
+                onPress={() => setCheckedMail("No")}
               />
               <Text
                 style={{
@@ -1251,7 +1293,9 @@ function SignUp(props) {
             titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
             title={"รีเซ็ทข้อมูล"}
             type="solid"
-            onPress={onClearObjSignup}
+            onPress={() => {
+              props.clearObjSignUp();
+            }}
             containerStyle={styles.blockButton1}
             buttonStyle={styles.buttonStyle1}
           />
@@ -1456,5 +1500,31 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: 150,
     alignSelf: "center",
+  },
+  passwordPass: {
+    fontFamily: "kanitRegular",
+    color: "#009ac9",
+    fontSize: 15,
+  },
+  passwordBlock: {
+    fontFamily: "kanitRegular",
+    color: "red",
+    fontSize: 15,
+  },
+  boxPassword: {
+    borderWidth: 1.5,
+    borderColor: "#e0e0e0",
+    backgroundColor: "white",
+    width: width - 45,
+    height: 47,
+  },
+  boxPasswordFeild: {
+    borderWidth: 1.5,
+    borderColor: "#e0e0e0",
+    backgroundColor: "white",
+    width: width - 45,
+    height: 47,
+    borderWidth: 1,
+    borderColor: "red",
   },
 });
