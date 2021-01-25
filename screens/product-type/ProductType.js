@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  SafeAreaView,
+  LogBox,
 } from "react-native";
 import * as ActionProduct from "../../actions/action-product/ActionProduct";
 import { Block, Text, theme, Input } from "galio-framework";
@@ -18,7 +20,8 @@ import products2 from "../../constants/products2";
 
 const { height, width } = Dimensions.get("screen");
 
-function ProductToys(props) {
+function ProductType(props) {
+  // console.log(props);
   const { objProductActivity } = useSelector((state) => ({
     objProductActivity: state.actionProduct.objProductActivity,
   }));
@@ -158,12 +161,14 @@ function ProductToys(props) {
           </Block>
         </Block>
         {/* ListItem */}
-        <FlatList
-          data={stateObj}
-          style={styles.containers}
-          renderItem={renderProduct}
-          numColumns={numColumns}
-        />
+        <SafeAreaView style={{ flex: 1 }}>
+          <FlatList
+            data={stateObj}
+            style={styles.containers}
+            renderItem={renderProduct}
+            numColumns={numColumns}
+          />
+        </SafeAreaView>
         {/* Load More */}
         <TouchableOpacity
           onPress={onClickProducts}
@@ -183,7 +188,7 @@ function ProductToys(props) {
   );
 }
 
-export default connect(null, ActionProduct.actions)(ProductToys);
+export default connect(null, ActionProduct.actions)(ProductType);
 
 const styles = StyleSheet.create({
   container: {

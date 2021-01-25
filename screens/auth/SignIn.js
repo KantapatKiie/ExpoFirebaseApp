@@ -15,10 +15,9 @@ import {
   ToastAndroid,
   ImageBackground,
 } from "react-native";
+import axios from "axios";
 import ModalLoading from "../../components/ModalLoading";
-import { logins } from "../../store/mock/mock"; //mock api
-import { setToken } from "../../store/mock/token";
-import { login } from "../../store/crud/auth.crud"; //real api
+import { getToken, setToken } from "../../store/mock/token";
 import * as ActionLogin from "../../actions/action-actives/ActionLogin";
 import { Block } from "galio-framework";
 import { Icon } from "../../components/";
@@ -26,8 +25,10 @@ import { formatTr } from "../../i18n/I18nProvider";
 import * as Facebook from "expo-facebook";
 import * as ImagePicker from "expo-image-picker";
 import WangdekInfo from "../../components/WangdekInfo";
+import { API_URL } from "../../config/config.app";
 
 const { height, width } = Dimensions.get("screen");
+const token = getToken();
 
 if (
   Platform.OS === "android" &&
@@ -75,63 +76,160 @@ function SignIn(props) {
     setStateObj(newObj);
   };
 
-  //loading
+  //loading & Required
   const [loading, setLoading] = useState(false);
   const [requiredEmail, setRequiredEmail] = useState(false);
   const [requiredPass, setRequiredPass] = useState(false);
-  const onClickSignIn = async (email, password) => {
-    let newLogin = Object.assign({}, objLoginHD);
-    if (stateObj.email !== "" && stateObj.email !== "undefined") {
-      setRequiredEmail(true);
-      if (stateObj.password !== "" && stateObj.password !== "undefined") {
-        if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
-          newLogin.EMAIL = "";
-        } else {
-          setRequiredEmail(false);
-          setRequiredPass(false);
-          setTimeout(() => {
-            setLoading(true);
-            logins(email, password)
-              .then(async (res) => {
-                newLogin.EMAIL = email;
-                newLogin.PASSWORD = password;
-                props.setObjLogin(newLogin);
-
-                await setToken(res.auth_token);
-                props.navigation.navigate("Home");
-              })
-              .catch((err) => console.log("error:", err.message));
-          }, 120);
-        }
-      } else {
-        setRequiredPass(true);
-        setRequiredEmail(false);
-        setLoading(false);
-      }
-    } else {
-      setRequiredPass(true);
-      setRequiredEmail(true);
-      setLoading(false);
-    }
-    setLoading(false);
-  };
 
   // Login
-  const LoginAccount = () => {
+  const LoginAccount =  () => {
+    setLoading(true);
+    let newLogin = Object.assign({}, objLoginHD);
     const reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    if (reg.test(stateObj.email) === true) {
-      setLoggedinStatus(true);
-      ToastAndroid.show("Login Account Success", ToastAndroid.SHORT);
-    } else {
+    if (stateObj.email !== "" && stateObj.email !== "undefined") {
+      setRequiredEmail(false);
+      if (stateObj.password !== "" && stateObj.password !== "undefined") {
+        setRequiredPass(false);
+        if (reg.test(stateObj.email) === true) {
+          setRequiredEmail(false);
+          setTimeout(() => {
+            setLoading(true);
+            axios({
+              method: "POST",
+              url: API_URL.LOGIN_API,
+              params: {
+                email: stateObj.email,
+                password: stateObj.password,
+              },
+            })
+              .then(async (response) => {
+                newLogin.EMAIL = stateObj.email;
+                newLogin.PASSWORD = stateObj.email;
+                newLogin.TOKEN = response.data.data.token;
+                newLogin.ID = response.data.data.user.id;
+                newLogin.GUEST = response.data.data.user.guest;
+                newLogin.FIRST_NAME = response.data.data.user.first_name;
+                newLogin.LAST_NAME = response.data.data.user.last_name;
+                newLogin.ACTIVE = response.data.data.user.active;
+                newLogin.EMAIL_VERIFIED_AT =
+                  response.data.data.user.email_verified_at;
+                newLogin.CREATE_AT = response.data.data.user.created_at;
+                newLogin.UPDATED_AT = response.data.data.user.updated_at;
+                newLogin.CREATE_BY = response.data.data.user.created_by;
+                newLogin.UPDATED_BY = response.data.data.user.updated_by;
+                newLogin.DELETED_AT = response.data.data.user.deleted_at;
+                await setToken(response.data.data.token);
+                setLoggedinStatus(true);
+                setLoading(false);
+
+                //UserInfo
+                axios
+                  .get(API_URL.USER_INFO_API, {
+                    headers: {
+                      Accept: "application/json",
+                      Authorization: "Bearer " + (await token).toString(),
+                    },
+                  })
+                  .then(function (response) {
+                    newLogin.TELEPHONE = response.data.data.profile.telephone;
+                    newLogin.ADDRESS = response.data.data.profile.telephone;
+                    newLogin.PROVINCE_ID = response.data.data.profile.telephone;
+                    newLogin.DISTRICT_ID = response.data.data.profile.telephone;
+                    newLogin.SUB_DISTRICT_ID =
+                      response.data.data.profile.telephone;
+
+                    //getAddress
+                    axios
+                      .get(API_URL.DISTRICT_API, {
+                        params: {
+                          province_id: newLogin.PROVINCE_ID,
+                        },
+                      })
+                      .then(function (response) {
+                        let newlstDistrict = response.data.data.find(
+                          (item) => item.id == parseInt(newLogin.DISTRICT_ID)
+                        );
+                        newLogin.DISTRICT_NAME = newlstDistrict.name_th;
+
+                        axios
+                          .get(API_URL.SUB_DISTRICT_API, {
+                            params: {
+                              district_id: newLogin.DISTRICT_ID,
+                            },
+                          })
+                          .then(function (response) {
+                            let newlstSubDistrict = response.data.data.find(
+                              (item) =>
+                                item.id == parseInt(newLogin.SUB_DISTRICT_ID)
+                            );
+                            newLogin.SUB_DISTRICT_NAME =
+                              newlstSubDistrict.name_th;
+                            newLogin.ZIP_CODE = newlstSubDistrict.zip_code;
+
+                            axios
+                              .get(API_URL.PROVINCE_API)
+                              .then(function (response) {
+                                let newlstProvince = response.data.data.find(
+                                  (item) =>
+                                    item.id == parseInt(newLogin.PROVINCE_ID)
+                                );
+                                newLogin.PROVINCE_NAME = newlstProvince.name_th;
+                                newLogin.ADDRESS_FULL_NAME =
+                                  newLogin.ADDRESS +
+                                  " " +
+                                  newLogin.DISTRICT_NAME +
+                                  " " +
+                                  newLogin.SUB_DISTRICT_NAME +
+                                  " " +
+                                  newLogin.PROVINCE_NAME +
+                                  " " +
+                                  newLogin.ZIP_CODE.toString();
+                                props.setObjLogin(newLogin);
+                              });
+                          });
+                      });
+                  });
+              })
+              .catch(function (error) {
+                setLoggedinStatus(false);
+                setRequiredPass(true);
+                setRequiredEmail(true);
+                setLoading(false);
+                console.log("error:", error.message);
+                ToastAndroid.show(
+                  "Email or Password was Wrong",
+                  ToastAndroid.SHORT
+                );
+              });
+          }, 1000);
+        } else {
+          setLoggedinStatus(false);
+          setRequiredPass(false);
+          setRequiredEmail(true);
+          ToastAndroid.show("Email was Wrong", ToastAndroid.SHORT);
+        }
+      } else {
+        setLoggedinStatus(false);
+        setRequiredPass(true);
+      }
       setLoggedinStatus(false);
-      ToastAndroid.show("Email or Password was Wrong", ToastAndroid.SHORT);
+    } else {
+      setRequiredEmail(true);
+      setRequiredPass(true);
+      ToastAndroid.show("Please enter your email & password", ToastAndroid.SHORT);
     }
-    
+    setLoading(false);
   };
   // Logout
   const LogoutAccount = () => {
     setLoggedinStatus(false);
     setUserData("");
+    setStateObj({
+      email: "",
+      password: "",
+    });
+    setToken("");
+    props.clearObjLogin();
     ToastAndroid.show("Logout Account", ToastAndroid.SHORT);
   };
   // Facbook login
@@ -181,7 +279,6 @@ function SignIn(props) {
       aspect: [4, 3],
       quality: 1,
     });
-    // console.log(result);
     if (!result.cancelled) {
       setImagePicker(result.uri);
     } else {
@@ -295,7 +392,7 @@ function SignIn(props) {
                 style={{
                   alignSelf: "flex-end",
                 }}
-                onPress={() => props.navigation.navigate("Notifications")}
+                onPress={() => props.navigation.navigate("Forgot Password")}
               >
                 <Text style={styles.forgot}>ลืมรหัสผ่าน ?</Text>
               </TouchableOpacity>
@@ -481,7 +578,7 @@ function SignIn(props) {
                   </TouchableOpacity>
                 </ImageBackground>
               </Block>
-              <Block style={{ paddingLeft: "10%" }}>
+              <Block style={{ paddingLeft: "10%", width: "90%"}}>
                 <Text
                   style={{
                     color: "black",
@@ -490,7 +587,7 @@ function SignIn(props) {
                     textAlign: "left",
                   }}
                 >
-                  Wangdek Commerce
+                  {objLoginHD.FIRST_NAME + " " + objLoginHD.LAST_NAME}
                 </Text>
                 <Text
                   style={{
@@ -500,7 +597,7 @@ function SignIn(props) {
                     textAlign: "left",
                   }}
                 >
-                  Address :
+                  Address : {objLoginHD.ADDRESS_FULL_NAME}
                 </Text>
                 <Text
                   style={{
@@ -510,7 +607,7 @@ function SignIn(props) {
                     textAlign: "left",
                   }}
                 >
-                  Phone :
+                  Phone : {objLoginHD.TELEPHONE}
                 </Text>
                 <Text
                   style={{
@@ -520,7 +617,7 @@ function SignIn(props) {
                     textAlign: "left",
                   }}
                 >
-                  Emial :
+                  Email : {objLoginHD.EMAIL}
                 </Text>
               </Block>
             </Block>
@@ -712,7 +809,7 @@ function SignIn(props) {
           </>
         )}
         {/* Info */}
-        <WangdekInfo/>
+        <WangdekInfo />
       </ScrollView>
       <ModalLoading loading={loading} />
     </>

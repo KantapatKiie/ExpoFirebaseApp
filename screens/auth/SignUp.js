@@ -27,13 +27,14 @@ import { API_URL } from "../../config/config.app";
 // import * as auth from "../../store/ducks/auth.duck";
 
 const { height, width } = Dimensions.get("screen");
+
 function SignUp(props) {
   const { objSignUpHD } = useSelector((state) => ({
     objSignUpHD: state.actionSignUp.objSignUpHD,
   }));
 
   useEffect(() => {
-    props.clearObjSignUp();
+    // props.clearObjSignUp();
     getProvinces();
   }, []);
 
@@ -105,7 +106,7 @@ function SignUp(props) {
     if (date === null) {
       newObj.BIRTH_DATE = moment(new Date()).format();
     } else {
-      newObj.BIRTH_DATE = moment(date).format("DD/MM/YYYY");
+      newObj.BIRTH_DATE = moment(date).format("YYYY-MM-DD");
     }
     props.setObjSignUp(newObj);
     hideDatePicker();
@@ -140,7 +141,7 @@ function SignUp(props) {
   ]);
   const getProvinces = async () => {
     await axios
-      .get("http://wangdek.am2bmarketing.co.th/api/v1/provinces")
+      .get(API_URL.PROVINCE_API)
       .then(function (response) {
         let newlstBin = response.data.data.map(function (item) {
           item.label = item.name_th;
@@ -168,7 +169,7 @@ function SignUp(props) {
     props.setObjSignUp(newObj);
     if (item.value !== null) {
       axios
-        .get("http://wangdek.am2bmarketing.co.th/api/v1/districts", {
+        .get(API_URL.DISTRICT_API, {
           params: {
             province_id: item.id,
           },
@@ -193,7 +194,7 @@ function SignUp(props) {
     props.setObjSignUp(newObj);
     if (item !== null) {
       axios
-        .get("http://wangdek.am2bmarketing.co.th/api/v1/sub_districts", {
+        .get(API_URL.SUB_DISTRICT_API, {
           params: {
             district_id: item.id,
           },
@@ -250,7 +251,7 @@ function SignUp(props) {
     props.setObjSignUp(newObj);
     if (item.value !== null) {
       axios
-        .get("http://wangdek.am2bmarketing.co.th/api/v1/districts", {
+        .get(API_URL.DISTRICT_API, {
           params: {
             province_id: item.id,
           },
@@ -275,7 +276,7 @@ function SignUp(props) {
     props.setObjSignUp(newObj);
     if (item !== null) {
       axios
-        .get("http://wangdek.am2bmarketing.co.th/api/v1/sub_districts", {
+        .get(API_URL.SUB_DISTRICT_API, {
           params: {
             district_id: item.id,
           },
@@ -318,7 +319,7 @@ function SignUp(props) {
   const onClickSignUp = () => {
     // setLoading(true);
     const reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    // if (reg.test(objSignUpHD.EMAIL) === true) {
+    if (reg.test(objSignUpHD.EMAIL) === true) {
       if (
         objSignUpHD.EMAIL !== "" &&
         objSignUpHD.FIRST_NAME !== "" &&
@@ -334,54 +335,57 @@ function SignUp(props) {
         objSignUpHD.SUB_DISTRICT_CODE_ORDER !== "" &&
         objSignUpHD.PHONE_NUMBER_ORDER !== ""
       ) {
-        axios
-          .get(API_URL.REGISTER_API, {
-            params: {
-              first_name: objSignUpHD.FIRST_NAME,
-              last_name: objSignUpHD.LAST_NAME,
-              email: objSignUpHD.EMAIL,
-              password: objSignUpHD.PASSWORD_1,
-              password_confirmation: objSignUpHD.PASSWORD_2,
-              sex: parseInt(checkedGender),
-              birthday: moment(objSignUpHD.BIRTH_DATE).format("YYYY-MM-DD"),
-              telephone: parseInt(objSignUpHD.PHONE_NUMBER),
+        axios({
+          method: "POST",
+          url: API_URL.REGISTER_API,
+          params: {
+            first_name: objSignUpHD.FIRST_NAME,
+            last_name: objSignUpHD.LAST_NAME,
+            email: objSignUpHD.EMAIL,
+            password: objSignUpHD.PASSWORD_1,
+            password_confirmation: objSignUpHD.PASSWORD_2,
+            sex: parseInt(checkedGender),
+            birthday: objSignUpHD.BIRTH_DATE.toString(),
+            telephone: parseInt(objSignUpHD.PHONE_NUMBER),
 
-              address: objSignUpHD.ADDRESS_NAME,
-              province: parseInt(objSignUpHD.PROVINCE_CODE),
-              district: parseInt(objSignUpHD.DISTRICT_CODE),
-              sub_district: parseInt(objSignUpHD.SUB_DISTRICT_CODE),
-              postcode: parseInt(objSignUpHD.ZIP_CODE),
-              current_address: objSignUpHD.ADDRESS_NAME,
+            address: objSignUpHD.ADDRESS_NAME,
+            province: parseInt(objSignUpHD.PROVINCE_CODE),
+            district: parseInt(objSignUpHD.DISTRICT_CODE),
+            sub_district: parseInt(objSignUpHD.SUB_DISTRICT_CODE),
+            postcode: parseInt(objSignUpHD.ZIP_CODE),
+            current_address: objSignUpHD.ADDRESS_NAME,
 
-              delivery_fullname: objSignUpHD.FIRST_NAME + " " + objSignUpHD.LAST_NAME,
-              delivery_address: objSignUpHD.ADDRESS_NAME,
-              delivery_province: parseInt(objSignUpHD.PROVINCE_CODE_ORDER),
-              delivery_district: parseInt(objSignUpHD.DISTRICT_CODE_ORDER),
-              delivery_sub_district: parseInt(objSignUpHD.SUB_DISTRICT_CODE_ORDER),
-              delivery_postcode: parseInt(objSignUpHD.ZIP_CODE_ORDER),
-              delivery_telephone: parseInt(objSignUpHD.PHONE_NUMBER_ORDER),
+            delivery_fullname:
+              objSignUpHD.FIRST_NAME + " " + objSignUpHD.LAST_NAME,
+            delivery_address: objSignUpHD.ADDRESS_NAME,
+            delivery_province: parseInt(objSignUpHD.PROVINCE_CODE_ORDER),
+            delivery_district: parseInt(objSignUpHD.DISTRICT_CODE_ORDER),
+            delivery_sub_district: parseInt(
+              objSignUpHD.SUB_DISTRICT_CODE_ORDER
+            ),
+            delivery_postcode: parseInt(objSignUpHD.ZIP_CODE_ORDER),
+            delivery_telephone: parseInt(objSignUpHD.PHONE_NUMBER_ORDER),
 
-              receive_info: checkedMail,
-              privacy_confirm: isConfirm ? "Confirm" : "Do not Confirm",
-            },
-          })
+            receive_info: checkedMail,
+            privacy_confirm: isConfirm ? "Confirm" : "Do not Confirm",
+          },
+        })
           .then(function (response) {
+            console.log(response.data);
             setLoading(false);
-            console.log(response);
-            // props.navigation.navigate("Sign In");
           })
-          .catch((err) => {
+          .catch(function (error) {
             setLoading(false);
-            console.log("error:", err.message);
+            console.log("error:", error.message);
           });
       } else {
         setLoading(false);
         setCheckPassword(true);
         ToastAndroid.show("กรุณากรอกข้อมูลให้ครบถ้วน", ToastAndroid.LONG);
       }
-    // } else {
-    //   ToastAndroid.show("Email ไม่ถูกต้อง", ToastAndroid.LONG);
-    // }
+    } else {
+      ToastAndroid.show("Email ไม่ถูกต้อง", ToastAndroid.LONG);
+    }
   };
 
   return (

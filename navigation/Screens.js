@@ -1,5 +1,5 @@
-import React from "react";
-import { Image, StyleSheet } from "react-native";
+import React, { useEffect } from "react";
+import { Image, StyleSheet, LogBox } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Header } from "../components";
@@ -19,7 +19,7 @@ import CartScreen from "../screens/product-cart/CartScreen";
 import PaymentScreen from "../screens/payment/PaymentScreen";
 import PaymentNotifications from "../screens/payment/PaymentNotifications";
 import ContactScreen from "../screens/about/Contact";
-import ForgetPasswordScreen from "../screens/auth/ForgetPassword";
+import ForgotPasswordScreen from "../screens/auth/ForgotPassword";
 import ChangePasswordScreen from "../screens/auth/ChangePassword";
 import FlashsaleProductScreen from "../screens/product-cart/FlashsaleProduct";
 import HistoryViewScreen from "../screens/HistoryView";
@@ -35,7 +35,7 @@ import UseCouponScreen from "../screens/product-cart/notification-order-screen/U
 import UseDeliveryScreen from "../screens/product-cart/notification-order-screen/UseDelivery";
 import UseAddressDeliveryScreen from "../screens/product-cart/notification-order-screen/UseAddressDelivery";
 // Product-Type
-import ProductToysScreen from "../screens/product-type/ProductToys";
+import ProductTypeScreen from "../screens/product-type/ProductType";
 // Etc //
 import NotificationsScreen from "../screens/notifications/Notifications";
 import HowToScreen from "../screens/notifications/HowTo";
@@ -206,7 +206,7 @@ function EditProfileStack() {
   );
 }
 
-function ForgetPasswordStack() {
+function ForgotPasswordStack() {
   return (
     <Stack.Navigator
       initialRouteName="Forgot Password"
@@ -215,7 +215,7 @@ function ForgetPasswordStack() {
     >
       <Stack.Screen
         name="Forget Password"
-        component={ForgetPasswordScreen}
+        component={ForgotPasswordScreen}
         options={{
           header: ({ navigation, scene }) => (
             <Header
@@ -710,22 +710,22 @@ function PromotiosnStack() {
   );
 }
 
-function ProductToysStack() {
+function ProductTypeStack() {
   return (
     <Stack.Navigator
-      initialRouteName="Product Toys"
+      initialRouteName="Product Type"
       mode="card"
       headerMode="screen"
     >
       <Stack.Screen
-        name="Product Toys"
-        component={ProductToysScreen}
+        name="Product Type"
+        component={ProductTypeScreen}
         options={{
           header: ({ navigation, scene }) => (
             <Header
               search
               tabs
-              title="Product Toys"
+              title="Product Type"
               scene={scene}
               navigation={navigation}
             />
@@ -790,11 +790,7 @@ function FilterSearchStack() {
 
 function EventsStack() {
   return (
-    <Stack.Navigator
-      initialRouteName="Events"
-      mode="card"
-      headerMode="screen"
-    >
+    <Stack.Navigator initialRouteName="Events" mode="card" headerMode="screen">
       <Stack.Screen
         name="Events"
         component={EventsScreen}
@@ -1075,6 +1071,9 @@ function OnboardingStack(props) {
   //   return token;
   // }
   //#endregion
+  useEffect(() => {
+    LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
+  }, []);
   return (
     <>
       <Stack.Navigator>
@@ -1119,8 +1118,8 @@ function OnboardingStack(props) {
           options={{ header: () => null }}
         />
         <Stack.Screen
-          name="Forget Password"
-          component={ForgetPasswordStack}
+          name="Forgot Password"
+          component={ForgotPasswordStack}
           options={{ header: () => null }}
         />
         <Stack.Screen
@@ -1189,8 +1188,8 @@ function OnboardingStack(props) {
           options={{ header: () => null }}
         />
         <Stack.Screen
-          name="Product Toys"
-          component={ProductToysStack}
+          name="Product Type"
+          component={ProductTypeStack}
           options={{ header: () => null }}
         />
         <Stack.Screen

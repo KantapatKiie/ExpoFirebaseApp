@@ -11,7 +11,7 @@ import * as actionHomeHD from "../actions/action-home/ActionHome";
 import * as actionPayment from "../actions/action-payment/ActionPayment";
 import * as actionPaymentNotifications from "../actions/action-payment/ActionPaymentNotifications";
 import * as actionContact from "../actions/action-contact/ActionContact";
-import * as actionForgetPassword from "../actions/action-forgetPassword/ActionForgetPassword";
+import * as actionForgotPassword from "../actions/action-forgot-password/ActionForgotPassword";
 import * as actionChangepassword from "../actions/action-change-password/ActionChangepassword";
 import * as actionFlashsaleProduct from "../actions/action-flashsale-product/ActionFlashsaleProduct";
 import * as actionHistoryView from "../actions/action-history-view/ActionHistoryView";
@@ -40,7 +40,7 @@ export const rootReducer = combineReducers({
   actionPayment: actionPayment.reducer,
   actionPaymentNotifications: actionPaymentNotifications.reducer,
   actionContact: actionContact.reducer,
-  actionForgetPassword: actionForgetPassword.reducer,
+  actionForgotPassword: actionForgotPassword.reducer,
   actionChangepassword: actionChangepassword.reducer,
   actionFlashsaleProduct: actionFlashsaleProduct.reducer,
   actionHistoryView: actionHistoryView.reducer,
@@ -56,6 +56,6 @@ export const rootReducer = combineReducers({
   actionEvents: actionEvents.reducer,
 });
 
-export function* rootSaga() {
-  // yield all([auth.saga()]);
-}
+// export function* rootSaga() {
+//   yield all([auth.saga()]);
+// }

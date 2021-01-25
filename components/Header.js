@@ -696,20 +696,33 @@ function Header(props) {
             isWhite={white}
           />,
         ];
-        case "Notifications":
-          return [
-            <ModalNotification
-              key="chat-search"
-              navigation={navigation}
-              isWhite={white}
-            />,
-            <ModalSearch
-              key="basket-search"
-              navigation={navigation}
-              isWhite={white}
-            />,
-          ];
-  
+      case "Notifications":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Product Type":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+
       default:
         break;
     }
@@ -1208,58 +1221,45 @@ function Header(props) {
             isWhite={white}
           />,
         ];
-        case "Notifications":
-          return [
-            <ModalMessage
-              key="chat-search"
-              navigation={navigation}
-              isWhite={white}
-            />,
-            <BasketButton
-              key="basket-search"
-              navigation={navigation}
-              isWhite={white}
-            />,
-          ];
-  
+      case "Notifications":
+        return [
+          <ModalMessage
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Product Type":
+        return [
+          <ModalMessage
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+
       default:
         break;
     }
   };
 
-  //Search
-  const renderSearch = () => {
-    const changeSearch = (e) => {
-      let newObjSearch = Object.assign({}, objSearch);
-      newObjSearch.SEARCH_NO = e.nativeEvent.text;
-      setObjSearch(newObjSearch);
-    };
-    return (
-      <Input
-        right
-        color="black"
-        style={styles.search}
-        placeholder="What are you looking for?"
-        onChange={changeSearch}
-        iconContent={
-          <Icon
-            size={16}
-            color={theme.COLORS.MUTED}
-            name="magnifying-glass"
-            family="entypo"
-          />
-        }
-      />
-    );
-  };
-
   //renderFucntion Tabs
-  const ListItemTypeProduct = ({ item }) => {
+  const ListTypeProduct = ({ item }) => {
     return (
       <Block style={styles2.item}>
         <TouchableOpacity
           shadowless
-          onPress={() => props.navigation.navigate(item.sectionPage)}
+          onPress={() => props.navigation.navigate("Product Type", item)}
         >
           <Image source={item.icon} />
         </TouchableOpacity>
@@ -1283,9 +1283,7 @@ function Header(props) {
                     <FlatList
                       horizontal
                       data={section.data}
-                      renderItem={({ item }) => (
-                        <ListItemTypeProduct item={item} />
-                      )}
+                      renderItem={({ item }) => <ListTypeProduct item={item} />}
                       showsHorizontalScrollIndicator={false}
                       showsVerticalScrollIndicator={false}
                     />
@@ -1304,12 +1302,12 @@ function Header(props) {
       </Block>
     );
   };
-  const ListItemProduct = ({ item }) => {
+  const ListBrandProduct = ({ item }) => {
     return (
       <Block style={styles2.item}>
         <TouchableOpacity
           shadowless
-          onPress={() => props.navigation.navigate(item.sectionPage)}
+          onPress={() => props.navigation.navigate("Product Type", item)}
         >
           <Image source={item.icon} style={styles2.itemPhoto} />
         </TouchableOpacity>
@@ -1331,7 +1329,7 @@ function Header(props) {
                   <FlatList
                     horizontal
                     data={section.data}
-                    renderItem={({ item }) => <ListItemProduct item={item} />}
+                    renderItem={({ item }) => <ListBrandProduct item={item} />}
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}
                   />
@@ -1548,42 +1546,34 @@ const sectionProductType = [
       {
         key: "1",
         icon: require("../assets/iconMain/icon-01.png"),
-        sectionPage: "Product Toys",
       },
       {
         key: "2",
         icon: require("../assets/iconMain/icon-02.png"),
-        sectionPage: "Basket",
       },
       {
         key: "3",
         icon: require("../assets/iconMain/icon-03.png"),
-        sectionPage: "Basket",
       },
       {
         key: "4",
         icon: require("../assets/iconMain/icon-04.png"),
-        sectionPage: "Basket",
       },
       {
         key: "5",
         icon: require("../assets/iconMain/icon-05.png"),
-        sectionPage: "Basket",
       },
       {
         key: "6",
         icon: require("../assets/iconMain/icon-06.png"),
-        sectionPage: "Basket",
       },
       {
         key: "7",
         icon: require("../assets/iconMain/icon-07.png"),
-        sectionPage: "Basket",
       },
       {
         key: "8",
         icon: require("../assets/iconMain/icon-08.png"),
-        sectionPage: "Basket",
       },
     ],
   },
@@ -1596,52 +1586,42 @@ const sectionBrand = [
       {
         key: "1",
         icon: require("../assets/iconBrand/brand-01.png"),
-        sectionPage: "Basket",
       },
       {
         key: "2",
         icon: require("../assets/iconBrand/brand-02.png"),
-        sectionPage: "Basket",
       },
       {
         key: "3",
         icon: require("../assets/iconBrand/brand-03.png"),
-        sectionPage: "Basket",
       },
       {
         key: "4",
         icon: require("../assets/iconBrand/brand-04.png"),
-        sectionPage: "Basket",
       },
       {
         key: "5",
         icon: require("../assets/iconBrand/brand-05.png"),
-        sectionPage: "Basket",
       },
       {
         key: "6",
         icon: require("../assets/iconBrand/brand-06.png"),
-        sectionPage: "Basket",
       },
       {
         key: "7",
         icon: require("../assets/iconBrand/brand-07.png"),
-        sectionPage: "Basket",
       },
       {
         key: "8",
         icon: require("../assets/iconBrand/brand-08.png"),
-        sectionPage: "Basket",
       },
       {
         key: "9",
         icon: require("../assets/iconBrand/brand-09.png"),
-        sectionPage: "Basket",
       },
       {
         key: "10",
         icon: require("../assets/iconBrand/brand-10.png"),
-        sectionPage: "Basket",
       },
     ],
   },

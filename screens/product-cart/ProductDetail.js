@@ -18,6 +18,7 @@ import NumericInput from 'react-native-numeric-input'
 import { LinearGradient } from "expo-linear-gradient";
 import { ProgressBar, Colors } from 'react-native-paper';
 import CountDown from "react-native-countdown-component";
+import commaNumber from "comma-number";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -95,6 +96,8 @@ function ProductDetail(props) {
     AsyncStorage["sessionCartBefore"] = newObjCart;
     props.navigation.navigate("Cart");
   };
+
+  console.log(props);
 
   return (
     <>
@@ -257,7 +260,7 @@ function ProductDetail(props) {
           </Block>
           <Block row style={{ margin: 15, alignSelf: "flex-end" }}>
             <Text style={styles.detailPrice1}>ราคา : </Text>
-            <Text style={styles.detailPrice2}>฿{objProductActivity.PRICE}</Text>
+            <Text style={styles.detailPrice2}>฿{commaNumber(objProductActivity.PRICE)}</Text>
           </Block>
           {/* Count */}
           <Block row style={{ margin: 10 }}>

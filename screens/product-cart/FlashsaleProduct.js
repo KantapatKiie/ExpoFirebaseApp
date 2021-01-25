@@ -261,7 +261,7 @@ function FlashsaleProduct(props) {
                   </TouchableOpacity>
                   {/* Load More */}
                   <TouchableOpacity onPress={onLoadMoreProduct}>
-                    <Block style={{ width: 90, alignSelf: "center" }}>
+                    <Block style={{ alignSelf: "center" }}>
                       <Text
                         style={{
                           fontFamily: "kanitRegular",

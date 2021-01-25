@@ -17,7 +17,7 @@ import ModalLoading from "../../components/ModalLoading";
 import { logins } from "../../store/mock/mock"; //mock api
 import { setToken } from "../../store/mock/token";
 import { login } from "../../store/crud/auth.crud"; //real api
-import * as ActionForgetPassword from "../../actions/action-forgetPassword/ActionForgetPassword";
+import * as ActionForgotPassword from "../../actions/action-forgot-password/ActionForgotPassword";
 import { Block } from "galio-framework";
 import { Icon } from "../../components";
 import { formatTr } from "../../i18n/I18nProvider";
@@ -32,9 +32,9 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-function ForgetPassword(props) {
-  const { objForgetPassword } = useSelector((state) => ({
-    objForgetPassword: state.actionForgetPassword.objForgetPassword,
+function ForgotPassword(props) {
+  const { objForgotPassword } = useSelector((state) => ({
+    objForgotPassword: state.actionForgotPassword.objForgotPassword,
   }));
 
   useEffect(() => {
@@ -60,7 +60,7 @@ function ForgetPassword(props) {
   const [requiredEmail, setRequiredEmail] = useState(false);
   const [requiredPass, setRequiredPass] = useState(false);
   const onClickSignIn = async (email) => {
-    let newLogin = Object.assign({}, objForgetPassword);
+    let newLogin = Object.assign({}, objForgotPassword);
     if (stateObj.email !== "" && stateObj.email !== "undefined") {
       setRequiredEmail(true);
       if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
@@ -223,7 +223,7 @@ function ForgetPassword(props) {
   );
 }
 
-export default connect(null, ActionForgetPassword.actions)(ForgetPassword);
+export default connect(null, ActionForgotPassword.actions)(ForgotPassword);
 
 const styles = StyleSheet.create({
   container: {
