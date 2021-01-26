@@ -15,7 +15,6 @@ import moment from "moment";
 import * as ActionSignUp from "../../actions/action-actives/ActionSignUp";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import ModalLoading from "../../components/ModalLoading";
-import { Register } from "../../store/crud/auth.crud";
 import { Block, Input } from "galio-framework";
 import WangdekInfo from "../../components/WangdekInfo";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -23,6 +22,7 @@ import { RadioButton } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Button, CheckBox } from "react-native-elements";
 import { API_URL } from "../../config/config.app";
+// import { Register } from "../../store/crud/auth.crud";
 // import { createAccount } from "../../store/mock/mock";
 // import * as auth from "../../store/ducks/auth.duck";
 
@@ -119,6 +119,13 @@ function SignUp(props) {
       hidden: true,
     },
   ];
+  
+  //Gender
+  const [checkedGender, setCheckedGender] = useState(1);
+  //MailBox
+  const [checkedMail, setCheckedMail] = useState(0);
+  //Confirm
+  const [isConfirm, setConfirm] = useState(false);
 
   // #3
   const [province, setProvince] = useState([
@@ -307,13 +314,6 @@ function SignUp(props) {
     props.setObjSignUp(newObj);
   };
 
-  //Gender
-  const [checkedGender, setCheckedGender] = useState(1);
-  //MailBox
-  const [checkedMail, setCheckedMail] = useState("Yes");
-  //Confirm
-  const [isConfirm, setConfirm] = useState(false);
-
   // SignUp
   const [checkPassword, setCheckPassword] = useState(false);
   const onClickSignUp = () => {
@@ -345,7 +345,7 @@ function SignUp(props) {
             password: objSignUpHD.PASSWORD_1,
             password_confirmation: objSignUpHD.PASSWORD_2,
             sex: parseInt(checkedGender),
-            birthday: objSignUpHD.BIRTH_DATE.toString(),
+            birthday: (objSignUpHD.BIRTH_DATE).toString(),
             telephone: parseInt(objSignUpHD.PHONE_NUMBER),
 
             address: objSignUpHD.ADDRESS_NAME,
@@ -366,7 +366,7 @@ function SignUp(props) {
             delivery_postcode: parseInt(objSignUpHD.ZIP_CODE_ORDER),
             delivery_telephone: parseInt(objSignUpHD.PHONE_NUMBER_ORDER),
 
-            receive_info: checkedMail,
+            receive_info: parseInt(checkedMail),
             privacy_confirm: isConfirm ? "Confirm" : "Do not Confirm",
           },
         })
@@ -1202,9 +1202,9 @@ function SignUp(props) {
           <Block row style={{ margin: 10 }}>
             <Block row>
               <RadioButton
-                value="Yes"
-                status={checkedMail === "Yes" ? "checked" : "unchecked"}
-                onPress={() => setCheckedMail("Yes")}
+                value={0}
+                status={checkedMail == 0 ? "checked" : "unchecked"}
+                onPress={() => setCheckedMail(0)}
               />
               <Text
                 style={{
@@ -1219,9 +1219,9 @@ function SignUp(props) {
             </Block>
             <Block row style={{ marginLeft: 50 }}>
               <RadioButton
-                value="No"
-                status={checkedMail === "No" ? "checked" : "unchecked"}
-                onPress={() => setCheckedMail("No")}
+                value={1}
+                status={checkedMail == 1 ? "checked" : "unchecked"}
+                onPress={() => setCheckedMail(1)}
               />
               <Text
                 style={{

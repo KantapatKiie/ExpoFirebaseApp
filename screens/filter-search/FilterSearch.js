@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
-  ToastAndroid,
 } from "react-native";
 import * as ActionFilterSearch from "../../actions/action-filter-search/ActionFilterSearch.js";
 import { Block, Text } from "galio-framework";
@@ -48,10 +47,6 @@ function FilterSearch(props) {
   ];
   const onChangeFilter = (item) => {
     setFilterSearch(item.value);
-  };
-
-  const showToast = () => {
-    ToastAndroid.show("ToastAndriod React Native !", ToastAndroid.SHORT);
   };
 
   // Filter Function
@@ -375,7 +370,6 @@ function FilterSearch(props) {
             title={"ค้นหา"}
             type="solid"
             buttonStyle={styles.buttonSearch}
-            onPress={showToast()}
           />
         </Block>
         <WangdekInfo />

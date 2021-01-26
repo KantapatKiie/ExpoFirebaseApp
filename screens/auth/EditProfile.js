@@ -10,80 +10,61 @@ import {
   ScrollView,
   ToastAndroid,
 } from "react-native";
+import axios from "axios";
 import moment from "moment";
+import * as ActionEditProfile from "../../actions/action-actives/ActionEditProfile";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import ModalLoading from "../../components/ModalLoading";
-import * as auth from "../../store/ducks/auth.duck";
-import { createAccount } from "../../store/mock/mock";
 import { Block, Input } from "galio-framework";
 import WangdekInfo from "../../components/WangdekInfo";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { RadioButton } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Button } from "react-native-elements";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+const token = getToken();
 
 function EditProfile(props) {
-  useEffect(() => {}, []);
+  let controller;
+  const { objEditProfileHD } = useSelector((state) => ({
+    objEditProfileHD: state.actionEditProfile.objEditProfileHD,
+    // listTrEditProfileHD: state.actionEditProfile.listTrEditProfileHD,
+  }));
+
+  useEffect(() => {
+    getProvinces();
+  }, []);
 
   const [loading, setLoading] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
-  const [stateObj, setStateObj] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password1: "",
-    password2: "",
-    phone: "",
-    birth_date: moment(new Date()).format("DD/MM/YYYY"),
-    postCode: "",
-    postCodeOrder: "",
-    phoneOrder: "",
-  });
-
-  // #1
-  const [visiblePass1, setVisiblePass1] = useState(true);
-  const [visiblePass2, setVisiblePass2] = useState(true);
-  const onChangePassword1 = (e) => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.password = e;
-    setStateObj(newObj);
-  };
-  const changeVisiblePassword1 = () => {
-    if (visiblePass1 === false) {
-      setVisiblePass1(true);
-    } else {
-      setVisiblePass1(false);
-    }
-  };
-
   // #2
   const onChangeFirstName = (e) => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.firstName = e;
-    setStateObj(newObj);
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.FIRST_NAME = e;
+    props.setObjEditProfile(newObj);
   };
   const onChangeLastName = (e) => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.lastName = e;
-    setStateObj(newObj);
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.LAST_NAME = e;
+    props.setObjEditProfile(newObj);
   };
   const onChangePhone = (e) => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.phone = e;
-    setStateObj(newObj);
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.PHONE_NUMBER = e;
+    props.setObjEditProfile(newObj);
   };
   const onChangeEmail = (e) => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.email = e;
-    setStateObj(newObj);
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.EMAIL = e;
+    props.setObjEditProfile(newObj);
   };
 
   //Gender
-  const [checked, setChecked] = useState("male");
+  const [checkedSex, setCheckedSex] = useState(0);
   //MailBox
-  const [checkedMail, setCheckedMail] = useState("yesMail");
+  const [checkedMail, setCheckedMail] = useState(2);
   //DatePicker
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const showDatePicker = () => {
@@ -93,129 +74,344 @@ function EditProfile(props) {
     setDatePickerVisibility(false);
   };
   const handleConfirm = (date) => {
-    let newObj = Object.assign({}, stateObj);
+    let newObj = Object.assign({}, objEditProfileHD);
     if (date === null) {
-      newObj.birth_date = moment(new Date()).format();
+      newObj.BIRTH_DATE = moment(new Date()).format();
     } else {
-      newObj.birth_date = moment(date).format("DD/MM/YYYY");
+      newObj.BIRTH_DATE = moment(date).format("YYYY-MM-DD");
     }
-    setStateObj(newObj);
+    props.setObjEditProfile(newObj);
     hideDatePicker();
   };
 
   // #3
-  const onChangeAdress = () => {};
-  const [tumbol, setTumbol] = useState();
-  const [aumper, setAumper] = useState();
-  const [province, setProvince] = useState();
-  const itemTumbol = [
+  const [province, setProvince] = useState([
     {
-      label: "USA",
-      value: "usa",
-      hidden: true,
+      label: objEditProfileHD.PROVINCE_NAME,
+      value: objEditProfileHD.PROVINCE_CODE,
     },
+  ]);
+  const [district, setDistrict] = useState([
     {
-      label: "UK",
-      value: "uk",
+      label: objEditProfileHD.DISTRICT_NAME,
+      value: objEditProfileHD.DISTRICT_CODE,
     },
-  ];
-  const onChangeTumbol = (item) => {
-    setTumbol(item);
+  ]);
+  const [subDistrict, setSubDistrict] = useState([
+    {
+      label: objEditProfileHD.SUB_DISTRICT_NAME,
+      value: objEditProfileHD.SUB_DISTRICT_CODE,
+    },
+  ]);
+  const getProvinces = async () => {
+    await axios
+      .get(API_URL.PROVINCE_API)
+      .then(function (response) {
+        let newlstBin = response.data.data.map(function (item) {
+          item.label = item.name_th;
+          item.value = item.id;
+          return item;
+        });
+
+        if (newlstBin !== null || newlstBin !== "") {
+          setProvince(newlstBin);
+          setProvinceOrder(newlstBin);
+
+          axios
+            .get(API_URL.DISTRICT_API, {
+              params: {
+                province_id: objEditProfileHD.PROVINCE_CODE,
+              },
+            })
+            .then(function (response) {
+              let newlstBin = response.data.data.map(function (item) {
+                item.label = item.name_th;
+                item.value = item.id;
+                return item;
+              });
+              setDistrict(newlstBin);
+
+              //User Address loadEffect
+              axios
+                .get(API_URL.SUB_DISTRICT_API, {
+                  params: {
+                    district_id: objEditProfileHD.DISTRICT_CODE,
+                  },
+                })
+                .then(function (response) {
+                  let newlstBin = response.data.data.map(function (item) {
+                    item.label = item.name_th;
+                    item.value = item.id;
+                    return item;
+                  });
+                  setSubDistrict(newlstBin);
+
+                  //Delivery Address loadEffect
+                  axios
+                    .get(API_URL.DISTRICT_API, {
+                      params: {
+                        province_id: objEditProfileHD.PROVINCE_CODE_ORDER,
+                      },
+                    })
+                    .then(function (response) {
+                      let newlstBin = response.data.data.map(function (item) {
+                        item.label = item.name_th;
+                        item.value = item.id;
+                        return item;
+                      });
+                      setDistrictOrder(newlstBin);
+
+                      axios
+                        .get(API_URL.SUB_DISTRICT_API, {
+                          params: {
+                            district_id: objEditProfileHD.DISTRICT_CODE_ORDER,
+                          },
+                        })
+                        .then(function (response) {
+                          let newlstBin = response.data.data.map(function (
+                            item
+                          ) {
+                            item.label = item.name_th;
+                            item.value = item.id;
+                            return item;
+                          });
+                          setSubDistrictOrder(newlstBin);
+                        });
+                    });
+                });
+            });
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
-  const onChangeAumper = (item) => {
-    setAumper(item);
+  const onChangeAdress = (value) => {
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.ADDRESS_NAME = value;
+    props.setObjEditProfile(newObj);
   };
   const onChangeProvince = (item) => {
-    setProvince(item);
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.PROVINCE_CODE = item.value;
+    newObj.PROVINCE_NAME = item.label;
+    props.setObjEditProfile(newObj);
+    if (item.value !== null) {
+      axios
+        .get(API_URL.DISTRICT_API, {
+          params: {
+            province_id: item.id,
+          },
+        })
+        .then(function (response) {
+          let newlstBin = response.data.data.map(function (item) {
+            item.label = item.name_th;
+            item.value = item.id;
+            return item;
+          });
+          setDistrict(newlstBin);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   };
-  const onChangePostCode = () => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.postCode = e;
-    setStateObj(newObj);
+  const onChangeDistrict = (item) => {
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.DISTRICT_CODE = item.value;
+    newObj.DISTRICT_NAME = item.label;
+    props.setObjEditProfile(newObj);
+    if (item !== null) {
+      axios
+        .get(API_URL.SUB_DISTRICT_API, {
+          params: {
+            district_id: item.id,
+          },
+        })
+        .then(function (response) {
+          let newlstBin = response.data.data.map(function (item) {
+            item.label = item.name_th;
+            item.value = item.id;
+            return item;
+          });
+          setSubDistrict(newlstBin);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+  };
+  const onChangeSubDistrict = (item) => {
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.SUB_DISTRICT_CODE = item.value;
+    newObj.SUB_DISTRICT_NAME = item.label;
+    newObj.ZIP_CODE = item.zip_code.toString();
+    props.setObjEditProfile(newObj);
   };
 
   // #4
-  const onChangeAdressOrder = () => {};
-  const [tumbolOrder, setTumbolOrder] = useState();
-  const [aumperOrder, setAumperOrder] = useState();
-  const [provinceOrder, setProvinceOrder] = useState();
-
-  const onChangeTumbolOrder = (item) => {
-    setTumbolOrder(item);
-  };
-  const onChangeAumperOrder = (item) => {
-    setAumperOrder(item);
+  const [provinceOrder, setProvinceOrder] = useState([
+    {
+      label: objEditProfileHD.PROVINCE_NAME_ORDER,
+      value: objEditProfileHD.PROVINCE_CODE_ORDER,
+    },
+  ]);
+  const [districtOrder, setDistrictOrder] = useState([
+    {
+      label: objEditProfileHD.DISTRICT_NAME_ORDER,
+      value: objEditProfileHD.DISTRICT_CODE_ORDER,
+    },
+  ]);
+  const [subDistrictOrder, setSubDistrictOrder] = useState([
+    {
+      label: objEditProfileHD.SUB_DISTRICT_NAME_ORDER,
+      value: objEditProfileHD.SUB_DISTRICT_CODE_ORDER,
+    },
+  ]);
+  const onChangeAdressOrder = (e) => {
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.ADDRESS_NAME_ORDER = e;
+    props.setObjEditProfile(newObj);
   };
   const onChangeProvinceOrder = (item) => {
-    setProvinceOrder(item);
-  };
-  const onChangePostCodeOrder = () => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.postCodeOrder = e;
-    setStateObj(newObj);
-  };
-  const onChangePhoneOrder = () => {
-    let newObj = Object.assign({}, stateObj);
-    newObj.phoneOrder = e;
-    setStateObj(newObj);
-  };
-
-  // Signup
-  const onClickConfirm = () => {
-    setLoading(true);
-    if (
-      stateObj.firstName !== "" &&
-      stateObj.lastName !== "" &&
-      stateObj.password !== "" &&
-      stateObj.password2 !== "" &&
-      stateObj.email !== ""
-    ) {
-      createAccount("firstName", "lastName", "test@test.ca", "12345")
-        .then((val) => {
-          console.log(val);
-          setLoading(false);
-          props.navigation.navigate("Sign In");
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.PROVINCE_CODE_ORDER = item.value;
+    newObj.PROVINCE_NAME_ORDER = item.label;
+    props.setObjEditProfile(newObj);
+    if (item.value !== null) {
+      axios
+        .get(API_URL.DISTRICT_API, {
+          params: {
+            province_id: item.id,
+          },
         })
-        .catch((err) => console.log("error:", err.message));
-    } else {
-      setLoading(false);
+        .then(function (response) {
+          let newlstBin = response.data.data.map(function (item) {
+            item.label = item.name_th;
+            item.value = item.id;
+            return item;
+          });
+          setDistrictOrder(newlstBin);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
     }
   };
-
-  const showToast = () => {
-    ToastAndroid.show("Test ToastAndriod React Native !", ToastAndroid.SHORT);
+  const onChangeDistrictOrder = (item) => {
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.DISTRICT_CODE_ORDER = item.value;
+    newObj.DISTRICT_NAME_ORDER = item.label;
+    props.setObjEditProfile(newObj);
+    if (item !== null) {
+      axios
+        .get(API_URL.SUB_DISTRICT_API, {
+          params: {
+            district_id: item.id,
+          },
+        })
+        .then(function (response) {
+          let newlstBin = response.data.data.map(function (item) {
+            item.label = item.name_th;
+            item.value = item.id;
+            return item;
+          });
+          setSubDistrictOrder(newlstBin);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+  };
+  const onChangeSubDistrictOrder = (item) => {
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.SUB_DISTRICT_CODE_ORDER = item.value;
+    newObj.SUB_DISTRICT_NAME_ORDER = item.label;
+    newObj.ZIP_CODE_ORDER = item.zip_code.toString();
+    props.setObjEditProfile(newObj);
+  };
+  const onChangePhoneOrder = (e) => {
+    let newObj = Object.assign({}, objEditProfileHD);
+    newObj.PHONE_NUMBER_ORDER = e;
+    props.setObjEditProfile(newObj);
   };
 
+  // Edit Profile
+  const confirmEditProfile = async () => {
+    // let address_dv = {listTrEditProfileHD};
+    axios({
+      method: "PUT",
+      url: API_URL.REGISTER_API,
+      headers: {
+        Accept: "application/json",
+        Authorization: "Bearer " + (await token),
+      },
+      params: {
+        first_name: objEditProfileHD.FIRST_NAME,
+        last_name: objEditProfileHD.LAST_NAME,
+        profile: {
+          profile_id: objEditProfileHD.PROFILE_ID,
+          sex: parseInt(checkedSex),//objEditProfileHD.SEX,
+          birthday: objEditProfileHD.BIRTH_DATE.toString(),
+          telephone: parseInt(objEditProfileHD.PHONE_NUMBER),
+          address: objEditProfileHD.ADDRESS_NAME,
+          province_id: parseInt(objEditProfileHD.PROVINCE_CODE),
+          district_id: parseInt(objEditProfileHD.DISTRICT_CODE),
+          sub_district_id: parseInt(objEditProfileHD.SUB_DISTRICT_CODE),
+          postcode: parseInt(objEditProfileHD.ZIP_CODE),
+          receive_info: parseInt(checkedMail),//objEditProfileHD.SEX,
+        },
+        address_deliveries: [
+          {
+            address_deliveries_id: objEditProfileHD.ADDRESS_DELIVERIES_ID,
+            address: objEditProfileHD.ADDRESS_NAME,
+            province_id: parseInt(objEditProfileHD.PROVINCE_CODE_ORDER),
+            district_id: parseInt(objEditProfileHD.DISTRICT_CODE_ORDER),
+            sub_district_id: parseInt(objEditProfileHD.SUB_DISTRICT_CODE_ORDER),
+            postcode: parseInt(objEditProfileHD.ZIP_CODE_ORDER),
+            telephone: parseInt(objEditProfileHD.PHONE_NUMBER_ORDER),
+          },
+        ],
+      },
+    })
+      .then(function (response) {
+        console.log(response.data);
+      })
+      .catch(function (error) {
+        console.log("error:", error.message);
+      });
+  };
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Title */}
         <TouchableOpacity onPress={() => props.navigation.navigate("Sign In")}>
-        <Block
-          row
-          style={{
-            paddingTop: 20,
-            paddingLeft: 20,
-            paddingBottom: 20,
-            backgroundColor: "white",
-            borderBottomWidth: 1,
-            borderBottomColor: "#e0e0e0",
-          }}
-        >
-          <Text
+          <Block
+            row
             style={{
-              color: "black",
-              fontFamily: "kanitRegular",
-              fontSize: 18,
+              paddingTop: 20,
+              paddingLeft: 20,
+              paddingBottom: 20,
+              backgroundColor: "white",
+              borderBottomWidth: 1,
+              borderBottomColor: "#e0e0e0",
             }}
           >
-            {"<  "}แก้ไขข้อมูล
-          </Text>
-        </Block>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 18,
+              }}
+            >
+              {"<  "}แก้ไขข้อมูล
+            </Text>
+          </Block>
         </TouchableOpacity>
+
         {/* Block 1 */}
         <Block style={styles.containerBlock1}>
-          <Block style={{ marginBottom: 5, marginTop: 20 }}>
+          <Block style={{ marginBottom: 5 }}>
             <Text
               style={{
                 alignSelf: "flex-start",
@@ -244,69 +440,20 @@ function EditProfile(props) {
           <Block style={styles.inputView}>
             <TextInput
               style={styles.inputText}
-              placeholder={"กรอกชื่อบัญชี"}
-              placeholderTextColor="#808080"
-              value={stateObj.email}
+              value={objEditProfileHD.EMAIL}
               onChangeText={onChangeEmail}
+              editable={false}
             />
           </Block>
-          {/* Password1 */}
-          <Block style={{ marginBottom: 5, marginTop: 20 }}>
-            <Text
-              style={{
-                alignSelf: "flex-start",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-              }}
-            >
-              รหัสผ่าน
-            </Text>
-          </Block>
-          <Block
-            row
-            style={{
-              borderWidth: 1.5,
-              borderColor: "#e0e0e0",
-              backgroundColor: "white",
-              width: width - 45,
-              height: 47,
-            }}
-          >
-            <TextInput
-              style={styles.inputTextPassword}
-              placeholder="กรอกรหัสผ่าน"
-              placeholderTextColor="#808080"
-              value={stateObj.password}
-              onChangeText={onChangePassword1}
-              secureTextEntry={visiblePass1}
-            />
-            <TouchableOpacity
-              style={{ marginTop: 10, marginLeft: 100 }}
-              onPress={changeVisiblePassword1}
-            >
-              <Image
-                source={
-                  visiblePass1
-                    ? require("../../assets/iconRegister/viewpass1.png")
-                    : require("../../assets/iconRegister/viewpass2.png")
-                }
-                style={{
-                  width: 25,
-                  height: 25,
-                }}
-              />
-            </TouchableOpacity>
-          </Block>
-          <Block
-            style={{ paddingTop: 20, alignSelf: "center" }}
-          >
+          {/* Change Password */}
+          <Block style={{ paddingTop: 20, alignSelf: "center" }}>
             <Button
               titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
               title={"เปลี่ยนรหัสผ่าน"}
               type="solid"
-              onPress={showToast}
               containerStyle={styles.blockButton1}
               buttonStyle={styles.buttonStyle1}
+              onPress={() => props.navigation.navigate("Change Password")}
             />
           </Block>
         </Block>
@@ -344,7 +491,7 @@ function EditProfile(props) {
               style={styles.inputText}
               placeholder={""}
               placeholderTextColor="#808080"
-              value={stateObj.firstName}
+              value={objEditProfileHD.FIRST_NAME}
               onChangeText={onChangeFirstName}
             />
           </Block>
@@ -365,10 +512,11 @@ function EditProfile(props) {
               style={styles.inputText}
               placeholder={""}
               placeholderTextColor="#808080"
-              value={stateObj.lastName}
+              value={objEditProfileHD.LAST_NAME}
               onChangeText={onChangeLastName}
             />
           </Block>
+          {/* Sex */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -384,9 +532,15 @@ function EditProfile(props) {
           <Block row>
             <Block row>
               <RadioButton
-                value="male"
-                status={checked === "male" ? "checked" : "unchecked"}
-                onPress={() => setChecked("male")}
+                value={1}
+                status={
+                  checkedSex === 2
+                    ? "unchecked"
+                    : objEditProfileHD.SEX === 1 || checkedSex === 1
+                    ? "checked"
+                    : "unchecked"
+                }
+                onPress={() => setCheckedSex(1)}
               />
               <Text
                 style={{
@@ -401,9 +555,15 @@ function EditProfile(props) {
             </Block>
             <Block row style={{ marginLeft: 50 }}>
               <RadioButton
-                value="female"
-                status={checked === "female" ? "checked" : "unchecked"}
-                onPress={() => setChecked("female")}
+                value={2}
+                status={
+                  checkedSex === 1
+                    ? "unchecked"
+                    : objEditProfileHD.SEX === 2 || checkedSex === 2
+                    ? "checked"
+                    : "unchecked"
+                }
+                onPress={() => setCheckedSex(2)}
               />
               <Text
                 style={{
@@ -434,20 +594,19 @@ function EditProfile(props) {
               right
               color="black"
               style={styles.search}
-              value={stateObj.birth_date}
+              value={
+                objEditProfileHD.BIRTH_DATE == ""
+                  ? new Date()
+                  : objEditProfileHD.BIRTH_DATE
+              }
               iconContent={
                 <TouchableOpacity onPress={showDatePicker}>
                   <Icons name="calendar-range" size={20} color="black" />
                 </TouchableOpacity>
               }
             />
-            <DateTimePickerModal
-              isVisible={isDatePickerVisible}
-              mode="date"
-              onConfirm={handleConfirm}
-              onCancel={hideDatePicker}
-            />
           </Block>
+          {/* Phone */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -464,7 +623,7 @@ function EditProfile(props) {
               style={styles.inputText}
               placeholder=""
               placeholderTextColor="#808080"
-              value={stateObj.phone}
+              value={objEditProfileHD.PHONE_NUMBER}
               onChangeText={onChangePhone}
               keyboardType={"number-pad"}
             />
@@ -483,10 +642,10 @@ function EditProfile(props) {
           <Block style={styles.inputView2}>
             <TextInput
               style={styles.inputText}
-              placeholder="example@gmail.com"
-              placeholderTextColor="#808080"
-              value={stateObj.email}
+              value={objEditProfileHD.EMAIL}
               onChangeText={onChangeEmail}
+              keyboardType="email-address"
+              editable={false}
             />
           </Block>
         </Block>
@@ -524,93 +683,11 @@ function EditProfile(props) {
               style={styles.inputText}
               placeholder={""}
               placeholderTextColor="#808080"
-              value={stateObj.firstName}
+              value={objEditProfileHD.ADDRESS_NAME}
               onChangeText={onChangeAdress}
             />
           </Block>
 
-          {/* Tumbol */}
-          <Block style={{ marginBottom: 5, marginTop: 20 }}>
-            <Text
-              style={{
-                alignSelf: "flex-start",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                color: "black",
-              }}
-            >
-              แขวง/ตำบล
-            </Text>
-            <DropDownPicker
-              items={itemTumbol}
-              containerStyle={{ height: 40, width: width - 45 }}
-              style={{ backgroundColor: "#fafafa" }}
-              itemStyle={{
-                justifyContent: "flex-start",
-              }}
-              dropDownStyle={{ backgroundColor: "#fafafa" }}
-              placeholderStyle={{
-                textAlign: "left",
-                color: "gray",
-                fontFamily: "kanitRegular",
-              }}
-              placeholder={"- โปรดเลือก -"}
-              labelStyle={{
-                textAlign: "left",
-                color: "#000",
-                fontFamily: "kanitRegular",
-              }}
-              arrowColor={"white"}
-              arrowSize={18}
-              arrowStyle={{
-                backgroundColor: "#02d483",
-                borderRadius: 20,
-                color: "white",
-              }}
-              onChangeItem={onChangeTumbol}
-            />
-          </Block>
-          {/* Aumper */}
-          <Block style={{ marginBottom: 5, marginTop: 20 }}>
-            <Text
-              style={{
-                alignSelf: "flex-start",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                color: "black",
-              }}
-            >
-              อำเภอ
-            </Text>
-            <DropDownPicker
-              items={itemTumbol}
-              containerStyle={{ height: 40, width: width - 45 }}
-              style={{ backgroundColor: "#fafafa" }}
-              itemStyle={{
-                justifyContent: "flex-start",
-              }}
-              dropDownStyle={{ backgroundColor: "#fafafa" }}
-              placeholderStyle={{
-                textAlign: "left",
-                color: "gray",
-                fontFamily: "kanitRegular",
-              }}
-              placeholder={"- โปรดเลือก -"}
-              labelStyle={{
-                textAlign: "left",
-                color: "#000",
-                fontFamily: "kanitRegular",
-              }}
-              arrowColor={"white"}
-              arrowSize={18}
-              arrowStyle={{
-                backgroundColor: "#02d483",
-                borderRadius: 20,
-                color: "white",
-              }}
-              onChangeItem={onChangeAumper}
-            />
-          </Block>
           {/* Province */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
@@ -624,7 +701,6 @@ function EditProfile(props) {
               จังหวัด
             </Text>
             <DropDownPicker
-              items={itemTumbol}
               containerStyle={{ height: 40, width: width - 45 }}
               style={{ backgroundColor: "#fafafa" }}
               itemStyle={{
@@ -649,7 +725,108 @@ function EditProfile(props) {
                 borderRadius: 20,
                 color: "white",
               }}
-              onChangeItem={onChangeProvince}
+              items={province}
+              controller={(instance) => (controller = instance)}
+              defaultValue={
+                objEditProfileHD.PROVINCE_NAME == ""
+                  ? null
+                  : objEditProfileHD.PROVINCE_CODE
+              }
+              onChangeItem={(item) => onChangeProvince(item)}
+            />
+          </Block>
+          {/* District */}
+          <Block style={{ marginBottom: 5, marginTop: 20 }}>
+            <Text
+              style={{
+                alignSelf: "flex-start",
+                fontFamily: "kanitRegular",
+                fontSize: 18,
+                color: "black",
+              }}
+            >
+              อำเภอ
+            </Text>
+            <DropDownPicker
+              items={district}
+              containerStyle={{ height: 40, width: width - 45 }}
+              style={{ backgroundColor: "#fafafa" }}
+              itemStyle={{
+                justifyContent: "flex-start",
+              }}
+              dropDownStyle={{ backgroundColor: "#fafafa" }}
+              placeholderStyle={{
+                textAlign: "left",
+                color: "gray",
+                fontFamily: "kanitRegular",
+              }}
+              placeholder={"- โปรดเลือก -"}
+              labelStyle={{
+                textAlign: "left",
+                color: "#000",
+                fontFamily: "kanitRegular",
+              }}
+              arrowColor={"white"}
+              arrowSize={18}
+              arrowStyle={{
+                backgroundColor: "#02d483",
+                borderRadius: 20,
+                color: "white",
+              }}
+              controller={(instance) => (controller = instance)}
+              defaultValue={
+                objEditProfileHD.DISTRICT_NAME == ""
+                  ? null
+                  : objEditProfileHD.DISTRICT_CODE
+              }
+              onChangeItem={(item) => onChangeDistrict(item)}
+            />
+          </Block>
+          {/* Sub-District */}
+          <Block style={{ marginBottom: 5, marginTop: 20 }}>
+            <Text
+              style={{
+                alignSelf: "flex-start",
+                fontFamily: "kanitRegular",
+                fontSize: 18,
+                color: "black",
+              }}
+            >
+              แขวง/ตำบล
+            </Text>
+            <DropDownPicker
+              items={subDistrict}
+              containerStyle={{ height: 40, width: width - 45 }}
+              style={{ backgroundColor: "#fafafa" }}
+              itemStyle={{
+                justifyContent: "flex-start",
+              }}
+              dropDownStyle={{ backgroundColor: "#fafafa" }}
+              placeholderStyle={{
+                textAlign: "left",
+                color: "gray",
+                fontFamily: "kanitRegular",
+              }}
+              placeholder={"- โปรดเลือก -"}
+              labelStyle={{
+                textAlign: "left",
+                color: "#000",
+                fontFamily: "kanitRegular",
+              }}
+              arrowColor={"white"}
+              arrowSize={18}
+              arrowStyle={{
+                backgroundColor: "#02d483",
+                borderRadius: 20,
+                color: "white",
+              }}
+              controller={(instance) => (controller = instance)}
+              defaultValue={
+                objEditProfileHD.SUB_DISTRICT_NAME == ""
+                  ? null
+                  : objEditProfileHD.SUB_DISTRICT_CODE
+              }
+              onChangeItem={(item) => onChangeSubDistrict(item)}
             />
           </Block>
 
@@ -663,17 +840,15 @@ function EditProfile(props) {
                 color: "black",
               }}
             >
-              รหัสไปรษณียื
+              รหัสไปรษณีย์
             </Text>
           </Block>
           <Block style={styles.inputView}>
             <TextInput
               style={styles.inputText}
-              placeholder={""}
-              placeholderTextColor="#808080"
-              value={stateObj.postCode}
-              onChangeText={onChangePostCode}
+              value={objEditProfileHD.ZIP_CODE}
               keyboardType="number-pad"
+              editable={false}
             />
           </Block>
         </Block>
@@ -711,93 +886,11 @@ function EditProfile(props) {
               style={styles.inputText}
               placeholder={""}
               placeholderTextColor="#808080"
-              value={stateObj.firstName}
+              value={objEditProfileHD.ADDRESS_NAME_ORDER}
               onChangeText={onChangeAdressOrder}
             />
           </Block>
 
-          {/* Tumbol */}
-          <Block style={{ marginBottom: 5, marginTop: 20 }}>
-            <Text
-              style={{
-                alignSelf: "flex-start",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                color: "black",
-              }}
-            >
-              แขวง/ตำบล
-            </Text>
-            <DropDownPicker
-              items={itemTumbol}
-              containerStyle={{ height: 40, width: width - 45 }}
-              style={{ backgroundColor: "#fafafa" }}
-              itemStyle={{
-                justifyContent: "flex-start",
-              }}
-              dropDownStyle={{ backgroundColor: "#fafafa" }}
-              placeholderStyle={{
-                textAlign: "left",
-                color: "gray",
-                fontFamily: "kanitRegular",
-              }}
-              placeholder={"- โปรดเลือก -"}
-              labelStyle={{
-                textAlign: "left",
-                color: "#000",
-                fontFamily: "kanitRegular",
-              }}
-              arrowColor={"white"}
-              arrowSize={18}
-              arrowStyle={{
-                backgroundColor: "#02d483",
-                borderRadius: 20,
-                color: "white",
-              }}
-              onChangeItem={onChangeTumbolOrder}
-            />
-          </Block>
-          {/* Aumper */}
-          <Block style={{ marginBottom: 5, marginTop: 20 }}>
-            <Text
-              style={{
-                alignSelf: "flex-start",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                color: "black",
-              }}
-            >
-              อำเภอ
-            </Text>
-            <DropDownPicker
-              items={itemTumbol}
-              containerStyle={{ height: 40, width: width - 45 }}
-              style={{ backgroundColor: "#fafafa" }}
-              itemStyle={{
-                justifyContent: "flex-start",
-              }}
-              dropDownStyle={{ backgroundColor: "#fafafa" }}
-              placeholderStyle={{
-                textAlign: "left",
-                color: "gray",
-                fontFamily: "kanitRegular",
-              }}
-              placeholder={"- โปรดเลือก -"}
-              labelStyle={{
-                textAlign: "left",
-                color: "#000",
-                fontFamily: "kanitRegular",
-              }}
-              arrowColor={"white"}
-              arrowSize={18}
-              arrowStyle={{
-                backgroundColor: "#02d483",
-                borderRadius: 20,
-                color: "white",
-              }}
-              onChangeItem={onChangeAumperOrder}
-            />
-          </Block>
           {/* Province */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
@@ -811,7 +904,7 @@ function EditProfile(props) {
               จังหวัด
             </Text>
             <DropDownPicker
-              items={itemTumbol}
+              items={provinceOrder}
               containerStyle={{ height: 40, width: width - 45 }}
               style={{ backgroundColor: "#fafafa" }}
               itemStyle={{
@@ -836,7 +929,107 @@ function EditProfile(props) {
                 borderRadius: 20,
                 color: "white",
               }}
-              onChangeItem={onChangeProvinceOrder}
+              controller={(instance) => (controller = instance)}
+              defaultValue={
+                objEditProfileHD.PROVINCE_NAME_ORDER == ""
+                  ? null
+                  : objEditProfileHD.PROVINCE_CODE_ORDER
+              }
+              onChangeItem={(item) => onChangeProvinceOrder(item)}
+            />
+          </Block>
+          {/* District */}
+          <Block style={{ marginBottom: 5, marginTop: 20 }}>
+            <Text
+              style={{
+                alignSelf: "flex-start",
+                fontFamily: "kanitRegular",
+                fontSize: 18,
+                color: "black",
+              }}
+            >
+              อำเภอ
+            </Text>
+            <DropDownPicker
+              items={districtOrder}
+              containerStyle={{ height: 40, width: width - 45 }}
+              style={{ backgroundColor: "#fafafa" }}
+              itemStyle={{
+                justifyContent: "flex-start",
+              }}
+              dropDownStyle={{ backgroundColor: "#fafafa" }}
+              placeholderStyle={{
+                textAlign: "left",
+                color: "gray",
+                fontFamily: "kanitRegular",
+              }}
+              placeholder={"- โปรดเลือก -"}
+              labelStyle={{
+                textAlign: "left",
+                color: "#000",
+                fontFamily: "kanitRegular",
+              }}
+              arrowColor={"white"}
+              arrowSize={18}
+              arrowStyle={{
+                backgroundColor: "#02d483",
+                borderRadius: 20,
+                color: "white",
+              }}
+              controller={(instance) => (controller = instance)}
+              defaultValue={
+                objEditProfileHD.DISTRICT_NAME_ORDER == ""
+                  ? null
+                  : objEditProfileHD.DISTRICT_CODE_ORDER
+              }
+              onChangeItem={(item) => onChangeDistrictOrder(item)}
+            />
+          </Block>
+          {/* Sub-District */}
+          <Block style={{ marginBottom: 5, marginTop: 20 }}>
+            <Text
+              style={{
+                alignSelf: "flex-start",
+                fontFamily: "kanitRegular",
+                fontSize: 18,
+                color: "black",
+              }}
+            >
+              แขวง/ตำบล
+            </Text>
+            <DropDownPicker
+              items={subDistrictOrder}
+              containerStyle={{ height: 40, width: width - 45 }}
+              style={{ backgroundColor: "#fafafa" }}
+              itemStyle={{
+                justifyContent: "flex-start",
+              }}
+              dropDownStyle={{ backgroundColor: "#fafafa" }}
+              placeholderStyle={{
+                textAlign: "left",
+                color: "gray",
+                fontFamily: "kanitRegular",
+              }}
+              placeholder={"- โปรดเลือก -"}
+              labelStyle={{
+                textAlign: "left",
+                color: "#000",
+                fontFamily: "kanitRegular",
+              }}
+              arrowColor={"white"}
+              arrowSize={18}
+              arrowStyle={{
+                backgroundColor: "#02d483",
+                borderRadius: 20,
+                color: "white",
+              }}
+              controller={(instance) => (controller = instance)}
+              defaultValue={
+                objEditProfileHD.SUB_DISTRICT_NAME_ORDER == ""
+                  ? null
+                  : objEditProfileHD.SUB_DISTRICT_CODE_ORDER
+              }
+              onChangeItem={(item) => onChangeSubDistrictOrder(item)}
             />
           </Block>
 
@@ -850,19 +1043,18 @@ function EditProfile(props) {
                 color: "black",
               }}
             >
-              รหัสไปรษณียื
+              รหัสไปรษณีย์
             </Text>
           </Block>
           <Block style={styles.inputView}>
             <TextInput
               style={styles.inputText}
-              placeholder={""}
-              placeholderTextColor="#808080"
-              value={stateObj.postCode}
-              onChangeText={onChangePostCodeOrder}
+              value={objEditProfileHD.ZIP_CODE_ORDER}
               keyboardType="number-pad"
+              editable={false}
             />
           </Block>
+          {/* Phone */}
           <Block style={{ marginBottom: 5, marginTop: 20 }}>
             <Text
               style={{
@@ -877,12 +1069,12 @@ function EditProfile(props) {
           </Block>
           <Block style={styles.inputView}>
             <TextInput
-              style={styles.inputText2}
+              style={styles.inputText}
               placeholder={""}
               placeholderTextColor="#808080"
-              value={stateObj.phoneOrder}
+              value={objEditProfileHD.PHONE_NUMBER_ORDER}
               onChangeText={onChangePhoneOrder}
-              keyboardType="number-pad"
+              keyboardType="phone-pad"
             />
           </Block>
         </Block>
@@ -905,9 +1097,15 @@ function EditProfile(props) {
             <Block row style={{ margin: 10 }}>
               <Block row>
                 <RadioButton
-                  value="yesMail"
-                  status={checkedMail === "yesMail" ? "checked" : "unchecked"}
-                  onPress={() => setCheckedMail("yesMail")}
+                  value={0}
+                  status={
+                    checkedMail === 1
+                      ? "unchecked"
+                      : objEditProfileHD.receive_info === 0 || checkedMail === 0
+                      ? "checked"
+                      : "unchecked"
+                  }
+                  onPress={() => setCheckedMail(0)}
                 />
                 <Text
                   style={{
@@ -922,9 +1120,15 @@ function EditProfile(props) {
               </Block>
               <Block row style={{ marginLeft: 50 }}>
                 <RadioButton
-                  value="notMail"
-                  status={checkedMail === "notMail" ? "checked" : "unchecked"}
-                  onPress={() => setCheckedMail("notMail")}
+                  value={1}
+                  status={
+                    checkedMail === 0
+                      ? "unchecked"
+                      : objEditProfileHD.receive_info === 1 || checkedMail === 1
+                      ? "checked"
+                      : "unchecked"
+                  }
+                  onPress={() => setCheckedMail(1)}
                 />
                 <Text
                   style={{
@@ -948,9 +1152,9 @@ function EditProfile(props) {
               titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
               title={"บันทึกข้อมูล"}
               type="solid"
-              onPress={showToast}
               containerStyle={styles.blockButton1}
               buttonStyle={styles.buttonStyle1}
+              onPress={confirmEditProfile}
             />
           </Block>
         </Block>
@@ -958,11 +1162,17 @@ function EditProfile(props) {
         <WangdekInfo />
       </ScrollView>
       <ModalLoading loading={loading} />
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}
+        mode="date"
+        onConfirm={handleConfirm}
+        onCancel={hideDatePicker}
+      />
     </>
   );
 }
 
-export default connect(null, auth.actions)(EditProfile);
+export default connect(null, ActionEditProfile.actions)(EditProfile);
 
 const styles = StyleSheet.create({
   container: {
@@ -1130,7 +1340,6 @@ const styles = StyleSheet.create({
   },
   blockButton1: {
     flexDirection: "row",
-    paddingLeft: 5,
   },
   blockButton2: {
     paddingLeft: 40,
@@ -1138,7 +1347,7 @@ const styles = StyleSheet.create({
   buttonStyle1: {
     backgroundColor: "#00e08e",
     borderRadius: 20,
-    width: 150,
+    width: 170,
     alignSelf: "center",
   },
   buttonStyle2: {

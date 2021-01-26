@@ -14,9 +14,9 @@ import { actions as ActionProduct } from "../../actions/action-product/ActionPro
 import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
 import WangdekInfo from "../../components/WangdekInfo";
 import ReadMore from "react-native-read-more-text";
-import NumericInput from 'react-native-numeric-input'
+import NumericInput from "react-native-numeric-input";
 import { LinearGradient } from "expo-linear-gradient";
-import { ProgressBar, Colors } from 'react-native-paper';
+import { ProgressBar, Colors } from "react-native-paper";
 import CountDown from "react-native-countdown-component";
 import commaNumber from "comma-number";
 
@@ -30,12 +30,11 @@ function ProductDetail(props) {
     objCartBasket: state.actionCart.objCartBasket,
   }));
 
-  useEffect(() => {
-  }, []);
-  
-  const [progressValue ,setProgressValue] = useState(0.7);
+  useEffect(() => {}, []);
 
-  const [ favotite, setFavorite] = useState(false)
+  const [progressValue, setProgressValue] = useState(0.7);
+
+  const [favotite, setFavorite] = useState(false);
   const onClickFavorite = () => {
     if (favotite === false) {
       setFavorite(true);
@@ -77,11 +76,11 @@ function ProductDetail(props) {
   };
 
   //onChangeCount
-  const onChangeValue =(value) => {
+  const onChangeValue = (value) => {
     let newObj = Object.assign({}, objProductActivity);
     newObj.COUNT = value;
     props.setObjProductActivity(newObj);
-  }
+  };
   const onclickAddProduct = () => {
     let newObjCart = Object.assign({}, objCartBasket);
     newObjCart.CART_ID = "CRTID001";
@@ -260,7 +259,9 @@ function ProductDetail(props) {
           </Block>
           <Block row style={{ margin: 15, alignSelf: "flex-end" }}>
             <Text style={styles.detailPrice1}>ราคา : </Text>
-            <Text style={styles.detailPrice2}>฿{commaNumber(objProductActivity.PRICE)}</Text>
+            <Text style={styles.detailPrice2}>
+              ฿{commaNumber(objProductActivity.PRICE)}
+            </Text>
           </Block>
           {/* Count */}
           <Block row style={{ margin: 10 }}>
@@ -427,7 +428,7 @@ const styles = StyleSheet.create({
     color: "black",
     fontSize: 16,
     fontFamily: "kanitRegular",
-    marginTop:4
+    marginTop: 4,
   },
   detailTextDesc: {
     color: "#858585",
@@ -454,7 +455,7 @@ const styles = StyleSheet.create({
   },
   blockTitle: {
     marginLeft: 10,
-    marginTop:15,
+    marginTop: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
     height: 70,
@@ -470,27 +471,26 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     backgroundColor: "#09db99",
-    borderWidth:0.2
+    borderWidth: 0.2,
   },
   buttonDecrease: {
     width: 30,
     height: 30,
     backgroundColor: "#adadad",
     marginLeft: 15,
-    borderWidth:0.2
+    borderWidth: 0.2,
   },
   inputCountPD: {
     width: 70,
     height: 30,
     backgroundColor: "white",
-    borderWidth:0.5,
+    borderWidth: 0.5,
     color: "black",
     fontSize: 18,
     fontFamily: "kanitRegular",
     textAlign: "center",
   },
 });
-
 
 const linerStyle = StyleSheet.create({
   container: {
@@ -502,16 +502,15 @@ const linerStyle = StyleSheet.create({
     justifyContent: "flex-start",
     height: 150,
     width: "97%",
-    alignSelf:"center"
+    alignSelf: "center",
   },
   BlockTime: {
     flexDirection: "row",
     alignItems: "flex-start",
     alignSelf: "flex-start",
-    width:width / 1.6
+    width: width / 1.6,
   },
 });
-
 
 const timeStyle = StyleSheet.create({
   timeText: {
@@ -520,7 +519,7 @@ const timeStyle = StyleSheet.create({
     color: "white",
     marginBottom: 5,
     textAlign: "center",
-    fontFamily:"kanitRegular"
+    fontFamily: "kanitRegular",
   },
   timeTextArrow: {
     fontWeight: "500",
@@ -529,6 +528,6 @@ const timeStyle = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 1.5,
     marginTop: 2.5,
-    fontFamily:"kanitRegular"
+    fontFamily: "kanitRegular",
   },
 });

@@ -15,17 +15,23 @@ function ModalLoading (props){
   return (
     <Modal
       transparent={true}
-      animationType={'none'}
+      animationType={"none"}
       visible={loading}
-      onRequestClose={() => {console.log('close modal')}}>
+      onRequestClose={() => {
+        console.log("close modal");
+      }}
+    >
       <View style={styles.modalBackground}>
         <View style={styles.activityIndicatorWrapper}>
           <ActivityIndicator
-            animating={loading} color="black"/>
+            animating={loading}
+            color="black"
+            // style={{ width: 100, height: 100 }}
+          />
         </View>
       </View>
     </Modal>
-  )
+  );
 }
 
 const styles = StyleSheet.create({

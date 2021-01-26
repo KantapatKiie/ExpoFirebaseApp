@@ -22,7 +22,7 @@ import { Feather } from "@expo/vector-icons";
 
 const { height, width } = Dimensions.get("window");
 
-const ModalNotification = ({ style }) => {
+const ModalNotification = ({ style, navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   return (
     <>
@@ -51,9 +51,8 @@ const ModalNotification = ({ style }) => {
 
       <TouchableOpacity
         style={[styles.button, style]}
-        onPress={() => {
-          setModalVisible(true);
-        }}
+        onPress={() => navigation.navigate("Notifications")}
+        // onPress={() => { setModalVisible(true);}}
       >
         <Icons name="notifications" color={"#383838"} size={20} />
         <Block middle style={styles.notify} />
@@ -95,12 +94,12 @@ const ModalSearch = ({ style, navigation }) => {
         <Icons name="search" color={"#383838"} size={20} />
         {/* <Feather name="search" size={20} /> */}
 
-        <Block middle style={styles.notify} />
+        {/* <Block middle style={styles.notify} /> */}
       </TouchableOpacity>
     </>
   );
 };
-const ModalMessage = ({ style }) => {
+const ModalFavorite = ({ style, navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   return (
     <>
@@ -129,12 +128,11 @@ const ModalMessage = ({ style }) => {
 
       <TouchableOpacity
         style={[styles.button, style]}
-        onPress={() => {
-          setModalVisible(true);
-        }}
+        onPress={() => navigation.navigate("Favorite View")}
+        // onPress={() => { setModalVisible(true);}}
       >
         <Icons name="favorite" color={"#383838"} size={20} />
-        <Block middle style={styles.notify} />
+        {/* <Block middle style={styles.notify} /> */}
       </TouchableOpacity>
     </>
   );
@@ -732,7 +730,7 @@ function Header(props) {
 
     if (title === "Title") {
       return [
-        <ModalMessage
+        <ModalFavorite
           key="chat-title"
           navigation={navigation}
           isWhite={white}
@@ -748,7 +746,7 @@ function Header(props) {
     switch (title) {
       case "Home":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-home"
             navigation={navigation}
             isWhite={white}
@@ -761,12 +759,12 @@ function Header(props) {
         ];
       case "Deals":
         return [
-          <ModalMessage key="chat-categories" navigation={navigation} />,
+          <ModalFavorite key="chat-categories" navigation={navigation} />,
           <BasketButton key="basket-categories" navigation={navigation} />,
         ];
       case "Cart":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-categories"
             navigation={navigation}
             isWhite={white}
@@ -779,7 +777,7 @@ function Header(props) {
         ];
       case "Products":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-deals"
             navigation={navigation}
             isWhite={white}
@@ -792,7 +790,7 @@ function Header(props) {
         ];
       case "Profile":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-profile"
             navigation={navigation}
             isWhite={white}
@@ -805,7 +803,7 @@ function Header(props) {
         ];
       case "Search":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -820,7 +818,7 @@ function Header(props) {
         return [];
       case "Payment":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -833,7 +831,7 @@ function Header(props) {
         ];
       case "Payment":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -846,7 +844,7 @@ function Header(props) {
         ];
       case "Sign In":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -859,7 +857,7 @@ function Header(props) {
         ];
       case "Filter Search":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -872,7 +870,7 @@ function Header(props) {
         ];
       case "History View":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -885,7 +883,7 @@ function Header(props) {
         ];
       case "History Order":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -898,7 +896,7 @@ function Header(props) {
         ];
       case "Order Screen":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -911,7 +909,7 @@ function Header(props) {
         ];
       case "Use Coupon":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -924,7 +922,7 @@ function Header(props) {
         ];
       case "Use Delivery":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -937,7 +935,7 @@ function Header(props) {
         ];
       case "Use Address Delivery":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -950,7 +948,7 @@ function Header(props) {
         ];
       case "Events":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -963,7 +961,7 @@ function Header(props) {
         ];
       case "Product All":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -976,7 +974,7 @@ function Header(props) {
         ];
       case "News Relation":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -989,7 +987,7 @@ function Header(props) {
         ];
       case "Payment Notifications":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1002,7 +1000,7 @@ function Header(props) {
         ];
       case "Account":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1015,7 +1013,7 @@ function Header(props) {
         ];
       case "About Us":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1028,7 +1026,7 @@ function Header(props) {
         ];
       case "HowTo":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1041,7 +1039,7 @@ function Header(props) {
         ];
       case "Payment":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1054,7 +1052,7 @@ function Header(props) {
         ];
       case "News Relation Detail":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1067,7 +1065,7 @@ function Header(props) {
         ];
       case "History Order":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1080,7 +1078,7 @@ function Header(props) {
         ];
       case "History View":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1093,7 +1091,7 @@ function Header(props) {
         ];
       case "Favorite View":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1106,7 +1104,7 @@ function Header(props) {
         ];
       case "My Coupon":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1119,7 +1117,7 @@ function Header(props) {
         ];
       case "Promotions":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1132,7 +1130,7 @@ function Header(props) {
         ];
       case "Order Status":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1145,7 +1143,7 @@ function Header(props) {
         ];
       case "Order Screen":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1158,7 +1156,7 @@ function Header(props) {
         ];
       case "Use Coupon":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1171,7 +1169,7 @@ function Header(props) {
         ];
       case "Use Delivery":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1184,7 +1182,7 @@ function Header(props) {
         ];
       case "Filter Search":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1197,7 +1195,7 @@ function Header(props) {
         ];
       case "Use Address Delivery":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1210,7 +1208,7 @@ function Header(props) {
         ];
       case "Contact":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1223,7 +1221,7 @@ function Header(props) {
         ];
       case "Notifications":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -1236,7 +1234,7 @@ function Header(props) {
         ];
       case "Product Type":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}

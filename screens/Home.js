@@ -29,6 +29,9 @@ import WangdekInfo from "../components/WangdekInfo";
 import CountDown from "react-native-countdown-component";
 import Icons from "react-native-vector-icons/MaterialIcons";
 
+// import { getToken } from "../store/mock/token";
+// let token = getToken();
+
 const { width } = Dimensions.get("screen");
 
 function Home(props) {

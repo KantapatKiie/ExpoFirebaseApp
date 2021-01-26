@@ -4,7 +4,7 @@ import * as login from "../actions/action-actives/ActionLogin";
 import * as auth from "./ducks/auth.duck";
 import * as activesComponent from "../actions/action-actives/ActionActives";
 import * as actionSignUp from "../actions/action-actives/ActionSignUp";
-import * as actionSearchHD from "../actions/action-search-hd/ActionSearchHD";
+import * as actionEditProfile from "../actions/action-actives/ActionEditProfile";
 import * as actionCart from "../actions/action-cart/ActionCart";
 import * as actionProduct from "../actions/action-product/ActionProduct";
 import * as actionHomeHD from "../actions/action-home/ActionHome";
@@ -32,8 +32,8 @@ export const rootReducer = combineReducers({
   auth: auth.reducer,
   i18n: i18n.reducer,
   actionSignUp: actionSignUp.reducer,
+  actionEditProfile: actionEditProfile.reducer,
   activesComponent: activesComponent.reducer,
-  actionSearchHD: actionSearchHD.reducer,
   actionCart: actionCart.reducer,
   actionProduct: actionProduct.reducer,
   actionHomeHD: actionHomeHD.reducer,
@@ -56,6 +56,6 @@ export const rootReducer = combineReducers({
   actionEvents: actionEvents.reducer,
 });
 
-// export function* rootSaga() {
-//   yield all([auth.saga()]);
-// }
+export function* rootSaga() {
+  // yield all([auth.saga()]);
+}
