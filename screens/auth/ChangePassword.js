@@ -1,27 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { connect, useSelector } from "react-redux";
-import * as auth from "../../store/ducks/auth.duck";
 import {
   StyleSheet,
   Text,
   View,
   TextInput,
-  TouchableOpacity,
   ScrollView,
   Platform,
   UIManager,
-  Image,
-  Dimensions,
-  ToastAndroid
+  TouchableOpacity,
+  ToastAndroid,
 } from "react-native";
+import axios from "axios";
 import * as ActionChangepassword from "../../actions/action-change-password/ActionChangepassword";
 import { Block } from "galio-framework";
-import { Icon } from "../../components";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
 import { Button } from "react-native-elements";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
+import ModalLoading from "../../components/ModalLoading";
 
-const { height, width } = Dimensions.get("screen");
+const token = getToken();
 
 if (
   Platform.OS === "android" &&
@@ -37,14 +37,24 @@ function ChangePassword(props) {
 
   useEffect(() => {
     setStateObj("");
+    setRequiredOldPassword(false);
+    setRequiredNewPassword(false);
   }, []);
 
   const [stateObj, setStateObj] = useState({
+    passwordOld: "",
     password1: "",
     password2: "",
   });
 
-  const [ requiredPassword , setRequiredPassword] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [requiredOldPassword, setRequiredOldPassword] = useState(false);
+  const [requiredNewPassword, setRequiredNewPassword] = useState(false);
+  const onChangePasswordOld = (e) => {
+    let newObj = Object.assign({}, stateObj);
+    newObj.passwordOld = e;
+    setStateObj(newObj);
+  };
   const onChangePassword1 = (e) => {
     let newObj = Object.assign({}, stateObj);
     newObj.password1 = e;
@@ -55,9 +65,39 @@ function ChangePassword(props) {
     newObj.password2 = e;
     setStateObj(newObj);
   };
+  const submitChangePassword = async () => {
+    setLoading(false);
+    if (stateObj.password2 === stateObj.password1) {
+      axios.defaults.headers.common["Authorization"] =
+        "Bearer " + (await token);
 
-  const showToast = () => {
-    ToastAndroid.show("Test ToastAndriod React Native !", ToastAndroid.SHORT);
+      await axios
+        .put(API_URL.CHANGE_PASSWORD_API, {
+          headers: {
+            Accept: "*/*",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+          old_password: stateObj.passwordOld,
+          password: stateObj.password1,
+          password_confirmation: stateObj.password2,
+        })
+        .then(function (response) {
+          console.log(response.data);
+          setLoading(true);
+          ToastAndroid.show("Password updated!", ToastAndroid.SHORT);
+        })
+        .catch(function (error) {
+          console.log("error :", error);
+          setLoading(true);
+          setRequiredOldPassword(true);
+          ToastAndroid.show("Password correct!", ToastAndroid.SHORT);
+        });
+    } else {
+      setLoading(true);
+      setRequiredNewPassword(true);
+      ToastAndroid.show("Passwords does not match", ToastAndroid.SHORT);
+    }
   };
 
   return (
@@ -65,82 +105,115 @@ function ChangePassword(props) {
       <View style={styles.container}>
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Title */}
-          <Block
-            row
-            style={{
-              paddingTop: 20,
-              paddingLeft: 20,
-              paddingBottom: 20,
-              backgroundColor: "white",
-            }}
+          <TouchableOpacity
+            onPress={() => props.navigation.navigate("Edit Profile")}
           >
-            <Text
+            <Block
+              row
               style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
+                paddingTop: 20,
+                paddingLeft: 20,
+                paddingBottom: 20,
+                backgroundColor: "white",
               }}
             >
-              {"<  "}เปลี่ยนรหัสผ่าน
-            </Text>
-          </Block>
+              <Text
+                style={{
+                  color: "black",
+                  fontFamily: "kanitRegular",
+                  fontSize: 18,
+                }}
+              >
+                {"<  "}เปลี่ยนรหัสผ่าน
+              </Text>
+            </Block>
+          </TouchableOpacity>
           {/* Input */}
           <Block style={styles.container2}>
-              <Block row style={{ marginBottom: 5 }}>
-                <Text
-                  style={{
-                    alignSelf: "flex-start",
-                    fontFamily: "kanitRegular",
-                    fontSize: 18,
-                    color: "black",
-                  }}
-                >
-                  รหัสผ่านใหม่
-                </Text>
-              </Block>
-              <View
-                style={
-                  requiredPassword !== true
-                    ? styles.inputView
-                    : styles.inputViewRequired
-                }
+            <Block row style={{ marginBottom: 5 }}>
+              <Text
+                style={{
+                  alignSelf: "flex-start",
+                  fontFamily: "kanitRegular",
+                  fontSize: 18,
+                  color: "black",
+                }}
               >
-                <TextInput
-                  style={styles.inputText}
-                  placeholder={"กรอกรหัสผ่านใหม่"}
-                  placeholderTextColor="#808080"
-                  value={stateObj.password1}
-                  onChangeText={onChangePassword1}
-                />
-              </View>
-              <Block row style={{ marginBottom: 5 }}>
-                <Text
-                  style={{
-                    alignSelf: "flex-start",
-                    fontFamily: "kanitRegular",
-                    fontSize: 18,
-                  }}
-                >
-                  ยืนยันรหัสผ่าน
-                </Text>
-              </Block>
-              <View
-                style={
-                  requiredPassword !== true
-                    ? styles.inputView
-                    : styles.inputViewRequired
-                }
-              >
-                <TextInput
-                  style={styles.inputText}
-                  placeholder="ยืนยันรหัสผ่าน"
-                  placeholderTextColor="#808080"
-                  value={stateObj.password2}
-                  onChangeText={onChangePassword2}
-                  secureTextEntry={true}
-                />
-              </View>
+                รหัสผ่านปัจจุบัน
+              </Text>
             </Block>
+            <View
+              style={
+                requiredOldPassword !== true
+                  ? styles.inputView
+                  : styles.inputViewRequired
+              }
+            >
+              <TextInput
+                style={styles.inputText}
+                placeholder={"กรอกรหัสผ่านปัจจุบัน"}
+                placeholderTextColor="#808080"
+                value={stateObj.passwordOld}
+                onChangeText={onChangePasswordOld}
+              />
+            </View>
+            {/*  New Password */}
+            <Block row style={{ marginBottom: 5 }}>
+              <Text
+                style={{
+                  alignSelf: "flex-start",
+                  fontFamily: "kanitRegular",
+                  fontSize: 18,
+                  color: "black",
+                }}
+              >
+                รหัสผ่านใหม่
+              </Text>
+            </Block>
+            <View
+              style={
+                requiredNewPassword !== true
+                  ? styles.inputView
+                  : styles.inputViewRequired
+              }
+            >
+              <TextInput
+                style={styles.inputText}
+                placeholder={"กรอกรหัสผ่านใหม่"}
+                placeholderTextColor="#808080"
+                value={stateObj.password1}
+                onChangeText={onChangePassword1}
+                // secureTextEntry={true}
+              />
+            </View>
+            <Block row style={{ marginBottom: 5 }}>
+              <Text
+                style={{
+                  alignSelf: "flex-start",
+                  fontFamily: "kanitRegular",
+                  fontSize: 18,
+                }}
+              >
+                ยืนยันรหัสผ่าน
+              </Text>
+            </Block>
+            <View
+              style={
+                requiredNewPassword !== true
+                  ? styles.inputView
+                  : styles.inputViewRequired
+              }
+            >
+              <TextInput
+                style={styles.inputText}
+                placeholder="ยืนยันรหัสผ่าน"
+                placeholderTextColor="#808080"
+                value={stateObj.password2}
+                onChangeText={onChangePassword2}
+                // secureTextEntry={true}
+              />
+            </View>
+          </Block>
           {/* Botton */}
           <Block
             style={{
@@ -149,29 +222,30 @@ function ChangePassword(props) {
               paddingBottom: 25,
             }}
           >
-             <Block row style={{ paddingTop: 30, paddingBottom: 30 }}>
-            <Button
-              titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-              title={"ย้อนกลับ"}
-              type="solid"
-              onPress={() => props.navigation.navigate("Sign In")}
-              containerStyle={styles.blockButton1}
-              buttonStyle={styles.buttonStyle1}
-            />
-            <Button
-              titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-              title={"ยืนยัน"}
-              type="solid"
-              containerStyle={styles.blockButton2}
-              buttonStyle={styles.buttonStyle2}
-              onPress={() => showToast()}
-            />
-          </Block>
+            <Block row style={{ paddingTop: 30, paddingBottom: 30 }}>
+              <Button
+                titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                title={"ย้อนกลับ"}
+                type="solid"
+                onPress={() => props.navigation.navigate("Edit Profile")}
+                containerStyle={styles.blockButton1}
+                buttonStyle={styles.buttonStyle1}
+              />
+              <Button
+                titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                title={"ยืนยัน"}
+                type="solid"
+                containerStyle={styles.blockButton2}
+                buttonStyle={styles.buttonStyle2}
+                onPress={submitChangePassword}
+              />
+            </Block>
           </Block>
           {/* Info */}
           <WangdekInfo />
         </ScrollView>
       </View>
+      <ModalLoading loading={!loading} />
     </>
   );
 }

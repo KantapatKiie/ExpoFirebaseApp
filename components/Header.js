@@ -17,11 +17,12 @@ import { Block, NavBar, Input, Text, theme } from "galio-framework";
 import Icon from "./Icon";
 import materialTheme from "../constants/Theme";
 import Icons from "react-native-vector-icons/MaterialIcons";
+import { Feather } from "@expo/vector-icons";
 // import { API_URL } from "../config/config.app";
 
 const { height, width } = Dimensions.get("window");
 
-const ModalNotification = ({ style }) => {
+const ModalNotification = ({ style, navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   return (
     <>
@@ -50,9 +51,8 @@ const ModalNotification = ({ style }) => {
 
       <TouchableOpacity
         style={[styles.button, style]}
-        onPress={() => {
-          setModalVisible(true);
-        }}
+        onPress={() => navigation.navigate("Notifications")}
+        // onPress={() => { setModalVisible(true);}}
       >
         <Icons name="notifications" color={"#383838"} size={20} />
         <Block middle style={styles.notify} />
@@ -92,12 +92,14 @@ const ModalSearch = ({ style, navigation }) => {
         onPress={() => navigation.navigate("Filter Search")}
       >
         <Icons name="search" color={"#383838"} size={20} />
-        <Block middle style={styles.notify} />
+        {/* <Feather name="search" size={20} /> */}
+
+        {/* <Block middle style={styles.notify} /> */}
       </TouchableOpacity>
     </>
   );
 };
-const ModalMessage = ({ style }) => {
+const ModalFavorite = ({ style, navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   return (
     <>
@@ -126,12 +128,11 @@ const ModalMessage = ({ style }) => {
 
       <TouchableOpacity
         style={[styles.button, style]}
-        onPress={() => {
-          setModalVisible(true);
-        }}
+        onPress={() => navigation.navigate("Favorite View")}
+        // onPress={() => { setModalVisible(true);}}
       >
         <Icons name="favorite" color={"#383838"} size={20} />
-        <Block middle style={styles.notify} />
+        {/* <Block middle style={styles.notify} /> */}
       </TouchableOpacity>
     </>
   );
@@ -407,6 +408,319 @@ function Header(props) {
             isWhite={white}
           />,
         ];
+      case "Product All":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "News Relation":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Payment Notifications":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Account":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "About Us":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Contact":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Payment":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "HowTo":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Payment":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "News Relation Detail":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "History View":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "History Order":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Favorite View":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Ny Coupon":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Promotions":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Order Status":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Order Screen":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Use Coupon":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Filter Search":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Use Delivery":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Use Address Delivery":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Contact":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Notifications":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Product Type":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+
       default:
         break;
     }
@@ -416,7 +730,7 @@ function Header(props) {
 
     if (title === "Title") {
       return [
-        <ModalMessage
+        <ModalFavorite
           key="chat-title"
           navigation={navigation}
           isWhite={white}
@@ -432,7 +746,7 @@ function Header(props) {
     switch (title) {
       case "Home":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-home"
             navigation={navigation}
             isWhite={white}
@@ -445,12 +759,12 @@ function Header(props) {
         ];
       case "Deals":
         return [
-          <ModalMessage key="chat-categories" navigation={navigation} />,
+          <ModalFavorite key="chat-categories" navigation={navigation} />,
           <BasketButton key="basket-categories" navigation={navigation} />,
         ];
       case "Cart":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-categories"
             navigation={navigation}
             isWhite={white}
@@ -463,7 +777,7 @@ function Header(props) {
         ];
       case "Products":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-deals"
             navigation={navigation}
             isWhite={white}
@@ -476,7 +790,7 @@ function Header(props) {
         ];
       case "Profile":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-profile"
             navigation={navigation}
             isWhite={white}
@@ -489,7 +803,7 @@ function Header(props) {
         ];
       case "Search":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -504,7 +818,7 @@ function Header(props) {
         return [];
       case "Payment":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -517,7 +831,7 @@ function Header(props) {
         ];
       case "Payment":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -530,7 +844,7 @@ function Header(props) {
         ];
       case "Sign In":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -543,7 +857,7 @@ function Header(props) {
         ];
       case "Filter Search":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -556,7 +870,7 @@ function Header(props) {
         ];
       case "History View":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -569,7 +883,7 @@ function Header(props) {
         ];
       case "History Order":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -582,7 +896,7 @@ function Header(props) {
         ];
       case "Order Screen":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -595,7 +909,7 @@ function Header(props) {
         ];
       case "Use Coupon":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -608,7 +922,7 @@ function Header(props) {
         ];
       case "Use Delivery":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -621,7 +935,7 @@ function Header(props) {
         ];
       case "Use Address Delivery":
         return [
-          <ModalMessage
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -634,7 +948,293 @@ function Header(props) {
         ];
       case "Events":
         return [
-          <ModalMessage
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Product All":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "News Relation":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Payment Notifications":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Account":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "About Us":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "HowTo":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Payment":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "News Relation Detail":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "History Order":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "History View":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Favorite View":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "My Coupon":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Promotions":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Order Status":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Order Screen":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Use Coupon":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Use Delivery":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Filter Search":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Use Address Delivery":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Contact":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Notifications":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Product Type":
+        return [
+          <ModalFavorite
             key="chat-search"
             navigation={navigation}
             isWhite={white}
@@ -651,39 +1251,13 @@ function Header(props) {
     }
   };
 
-  //Search
-  const renderSearch = () => {
-    const changeSearch = (e) => {
-      let newObjSearch = Object.assign({}, objSearch);
-      newObjSearch.SEARCH_NO = e.nativeEvent.text;
-      setObjSearch(newObjSearch);
-    };
-    return (
-      <Input
-        right
-        color="black"
-        style={styles.search}
-        placeholder="What are you looking for?"
-        onChange={changeSearch}
-        iconContent={
-          <Icon
-            size={16}
-            color={theme.COLORS.MUTED}
-            name="magnifying-glass"
-            family="entypo"
-          />
-        }
-      />
-    );
-  };
-
   //renderFucntion Tabs
-  const ListItemTypeProduct = ({ item }) => {
+  const ListTypeProduct = ({ item }) => {
     return (
       <Block style={styles2.item}>
         <TouchableOpacity
           shadowless
-          onPress={() => props.navigation.navigate(item.sectionPage)}
+          onPress={() => props.navigation.navigate("Product Type", item)}
         >
           <Image source={item.icon} />
         </TouchableOpacity>
@@ -707,9 +1281,7 @@ function Header(props) {
                     <FlatList
                       horizontal
                       data={section.data}
-                      renderItem={({ item }) => (
-                        <ListItemTypeProduct item={item} />
-                      )}
+                      renderItem={({ item }) => <ListTypeProduct item={item} />}
                       showsHorizontalScrollIndicator={false}
                       showsVerticalScrollIndicator={false}
                     />
@@ -728,12 +1300,12 @@ function Header(props) {
       </Block>
     );
   };
-  const ListItemProduct = ({ item }) => {
+  const ListBrandProduct = ({ item }) => {
     return (
       <Block style={styles2.item}>
         <TouchableOpacity
           shadowless
-          onPress={() => props.navigation.navigate(item.sectionPage)}
+          onPress={() => props.navigation.navigate("Product Type", item)}
         >
           <Image source={item.icon} style={styles2.itemPhoto} />
         </TouchableOpacity>
@@ -755,7 +1327,7 @@ function Header(props) {
                   <FlatList
                     horizontal
                     data={section.data}
-                    renderItem={({ item }) => <ListItemProduct item={item} />}
+                    renderItem={({ item }) => <ListBrandProduct item={item} />}
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}
                   />
@@ -972,42 +1544,34 @@ const sectionProductType = [
       {
         key: "1",
         icon: require("../assets/iconMain/icon-01.png"),
-        sectionPage: "Product Toys",
       },
       {
         key: "2",
         icon: require("../assets/iconMain/icon-02.png"),
-        sectionPage: "Basket",
       },
       {
         key: "3",
         icon: require("../assets/iconMain/icon-03.png"),
-        sectionPage: "Basket",
       },
       {
         key: "4",
         icon: require("../assets/iconMain/icon-04.png"),
-        sectionPage: "Basket",
       },
       {
         key: "5",
         icon: require("../assets/iconMain/icon-05.png"),
-        sectionPage: "Basket",
       },
       {
         key: "6",
         icon: require("../assets/iconMain/icon-06.png"),
-        sectionPage: "Basket",
       },
       {
         key: "7",
         icon: require("../assets/iconMain/icon-07.png"),
-        sectionPage: "Basket",
       },
       {
         key: "8",
         icon: require("../assets/iconMain/icon-08.png"),
-        sectionPage: "Basket",
       },
     ],
   },
@@ -1020,52 +1584,42 @@ const sectionBrand = [
       {
         key: "1",
         icon: require("../assets/iconBrand/brand-01.png"),
-        sectionPage: "Basket",
       },
       {
         key: "2",
         icon: require("../assets/iconBrand/brand-02.png"),
-        sectionPage: "Basket",
       },
       {
         key: "3",
         icon: require("../assets/iconBrand/brand-03.png"),
-        sectionPage: "Basket",
       },
       {
         key: "4",
         icon: require("../assets/iconBrand/brand-04.png"),
-        sectionPage: "Basket",
       },
       {
         key: "5",
         icon: require("../assets/iconBrand/brand-05.png"),
-        sectionPage: "Basket",
       },
       {
         key: "6",
         icon: require("../assets/iconBrand/brand-06.png"),
-        sectionPage: "Basket",
       },
       {
         key: "7",
         icon: require("../assets/iconBrand/brand-07.png"),
-        sectionPage: "Basket",
       },
       {
         key: "8",
         icon: require("../assets/iconBrand/brand-08.png"),
-        sectionPage: "Basket",
       },
       {
         key: "9",
         icon: require("../assets/iconBrand/brand-09.png"),
-        sectionPage: "Basket",
       },
       {
         key: "10",
         icon: require("../assets/iconBrand/brand-10.png"),
-        sectionPage: "Basket",
       },
     ],
   },

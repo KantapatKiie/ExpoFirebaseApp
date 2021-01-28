@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { connect, useSelector } from "react-redux";
-import * as auth from "../../store/ducks/auth.duck";
+import { connect } from "react-redux";
 import {
   StyleSheet,
   Text,
@@ -15,19 +14,20 @@ import {
   ToastAndroid,
   ImageBackground,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
 import ModalLoading from "../../components/ModalLoading";
-import { logins } from "../../store/mock/mock"; //mock api
-import { setToken } from "../../store/mock/token";
-import { login } from "../../store/crud/auth.crud"; //real api
-import * as ActionLogin from "../../actions/action-actives/ActionLogin";
+import { getToken, setToken } from "../../store/mock/token";
+import { actions as ActionEditProfile } from "../../actions/action-actives/ActionEditProfile";
 import { Block } from "galio-framework";
-import { Icon } from "../../components/";
 import { formatTr } from "../../i18n/I18nProvider";
 import * as Facebook from "expo-facebook";
 import * as ImagePicker from "expo-image-picker";
 import WangdekInfo from "../../components/WangdekInfo";
+import { API_URL } from "../../config/config.app";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+const token = getToken();
 
 if (
   Platform.OS === "android" &&
@@ -36,12 +36,61 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+const defalutLoginMasterHD = {
+  EMAIL: "",
+  PASSWORD: "",
+  TOKEN: "",
+  ID: 0,
+  GUEST: 0,
+  FIRST_NAME: "a",
+  LAST_NAME: "a",
+  EMAIL: "abcd@email.com",
+  ACTIVE: 0,
+  EMAIL_VERIFIED_AT: moment(new Date()).format("YYYY-MM-DDT00:00:00"),
+  CREATE_AT: moment(new Date()).format("YYYY-MM-DDT00:00:00"),
+  UPDATED_AT: moment(new Date()).format("YYYY-MM-DDT00:00:00"),
+  CREATE_BY: 0,
+  UPDATED_BY: 0,
+  DELETED_AT: null,
+
+  TELEPHONE: "00",
+  ADDRESS: "11/11",
+  PROVINCE_ID: 1,
+  PROVINCE_NAME: "",
+  DISTRICT_ID: 1,
+  DISTRICT_NAME: "",
+  SUB_DISTRICT_ID: 1,
+  SUB_DISTRICT_NAME: "",
+  ZIP_CODE: "10000",
+  ADDRESS_FULL_NAME: "aa",
+
+  //Push List EditProfile
+  profile_id: 5,
+  sex: 1,
+  birthday: moment(new Date()).format("YYYY-MM-DD"),
+  telephone: "1",
+  address: "a",
+  province_id: 1,
+  district_id: 1,
+  sub_district_id: 1,
+  postcode: "1",
+  receive_info: 0,
+
+  address_deliveries_id: 5,
+  address_deliveries: "a",
+  province_id_deliveries: 1,
+  district_id_deliveries: 1,
+  sub_district_id_deliveries: 1,
+  postcode_deliveries: "1",
+  telephone_deliveries: "1",
+};
+
 function SignIn(props) {
-  // IsLogIn Complete
+  // IsLogIn Complete View
   const [isLoggedin, setLoggedinStatus] = useState(false);
-  const { objLoginHD } = useSelector((state) => ({
-    objLoginHD: state.login.objLoginHD,
-  }));
+  const [objLoginMasterHD, setObjLoginMasterHD] = useState(
+    defalutLoginMasterHD
+  );
 
   useEffect(() => {
     setRequiredEmail(false);
@@ -75,56 +124,254 @@ function SignIn(props) {
     setStateObj(newObj);
   };
 
-  //loading
+  //loading & Required
   const [loading, setLoading] = useState(false);
   const [requiredEmail, setRequiredEmail] = useState(false);
   const [requiredPass, setRequiredPass] = useState(false);
-  const onClickSignIn = async (email, password) => {
-    let newLogin = Object.assign({}, objLoginHD);
-    if (stateObj.email !== "" && stateObj.email !== "undefined") {
-      setRequiredEmail(true);
-      if (stateObj.password !== "" && stateObj.password !== "undefined") {
-        if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
-          newLogin.EMAIL = "";
-        } else {
-          setRequiredEmail(false);
-          setRequiredPass(false);
-          setTimeout(() => {
-            setLoading(true);
-            logins(email, password)
-              .then(async (res) => {
-                newLogin.EMAIL = email;
-                newLogin.PASSWORD = password;
-                props.setObjLogin(newLogin);
-
-                await setToken(res.auth_token);
-                props.navigation.navigate("Home");
-              })
-              .catch((err) => console.log("error:", err.message));
-          }, 120);
-        }
-      } else {
-        setRequiredPass(true);
-        setRequiredEmail(false);
-        setLoading(false);
-      }
-    } else {
-      setRequiredPass(true);
-      setRequiredEmail(true);
-      setLoading(false);
-    }
-    setLoading(false);
-  };
 
   // Login
   const LoginAccount = () => {
-    setLoggedinStatus(true);
-    ToastAndroid.show("Logout Account", ToastAndroid.SHORT);
+    setLoading(true);
+    let newLogin = Object.assign({}, objLoginMasterHD);
+    const reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (stateObj.email !== "" && stateObj.email !== "undefined") {
+      setRequiredEmail(false);
+      if (stateObj.password !== "" && stateObj.password !== "undefined") {
+        setRequiredPass(false);
+        if (reg.test(stateObj.email) === true) {
+          setRequiredEmail(false);
+          setTimeout(() => {
+            setLoading(true);
+            axios({
+              method: "POST",
+              url: API_URL.LOGIN_API,
+              params: {
+                email: stateObj.email,
+                password: stateObj.password,
+              },
+            })
+              .then(async (response) => {
+                newLogin.EMAIL = stateObj.email;
+                newLogin.PASSWORD = stateObj.email;
+                newLogin.TOKEN = response.data.data.token;
+                newLogin.ID = response.data.data.user.id;
+                newLogin.GUEST = response.data.data.user.guest;
+                newLogin.FIRST_NAME = response.data.data.user.first_name;
+                newLogin.LAST_NAME = response.data.data.user.last_name;
+                newLogin.ACTIVE = response.data.data.user.active;
+                newLogin.EMAIL_VERIFIED_AT =
+                  response.data.data.user.email_verified_at;
+                newLogin.CREATE_AT = response.data.data.user.created_at;
+                newLogin.UPDATED_AT = response.data.data.user.updated_at;
+                newLogin.CREATE_BY = response.data.data.user.created_by;
+                newLogin.UPDATED_BY = response.data.data.user.updated_by;
+                newLogin.DELETED_AT = response.data.data.user.deleted_at;
+                await setToken(response.data.data.token);
+
+                //get UserInfo
+                axios
+                  .get(API_URL.USER_INFO_API, {
+                    headers: {
+                      Accept: "application/json",
+                      Authorization: "Bearer " + (await token),
+                    },
+                  })
+                  .then(function (response) {
+                    newLogin.TELEPHONE = response.data.data.profile.telephone;
+                    newLogin.ADDRESS = response.data.data.profile.address;
+                    newLogin.PROVINCE_ID =
+                      response.data.data.profile.province_id;
+                    newLogin.DISTRICT_ID =
+                      response.data.data.profile.district_id;
+                    newLogin.SUB_DISTRICT_ID =
+                      response.data.data.profile.sub_district_id;
+
+                    //get EditProfile
+                    newLogin.profile_id = response.data.data.profile.id;
+                    newLogin.sex = response.data.data.profile.sex;
+                    newLogin.birthday = response.data.data.profile.birthday;
+                    newLogin.telephone = response.data.data.profile.telephone;
+                    newLogin.address = response.data.data.profile.address;
+                    newLogin.province_id =
+                      response.data.data.profile.province_id;
+                    newLogin.district_id =
+                      response.data.data.profile.district_id;
+                    newLogin.sub_district_id =
+                      response.data.data.profile.sub_district_id;
+                    newLogin.postcode = response.data.data.profile.postcode;
+                    newLogin.receive_info =
+                      response.data.data.profile.receive_info;
+
+                    newLogin.address_deliveries_id =
+                      response.data.data.address_deliveries[0].id;
+                    newLogin.address_deliveries =
+                      response.data.data.address_deliveries[0].address;
+                    newLogin.province_id_deliveries =
+                      response.data.data.address_deliveries[0].province_id;
+                    newLogin.district_id_deliveries =
+                      response.data.data.address_deliveries[0].district_id;
+                    newLogin.sub_district_id_deliveries =
+                      response.data.data.address_deliveries[0].sub_district_id;
+                    newLogin.postcode_deliveries =
+                      response.data.data.address_deliveries[0].postcode;
+                    newLogin.telephone_deliveries =
+                      response.data.data.address_deliveries[0].telephone;
+
+                    //getAddress User & Delivery
+                    axios
+                      .get(API_URL.DISTRICT_API, {
+                        params: {
+                          province_id: newLogin.PROVINCE_ID,
+                        },
+                      })
+                      .then(function (response) {
+                        let newlstDistrict = response.data.data.find(
+                          (item) => item.id == parseInt(newLogin.DISTRICT_ID)
+                        );
+                        newLogin.DISTRICT_NAME = newlstDistrict.name_th;
+
+                        axios
+                          .get(API_URL.SUB_DISTRICT_API, {
+                            params: {
+                              district_id: newLogin.DISTRICT_ID,
+                            },
+                          })
+                          .then(function (response) {
+                            let newlstSubDistrict = response.data.data.find(
+                              (item) =>
+                                item.id == parseInt(newLogin.SUB_DISTRICT_ID)
+                            );
+                            newLogin.SUB_DISTRICT_NAME =
+                              newlstSubDistrict.name_th;
+                            newLogin.ZIP_CODE = newlstSubDistrict.zip_code;
+
+                            axios
+                              .get(API_URL.PROVINCE_API)
+                              .then(function (response) {
+                                let newlstProvince = response.data.data.find(
+                                  (item) =>
+                                    item.id == parseInt(newLogin.PROVINCE_ID)
+                                );
+                                newLogin.PROVINCE_NAME = newlstProvince.name_th;
+                                newLogin.ADDRESS_FULL_NAME =
+                                  newLogin.ADDRESS +
+                                  " " +
+                                  newLogin.DISTRICT_NAME +
+                                  " " +
+                                  newLogin.SUB_DISTRICT_NAME +
+                                  " " +
+                                  newLogin.PROVINCE_NAME +
+                                  " " +
+                                  newLogin.ZIP_CODE;
+
+                                //Delivery Address
+                                //District
+                                axios
+                                  .get(API_URL.DISTRICT_API, {
+                                    params: {
+                                      province_id:
+                                        newLogin.province_id_deliveries,
+                                    },
+                                  })
+                                  .then(function (response) {
+                                    let newlstDistrict = response.data.data.find(
+                                      (item) =>
+                                        item.id ==
+                                        parseInt(
+                                          newLogin.district_id_deliveries
+                                        )
+                                    );
+                                    newLogin.DISTRICT_NAME_ORDER =
+                                      newlstDistrict.name_th;
+
+                                    //Sub-District
+                                    axios
+                                      .get(API_URL.SUB_DISTRICT_API, {
+                                        params: {
+                                          district_id:
+                                            newLogin.district_id_deliveries,
+                                        },
+                                      })
+                                      .then(function (response) {
+                                        let newlstSubDistrict = response.data.data.find(
+                                          (item) =>
+                                            item.id ==
+                                            parseInt(
+                                              newLogin.sub_district_id_deliveries
+                                            )
+                                        );
+                                        newLogin.SUB_DISTRICT_NAME_ORDER =
+                                          newlstSubDistrict.name_th;
+                                        newLogin.ZIP_CODE_ORDER =
+                                          newlstSubDistrict.zip_code;
+
+                                        //province
+                                        axios
+                                          .get(API_URL.PROVINCE_API)
+                                          .then(function (response) {
+                                            let newlstProvince = response.data.data.find(
+                                              (item) =>
+                                                item.id ==
+                                                parseInt(
+                                                  newLogin.province_id_deliveries
+                                                )
+                                            );
+                                            newLogin.PROVINCE_NAME_ORDER =
+                                              newlstProvince.name_th;
+
+                                            setObjLoginMasterHD(newLogin);
+                                            setLoggedinStatus(true);
+                                            setLoading(false);
+                                          });
+                                      });
+                                  });
+                              });
+                          });
+                      });
+                  });
+              })
+              .catch(function (error) {
+                setLoggedinStatus(false);
+                setRequiredPass(true);
+                setRequiredEmail(true);
+                setLoading(false);
+                console.log("error:", error.message);
+                ToastAndroid.show(
+                  "Email or Password was Wrong",
+                  ToastAndroid.SHORT
+                );
+              });
+          }, 800);
+        } else {
+          setLoggedinStatus(false);
+          setRequiredPass(false);
+          setRequiredEmail(true);
+          ToastAndroid.show("Email was Wrong", ToastAndroid.SHORT);
+        }
+      } else {
+        setLoggedinStatus(false);
+        setRequiredPass(true);
+      }
+      setLoggedinStatus(false);
+    } else {
+      setRequiredEmail(true);
+      setRequiredPass(true);
+      ToastAndroid.show(
+        "Please enter your email & password",
+        ToastAndroid.SHORT
+      );
+    }
+    setLoading(false);
   };
   // Logout
   const LogoutAccount = () => {
     setLoggedinStatus(false);
-    setUserData("");
+    setStateObj({
+      email: "",
+      password: "",
+    });
+    // setUserData("");
+    setToken("");
     ToastAndroid.show("Logout Account", ToastAndroid.SHORT);
   };
   // Facbook login
@@ -174,7 +421,6 @@ function SignIn(props) {
       aspect: [4, 3],
       quality: 1,
     });
-    // console.log(result);
     if (!result.cancelled) {
       setImagePicker(result.uri);
     } else {
@@ -182,14 +428,56 @@ function SignIn(props) {
     }
   };
 
-  const checkFunction = () => {
-    ToastAndroid.show("Check Function!", ToastAndroid.SHORT);
+  //Change Page
+  const onChangePageEditProfile = () => {
+    let newObjList = Object.assign({}, objLoginMasterHD);
+    newObjList.FIRST_NAME = objLoginMasterHD.FIRST_NAME;
+    newObjList.LAST_NAME = objLoginMasterHD.LAST_NAME;
+
+    newObjList.profile_id = objLoginMasterHD.profile_id;
+    newObjList.SEX = objLoginMasterHD.sex;
+    newObjList.BIRTH_DATE = objLoginMasterHD.birthday;
+    newObjList.PHONE_NUMBER = objLoginMasterHD.telephone;
+    newObjList.address = objLoginMasterHD.address;
+    newObjList.province_id = objLoginMasterHD.province_id;
+    newObjList.district_id = objLoginMasterHD.district_id;
+    newObjList.sub_district_id = objLoginMasterHD.sub_district_id;
+    newObjList.postcode = objLoginMasterHD.postcode;
+    newObjList.receive_info = objLoginMasterHD.receive_info;
+
+    newObjList.address_deliveries_id = objLoginMasterHD.address_deliveries_id;
+    newObjList.address = objLoginMasterHD.address_deliveries;
+    newObjList.province_id = objLoginMasterHD.province_id_deliveries;
+    newObjList.district_id = objLoginMasterHD.district_id_deliveries;
+    newObjList.sub_district_id = objLoginMasterHD.sub_district_id_deliveries;
+    newObjList.postcode = objLoginMasterHD.postcode_deliveries;
+    newObjList.telephone = objLoginMasterHD.telephone_deliveries;
+
+    newObjList.TOKEN = objLoginMasterHD.TOKEN;
+
+    newObjList.ADDRESS_NAME = objLoginMasterHD.address;
+    newObjList.PROVINCE_CODE = objLoginMasterHD.province_id;
+    newObjList.DISTRICT_CODE = objLoginMasterHD.district_id;
+    newObjList.SUB_DISTRICT_CODE = objLoginMasterHD.sub_district_id;
+    newObjList.ZIP_CODE = objLoginMasterHD.postcode;
+
+    newObjList.ADDRESS_NAME_ORDER = objLoginMasterHD.address_deliveries;
+    newObjList.PROVINCE_CODE_ORDER = objLoginMasterHD.province_id_deliveries;
+    newObjList.DISTRICT_CODE_ORDER = objLoginMasterHD.district_id_deliveries;
+    newObjList.SUB_DISTRICT_CODE_ORDER =
+      objLoginMasterHD.sub_district_id_deliveries;
+    newObjList.ZIP_CODE_ORDER = objLoginMasterHD.postcode_deliveries;
+    newObjList.PHONE_NUMBER_ORDER = newObjList.telephone;
+
+    // console.log(newObjList);
+    props.setObjEditProfile(newObjList);
+    props.navigation.navigate("Edit Profile");
   };
 
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {!isLoggedin ? (
+        {isLoggedin ? ( //Not Login
           <>
             {/* Title */}
             <Block
@@ -206,7 +494,7 @@ function SignIn(props) {
                 เข้าสู่ระบบ
               </Text>
             </Block>
-            {/* Input */}
+            {/* Email */}
             <Block style={styles.container2}>
               <Block row style={{ marginBottom: 5 }}>
                 <Text
@@ -292,7 +580,7 @@ function SignIn(props) {
                 style={{
                   alignSelf: "flex-end",
                 }}
-                onPress={() => props.navigation.navigate("Notifications")}
+                onPress={() => props.navigation.navigate("Forgot Password")}
               >
                 <Text style={styles.forgot}>ลืมรหัสผ่าน ?</Text>
               </TouchableOpacity>
@@ -436,6 +724,7 @@ function SignIn(props) {
             </Block>
           </>
         ) : (
+          //Login Complete
           <>
             {/* Profile */}
             <Block
@@ -478,7 +767,7 @@ function SignIn(props) {
                   </TouchableOpacity>
                 </ImageBackground>
               </Block>
-              <Block style={{ paddingLeft: "10%" }}>
+              <Block style={{ paddingLeft: "10%", width: "90%" }}>
                 <Text
                   style={{
                     color: "black",
@@ -487,7 +776,9 @@ function SignIn(props) {
                     textAlign: "left",
                   }}
                 >
-                  Wangdek Commerce
+                  {objLoginMasterHD.FIRST_NAME +
+                    " " +
+                    objLoginMasterHD.LAST_NAME}
                 </Text>
                 <Text
                   style={{
@@ -497,7 +788,7 @@ function SignIn(props) {
                     textAlign: "left",
                   }}
                 >
-                  Address :
+                  Address : {objLoginMasterHD.ADDRESS_FULL_NAME}
                 </Text>
                 <Text
                   style={{
@@ -507,7 +798,7 @@ function SignIn(props) {
                     textAlign: "left",
                   }}
                 >
-                  Phone :
+                  Phone : {objLoginMasterHD.TELEPHONE}
                 </Text>
                 <Text
                   style={{
@@ -517,7 +808,7 @@ function SignIn(props) {
                     textAlign: "left",
                   }}
                 >
-                  Emial :
+                  Email : {objLoginMasterHD.EMAIL}
                 </Text>
               </Block>
             </Block>
@@ -585,7 +876,7 @@ function SignIn(props) {
               <Block row>
                 <TouchableOpacity
                   style={{ paddingLeft: "5%" }}
-                  onPress={() => props.navigation.navigate("Edit Profile")}
+                  onPress={onChangePageEditProfile}
                 >
                   <Image
                     source={require("../../assets/iconSignIn/edit-icon.png")}
@@ -709,14 +1000,26 @@ function SignIn(props) {
           </>
         )}
         {/* Info */}
-        <WangdekInfo/>
+        <WangdekInfo />
       </ScrollView>
       <ModalLoading loading={loading} />
     </>
   );
 }
 
-export default connect(null, ActionLogin.actions)(SignIn);
+const mapActions = {
+  // setObjLogin: ActionLogin.setObjLogin,
+  // pushListTrLoginHD: ActionLogin.pushListTrLoginHD,
+  // setListTrLoginHD: ActionLogin.setListTrLoginHD,
+  // clearObjLogin: ActionLogin.clearObjLogin,
+
+  setObjEditProfile: ActionEditProfile.setObjEditProfile,
+  pushListTrEditProfileHD: ActionEditProfile.pushListTrEditProfileHD,
+  setListTrEditProfileHD: ActionEditProfile.setListTrEditProfileHD,
+  clearObjEditProfile: ActionEditProfile.clearObjEditProfile,
+};
+
+export default connect(null, mapActions)(SignIn);
 
 const styles = StyleSheet.create({
   container: {

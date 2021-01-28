@@ -20,6 +20,7 @@ import MattelLogo from "../../constants/MattelLogo";
 
 const { height, width } = Dimensions.get("screen");
 
+
 function AboutUs(props) {
   return (
     <>
@@ -97,7 +98,8 @@ function AboutUs(props) {
             style={{
               backgroundColor: "#e807d2",
               borderRadius: 20,
-              width: 150,
+              width: 170,
+              height: 50,
               alignSelf: "center",
               marginTop: 40,
               marginBottom: 25,
@@ -108,7 +110,7 @@ function AboutUs(props) {
                 textAlign: "center",
                 color: "white",
                 fontFamily: "kanitBold",
-                fontSize: 27,
+                fontSize: 32,
               }}
             >
               ในปี 2550
@@ -188,7 +190,7 @@ function AboutUs(props) {
                 textAlign: "center",
                 color: "white",
                 fontFamily: "kanitBold",
-                fontSize: 27,
+                fontSize: 32,
               }}
             >
               ในปี 2552

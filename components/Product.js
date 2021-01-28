@@ -10,6 +10,7 @@ import {
 import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import * as ActionProductActivity from "../actions/action-product/ActionProduct";
+import commaNumber from "comma-number";
 
 const { width } = Dimensions.get("screen");
 
@@ -66,7 +67,7 @@ function Product(props) {
               muted={!priceColor}
               color={priceColor}
             >
-              ราคา : ฿{product.price}
+              ราคา : ฿{commaNumber(product.price)}
             </Text>
           </Block>
         </TouchableOpacity>

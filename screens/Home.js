@@ -13,6 +13,7 @@ import {
   Modal,
   ScrollView,
 } from "react-native";
+import axios from "axios";
 import { withNavigation } from "@react-navigation/compat";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
@@ -28,6 +29,9 @@ import WangdekInfo from "../components/WangdekInfo";
 import CountDown from "react-native-countdown-component";
 import Icons from "react-native-vector-icons/MaterialIcons";
 
+// import { getToken } from "../store/mock/token";
+// let token = getToken();
+
 const { width } = Dimensions.get("screen");
 
 function Home(props) {
@@ -35,17 +39,23 @@ function Home(props) {
     objHomeHD: state.actionHomeHD.objHomeHD,
     disabledInput: state.actionHomeHD.disabledInput,
   }));
-  //#region Translate
-  var VIEW_ALL = formatTr("VIEW_ALL").toString(); //View all
-  var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
-  var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
-  var NEWS_RELEASE = formatTr("NEWS_RELEASE").toString();
-  var READ_MORE = formatTr("READ_MORE").toString();
-  //#endregion
 
   useEffect(() => {
     setModalVisible(false); // Popup Coupon
+    // FlashsaleOnLoad(); // Flashsale onLoad
   }, []);
+
+  const FlashsaleOnLoad = async () =>{
+    console.log("FlashsaleOnLoad");
+    await  axios
+    .get("http://wangdek.am2bmarketing.co.th/api/v1/flashsales?offset=1&limit=10")
+    .then(function (response) {
+      console.log(response.data);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }
 
   //Time Everthing
   let LeftTime = moment(new Date()).format("HH:mm");
@@ -153,7 +163,7 @@ function Home(props) {
     );
   };
 
-  //#region ModalCoupon
+  //#region PopupCoupon
   const [modalVisible, setModalVisible] = useState(false);
   const ModalNotification = () => {
     return (
@@ -180,7 +190,7 @@ function Home(props) {
               <ScrollView showsVerticalScrollIndicator={false}>
                 <Block row style={{ marginBottom: 15 }}>
                   <Image
-                    source={require("../assets/images/coupon/coupon-1.png")}
+                    source={require("../assets/images/coupon/coupon-1-md.png")}
                     style={{ width: 130, height: 55 }}
                   />
                   <TouchableOpacity
@@ -190,7 +200,25 @@ function Home(props) {
                       height: 24,
                       borderRadius: 20,
                       alignSelf: "center",
-                      marginLeft: 5,
+                      marginLeft: 15,
+                    }}
+                  >
+                    <Text style={styles.fontCoupon}>COLLECT</Text>
+                  </TouchableOpacity>
+                </Block>
+                <Block row style={{ marginBottom: 15 }}>
+                  <Image
+                    source={require("../assets/images/coupon/coupon-2-md.png")}
+                    style={{ width: 130, height: 55 }}
+                  />
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: "#00e099",
+                      width: 80,
+                      height: 24,
+                      borderRadius: 20,
+                      alignSelf: "center",
+                      marginLeft: 15,
                     }}
                   >
                     <Text style={styles.fontCoupon}>COLLECT</Text>
@@ -211,6 +239,14 @@ function Home(props) {
       </>
     );
   };
+  //#endregion
+
+  //#region Translate
+  var VIEW_ALL = formatTr("VIEW_ALL").toString(); //View all
+  var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
+  var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
+  var NEWS_RELEASE = formatTr("NEWS_RELEASE").toString();
+  var READ_MORE = formatTr("READ_MORE").toString();
   //#endregion
 
   return (

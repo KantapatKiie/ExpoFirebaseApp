@@ -29,27 +29,29 @@ function Notifications(props) {
       <ScrollView showsVerticalScrollIndicator={false}>
         <Block style={{ height: height / 2, backgroundColor: "white" }}>
           {/* Title */}
-          <Block
-            row
-            style={{
-              paddingTop: 20,
-              paddingLeft: 20,
-              paddingBottom: 20,
-              backgroundColor: "white",
-              borderBottomWidth: 1,
-              borderBottomColor: "#e0e0e0",
-            }}
-          >
-            <Text
+          <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
+            <Block
+              row
               style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
+                paddingTop: 20,
+                paddingLeft: 20,
+                paddingBottom: 20,
+                backgroundColor: "white",
+                borderBottomWidth: 1,
+                borderBottomColor: "#e0e0e0",
               }}
             >
-              {"<  "}Notifications
-            </Text>
-          </Block>
+              <Text
+                style={{
+                  color: "black",
+                  fontFamily: "kanitRegular",
+                  fontSize: 18,
+                }}
+              >
+                {"<  "}Notifications
+              </Text>
+            </Block>
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => props.navigation.navigate("News")}>
             <Block
               style={{

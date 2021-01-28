@@ -1,5 +1,5 @@
 import { persistReducer } from "redux-persist";
-import AsyncStorage from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 
 const actionTypes = {
@@ -15,7 +15,7 @@ const initialState = {
     FIRST_NAME: "",
     LAST_NAME: "",
     GENDER: "",
-    BIRTH_DATE: moment(new Date()).format("DD/MM/YYYY"),
+    BIRTH_DATE: moment(new Date()).format("YYYY-MM-DD"),
     PHONE_NUMBER: "",
     GENDER: "Male",
 
@@ -40,10 +40,10 @@ const initialState = {
     ZIP_CODE_ORDER: "",
     PHONE_NUMBER_ORDER: "",
 
-    NEWS: true,
-    CONFIRM: false,
+    RECEIVE_INFO: true,
+    PRIVACY_CONFIRM: false,
 
-    INSERT_ID: "User Admin",
+    INSERT_ID: "User",
     INSERT_DT: moment(new Date()).format("YYYY-MM-DDT00:00:00"),
   },
 };

@@ -4,14 +4,14 @@ import * as login from "../actions/action-actives/ActionLogin";
 import * as auth from "./ducks/auth.duck";
 import * as activesComponent from "../actions/action-actives/ActionActives";
 import * as actionSignUp from "../actions/action-actives/ActionSignUp";
-import * as actionSearchHD from "../actions/action-search-hd/ActionSearchHD";
+import * as actionEditProfile from "../actions/action-actives/ActionEditProfile";
 import * as actionCart from "../actions/action-cart/ActionCart";
 import * as actionProduct from "../actions/action-product/ActionProduct";
 import * as actionHomeHD from "../actions/action-home/ActionHome";
 import * as actionPayment from "../actions/action-payment/ActionPayment";
 import * as actionPaymentNotifications from "../actions/action-payment/ActionPaymentNotifications";
 import * as actionContact from "../actions/action-contact/ActionContact";
-import * as actionForgetPassword from "../actions/action-forgetPassword/ActionForgetPassword";
+import * as actionForgotPassword from "../actions/action-forgot-password/ActionForgotPassword";
 import * as actionChangepassword from "../actions/action-change-password/ActionChangepassword";
 import * as actionFlashsaleProduct from "../actions/action-flashsale-product/ActionFlashsaleProduct";
 import * as actionHistoryView from "../actions/action-history-view/ActionHistoryView";
@@ -32,15 +32,15 @@ export const rootReducer = combineReducers({
   auth: auth.reducer,
   i18n: i18n.reducer,
   actionSignUp: actionSignUp.reducer,
+  actionEditProfile: actionEditProfile.reducer,
   activesComponent: activesComponent.reducer,
-  actionSearchHD: actionSearchHD.reducer,
   actionCart: actionCart.reducer,
   actionProduct: actionProduct.reducer,
   actionHomeHD: actionHomeHD.reducer,
   actionPayment: actionPayment.reducer,
   actionPaymentNotifications: actionPaymentNotifications.reducer,
   actionContact: actionContact.reducer,
-  actionForgetPassword: actionForgetPassword.reducer,
+  actionForgotPassword: actionForgotPassword.reducer,
   actionChangepassword: actionChangepassword.reducer,
   actionFlashsaleProduct: actionFlashsaleProduct.reducer,
   actionHistoryView: actionHistoryView.reducer,

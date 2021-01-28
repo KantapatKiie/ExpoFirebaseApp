@@ -261,7 +261,7 @@ function FlashsaleProduct(props) {
                   </TouchableOpacity>
                   {/* Load More */}
                   <TouchableOpacity onPress={onLoadMoreProduct}>
-                    <Block style={{ width: 90, alignSelf: "center" }}>
+                    <Block style={{ alignSelf: "center" }}>
                       <Text
                         style={{
                           fontFamily: "kanitRegular",
@@ -421,7 +421,7 @@ const COUPON_LIST = [
       },
       {
         key: "2",
-        uri: require("../../assets/images/coupon/coupon-2.png"),
+        uri: require("../../assets/images/coupon/coupon-2-md.png"),
       },
     ],
   },

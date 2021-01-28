@@ -1,5 +1,5 @@
 import { persistReducer } from "redux-persist";
-import AsyncStorage from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 
 const actionTypes = {
@@ -14,16 +14,10 @@ const actionTypes = {
 
 const initialState = {
   objChangePassword: {
-    TITLE: "",
-    DETAIL: "",
-    IMAGE: "../../assets/tiendat.png",
-    PRICE: 0,
-    COUNT: 1,
-    TOTAL_PRICE: 0,
+    OLD_PASSWORD: "",
+    PASSWORD: "",
+    PASSWORD_CONFIRMATION: "",
   },
-  // listTrChangePassword: [],
-  // disabledInput: false,
-  // editable: false,
 };
 
 export const reducer = persistReducer(

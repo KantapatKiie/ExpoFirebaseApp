@@ -3,8 +3,12 @@ import {
   StyleSheet,
   View,
   Modal,
-  ActivityIndicator
+  ActivityIndicator,
+  Dimensions,
+  Text,
 } from 'react-native';
+
+const { height, width } = Dimensions.get("window");
 
 function ModalLoading (props){
   const {
@@ -15,36 +19,47 @@ function ModalLoading (props){
   return (
     <Modal
       transparent={true}
-      animationType={'none'}
+      animationType={"fade"}
       visible={loading}
-      onRequestClose={() => {console.log('close modal')}}>
+      style={{height: 300, width: 300}}
+    >
       <View style={styles.modalBackground}>
         <View style={styles.activityIndicatorWrapper}>
           <ActivityIndicator
-            animating={loading} color="black"/>
+            animating={loading}
+            color="white"
+            size={50}
+          />
+          <Text style={styles.textLoding}>Loading . . .</Text>
         </View>
       </View>
     </Modal>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   modalBackground: {
     flex: 1,
-    alignItems: 'center',
-    flexDirection: 'column',
-    justifyContent: 'space-around',
-    backgroundColor: '#00000040'
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 0,
+    backgroundColor: "#00000040",
   },
   activityIndicatorWrapper: {
-    backgroundColor: '#FFFFFF',
-    height: 110,
-    width: 110,
+    // backgroundColor: '#FFFFFF',
+    height: 120,
+    width: 120,
     borderRadius: 12,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-around'
-  }
+    justifyContent: "center",
+  },
+  textLoding: {
+    fontSize: 22,
+    color: "white",
+    alignSelf: "center",
+    fontFamily: "kanitRegular",
+    marginTop: 5,
+  },
 });
 
 export default ModalLoading;

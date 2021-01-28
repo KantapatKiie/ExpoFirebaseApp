@@ -5,7 +5,6 @@ import {
   Dimensions,
   Text,
   TouchableOpacity,
-  View,
   ImageBackground,
   Image,
   ToastAndroid,

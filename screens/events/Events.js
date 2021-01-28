@@ -177,18 +177,18 @@ function Events(props) {
   const events = [
     {
       title: "Meeting",
-      start: new Date(2021, 0, 20, 10, 0, 0),
-      end: new Date(2021, 0, 20, 12, 30, 0),
+      start: new Date(2021, 0, 30, 10, 0, 0),
+      end: new Date(2021, 0, 30, 12, 30, 0),
     },
     {
       title: "Coffe Time",
-      start: new Date(2021, 0, 20, 11, 30, 0),
-      end: new Date(2021, 0, 20, 12, 30, 0),
+      start: new Date(2021, 0, 29, 11, 30, 0),
+      end: new Date(2021, 0, 29, 12, 30, 0),
     },
     {
       title: "Tea Time",
-      start: new Date(2021, 0, 21, 11, 15, 0),
-      end: new Date(2021, 0, 21, 12, 30, 0),
+      start: new Date(2021, 0, 29, 11, 15, 0),
+      end: new Date(2021, 0, 29, 12, 30, 0),
     },
   ];
   console.log(events);
