@@ -371,7 +371,7 @@ function SignIn(props) {
       password: "",
     });
     // setUserData("");
-    // setToken("");
+    setToken("");
     ToastAndroid.show("Logout Account", ToastAndroid.SHORT);
   };
   // Facbook login
@@ -443,6 +443,7 @@ function SignIn(props) {
     newObjList.district_id = objLoginMasterHD.district_id;
     newObjList.sub_district_id = objLoginMasterHD.sub_district_id;
     newObjList.postcode = objLoginMasterHD.postcode;
+    newObjList.receive_info = objLoginMasterHD.receive_info;
 
     newObjList.address_deliveries_id = objLoginMasterHD.address_deliveries_id;
     newObjList.address = objLoginMasterHD.address_deliveries;
@@ -451,7 +452,8 @@ function SignIn(props) {
     newObjList.sub_district_id = objLoginMasterHD.sub_district_id_deliveries;
     newObjList.postcode = objLoginMasterHD.postcode_deliveries;
     newObjList.telephone = objLoginMasterHD.telephone_deliveries;
-    newObjList.receive_info = objLoginMasterHD.receive_info;
+
+    newObjList.TOKEN = objLoginMasterHD.TOKEN;
 
     newObjList.ADDRESS_NAME = objLoginMasterHD.address;
     newObjList.PROVINCE_CODE = objLoginMasterHD.province_id;
@@ -475,7 +477,7 @@ function SignIn(props) {
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {!isLoggedin ? ( //Login Complete
+        {isLoggedin ? ( //Not Login
           <>
             {/* Title */}
             <Block
@@ -722,7 +724,7 @@ function SignIn(props) {
             </Block>
           </>
         ) : (
-          //Not Login
+          //Login Complete
           <>
             {/* Profile */}
             <Block

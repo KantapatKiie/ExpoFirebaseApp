@@ -19,6 +19,7 @@ const initialState = {
     BIRTH_DATE: moment(new Date()).format("YYYY-MM-DD"),
     PHONE_NUMBER: "",
     SEX: 1,
+    TOKEN: "",
 
     // Region
     PROFILE_ID: "",

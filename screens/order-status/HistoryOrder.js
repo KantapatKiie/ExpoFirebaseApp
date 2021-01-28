@@ -8,16 +8,21 @@ import {
   Dimensions,
   ToastAndroid,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
 import * as ActionHistoryOrder from "../../actions/action-history-order/ActionHistoryOrder.js";
 import { Block, Text, theme, Input } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
 import { Button } from "react-native-elements";
 import { Searchbar } from "react-native-paper";
+import ModalLoading from "../../components/ModalLoading";
+import { API_URL } from "../../config/config.app";
 
 const { height, width } = Dimensions.get("screen");
 
 function HistoryOrder(props) {
+  console.log(props)
   const { objHistoryOrder } = useSelector((state) => ({
     objHistoryOrder: state.actionHistoryOrder.objHistoryOrder,
   }));
@@ -26,6 +31,7 @@ function HistoryOrder(props) {
     // setStateObj(products);
   }, []);
 
+  const [loading, setLoading] = useState(false);
   const [stateObj, setStateObj] = useState([
     {
       key: "1",
@@ -49,13 +55,8 @@ function HistoryOrder(props) {
     props.setObjHistoryOrder(newObj);
   };
 
-  const showToast = () => {
-    ToastAndroid.show("Test ToastAndriod React Native !", ToastAndroid.SHORT);
-  };
-
-  let status = "payment";
   const renderProduct = () => {
-    status = "payment";
+    let status = "payment";
     const renderStatus = () => {
       if (status == "payment") {
         return (
@@ -286,6 +287,7 @@ function HistoryOrder(props) {
         </TouchableOpacity>
         <WangdekInfo />
       </ScrollView>
+      <ModalLoading loading={loading} />
     </>
   );
 }

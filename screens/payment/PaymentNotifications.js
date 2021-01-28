@@ -31,17 +31,32 @@ function PaymentNotifications(props) {
 
   useEffect(() => {
     setObjSearch({
-      money: 0,
+      order_no: "",
+      fullname: "",
+      telephone: "",
+      email: "",
+      money_transfer: 0,
       transfer_date: moment(new Date()).format("DD/MM/YYYY"),
       transfer_time: moment(new Date()).format("HH : mm"),
     });
   }, []);
 
   const [objSearch, setObjSearch] = useState({
-    money: 0,
+    order_no: "",
+    fullname: "",
+    telephone: "",
+    email: "",
+    money_transfer: 0,
     transfer_date: moment(new Date()).format("DD/MM/YYYY"),
     transfer_time: moment(new Date()).format("HH : mm"),
   });
+
+  //Block 1 
+  const onChangeOrderNumber = (e) => {
+    let newObj = Object.assign({}, objSearch);
+    newObj.order_no = e
+    setObjSearch(newObj);
+  }
 
   //DatePicker
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -73,10 +88,10 @@ function PaymentNotifications(props) {
     if (date === null) {
       newObj.transfer_time = moment(new Date()).format();
     } else {
-      newObj.transfer_time = moment(date).format("DD/MM/YYYY");
+      newObj.transfer_time = moment(date).format("HH:mm");
     }
     setObjSearch(newObj);
-    hideDatePicker();
+    setTimePickerVisibility(false);
   };
 
   // Transfer Money
@@ -97,7 +112,7 @@ function PaymentNotifications(props) {
   };
   const onChangeTransferMoney = (e) => {
     let newObj = Object.assign({}, objSearch);
-    newObj.money = e;
+    newObj.money_transfer = e;
     setObjSearch(newObj);
   };
 
@@ -157,10 +172,10 @@ function PaymentNotifications(props) {
           <Block style={styles.inputView}>
             <TextInput
               style={styles.inputText}
-              //   placeholder={"กรอกรหัสผ่านใหม่"}
+                placeholder={"หมายเลขสั่งซื้อ"}
               placeholderTextColor="#808080"
-              value={objSearch.PLACE_NO}
-              //   onChangeText={onChangePassword1}
+              value={objSearch.order_no}
+                onChangeText={onChangeOrderNumber}
             />
           </Block>
         </Block>
@@ -195,7 +210,7 @@ function PaymentNotifications(props) {
               style={styles.inputText}
               //   placeholder={"กรอกรหัสผ่านใหม่"}
               placeholderTextColor="#808080"
-              value={objSearch.PLACE_NO}
+              value={objSearch.fullname}
               //   onChangeText={onChangePassword1}
             />
           </Block>
@@ -216,7 +231,7 @@ function PaymentNotifications(props) {
               style={styles.inputText}
               //   placeholder={"กรอกรหัสผ่านใหม่"}
               placeholderTextColor="#808080"
-              value={objSearch.PLACE_NO}
+              value={objSearch.telephone}
               //   onChangeText={onChangePassword1}
             />
           </Block>
@@ -237,7 +252,7 @@ function PaymentNotifications(props) {
               style={styles.inputText}
               //   placeholder={"กรอกรหัสผ่านใหม่"}
               placeholderTextColor="#808080"
-              value={objSearch.PLACE_NO}
+              value={objSearch.email}
               //   onChangeText={onChangePassword1}
             />
           </Block>
@@ -343,6 +358,7 @@ function PaymentNotifications(props) {
                 mode="time"
                 onConfirm={handleConfirmTime}
                 onCancel={hideTimePicker}
+                is24Hour={true}
               />
             </Block>
           </Block>
@@ -365,7 +381,7 @@ function PaymentNotifications(props) {
               placeholder={"กรุณาใส่จำนวนเงินที่ทำการโอน"}
               placeholderTextColor="#808080"
               keyboardType="number-pad"
-              value={objSearch.PLACE_NO}
+              value={objSearch.money_transfer}
               onChangeText={onChangeTransferMoney}
             />
           </Block>

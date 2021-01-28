@@ -14,16 +14,10 @@ const actionTypes = {
 
 const initialState = {
   objChangePassword: {
-    TITLE: "",
-    DETAIL: "",
-    IMAGE: "../../assets/tiendat.png",
-    PRICE: 0,
-    COUNT: 1,
-    TOTAL_PRICE: 0,
+    OLD_PASSWORD: "",
+    PASSWORD: "",
+    PASSWORD_CONFIRMATION: "",
   },
-  // listTrChangePassword: [],
-  // disabledInput: false,
-  // editable: false,
 };
 
 export const reducer = persistReducer(

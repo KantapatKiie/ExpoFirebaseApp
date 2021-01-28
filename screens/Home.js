@@ -190,7 +190,7 @@ function Home(props) {
               <ScrollView showsVerticalScrollIndicator={false}>
                 <Block row style={{ marginBottom: 15 }}>
                   <Image
-                    source={require("../assets/images/coupon/coupon-1.png")}
+                    source={require("../assets/images/coupon/coupon-1-md.png")}
                     style={{ width: 130, height: 55 }}
                   />
                   <TouchableOpacity
@@ -200,7 +200,25 @@ function Home(props) {
                       height: 24,
                       borderRadius: 20,
                       alignSelf: "center",
-                      marginLeft: 5,
+                      marginLeft: 15,
+                    }}
+                  >
+                    <Text style={styles.fontCoupon}>COLLECT</Text>
+                  </TouchableOpacity>
+                </Block>
+                <Block row style={{ marginBottom: 15 }}>
+                  <Image
+                    source={require("../assets/images/coupon/coupon-2-md.png")}
+                    style={{ width: 130, height: 55 }}
+                  />
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: "#00e099",
+                      width: 80,
+                      height: 24,
+                      borderRadius: 20,
+                      alignSelf: "center",
+                      marginLeft: 15,
                     }}
                   >
                     <Text style={styles.fontCoupon}>COLLECT</Text>

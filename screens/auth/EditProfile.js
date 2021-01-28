@@ -28,7 +28,7 @@ const { width } = Dimensions.get("screen");
 const token = getToken();
 
 function EditProfile(props) {
-  let controller;
+  // let controller;
   const { objEditProfileHD } = useSelector((state) => ({
     objEditProfileHD: state.actionEditProfile.objEditProfileHD,
     // listTrEditProfileHD: state.actionEditProfile.listTrEditProfileHD,
@@ -38,7 +38,7 @@ function EditProfile(props) {
     getProvinces();
   }, []);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   // #2
   const onChangeFirstName = (e) => {
     let newObj = Object.assign({}, objEditProfileHD);
@@ -335,50 +335,54 @@ function EditProfile(props) {
     newObj.PHONE_NUMBER_ORDER = e;
     props.setObjEditProfile(newObj);
   };
-
   // Edit Profile
   const confirmEditProfile = async () => {
-    // let address_dv = {listTrEditProfileHD};
-    axios({
-      method: "PUT",
-      url: API_URL.REGISTER_API,
-      headers: {
-        Accept: "application/json",
-        Authorization: "Bearer " + (await token),
-      },
-      params: {
+    setLoading(false);
+    axios.defaults.headers.common["Authorization"] =
+        "Bearer " + (await token);
+    axios
+      .put(API_URL.EDIT_USER_PROFILE_API, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + (await token),
+        },
         first_name: objEditProfileHD.FIRST_NAME,
         last_name: objEditProfileHD.LAST_NAME,
         profile: {
-          profile_id: objEditProfileHD.PROFILE_ID,
-          sex: parseInt(checkedSex),//objEditProfileHD.SEX,
-          birthday: objEditProfileHD.BIRTH_DATE.toString(),
-          telephone: parseInt(objEditProfileHD.PHONE_NUMBER),
-          address: objEditProfileHD.ADDRESS_NAME,
-          province_id: parseInt(objEditProfileHD.PROVINCE_CODE),
-          district_id: parseInt(objEditProfileHD.DISTRICT_CODE),
-          sub_district_id: parseInt(objEditProfileHD.SUB_DISTRICT_CODE),
-          postcode: parseInt(objEditProfileHD.ZIP_CODE),
-          receive_info: parseInt(checkedMail),//objEditProfileHD.SEX,
+          profile_id: parseInt(objEditProfileHD.profile_id),
+          sex: parseInt(objEditProfileHD.SEX), //objEditProfileHD.SEX,
+          birthday: objEditProfileHD.BIRTH_DATE,
+          telephone: objEditProfileHD.PHONE_NUMBER,
+          address: objEditProfileHD.address,
+          province_id: parseInt(objEditProfileHD.province_id),
+          district_id: parseInt(objEditProfileHD.district_id),
+          sub_district_id: parseInt(objEditProfileHD.sub_district_id),
+          postcode: objEditProfileHD.postcode,
+          receive_info: parseInt(objEditProfileHD.receive_info), //objEditProfileHD.SEX,
         },
         address_deliveries: [
           {
-            address_deliveries_id: objEditProfileHD.ADDRESS_DELIVERIES_ID,
-            address: objEditProfileHD.ADDRESS_NAME,
-            province_id: parseInt(objEditProfileHD.PROVINCE_CODE_ORDER),
-            district_id: parseInt(objEditProfileHD.DISTRICT_CODE_ORDER),
-            sub_district_id: parseInt(objEditProfileHD.SUB_DISTRICT_CODE_ORDER),
-            postcode: parseInt(objEditProfileHD.ZIP_CODE_ORDER),
-            telephone: parseInt(objEditProfileHD.PHONE_NUMBER_ORDER),
+            address_deliveries_id: parseInt(objEditProfileHD.address_deliveries_id),
+            address: objEditProfileHD.address_deliveries,
+            province_id: parseInt(objEditProfileHD.province_id_deliveries),
+            district_id: parseInt(objEditProfileHD.district_id_deliveries),
+            sub_district_id: parseInt(
+              objEditProfileHD.sub_district_id_deliveries
+            ),
+            postcode: objEditProfileHD.postcode_deliveries,
+            telephone: objEditProfileHD.telephone_deliveries,
           },
         ],
-      },
-    })
+      })
       .then(function (response) {
         console.log(response.data);
+        setLoading(true);
+        ToastAndroid.show("User updated", ToastAndroid.SHORT);
       })
       .catch(function (error) {
-        console.log("error:", error.message);
+        console.log("error:", error);
+        setLoading(true);
       });
   };
   return (
@@ -726,7 +730,7 @@ function EditProfile(props) {
                 color: "white",
               }}
               items={province}
-              controller={(instance) => (controller = instance)}
+              // // controller={(instance) => (controller = instance)}
               defaultValue={
                 objEditProfileHD.PROVINCE_NAME == ""
                   ? null
@@ -773,7 +777,7 @@ function EditProfile(props) {
                 borderRadius: 20,
                 color: "white",
               }}
-              controller={(instance) => (controller = instance)}
+              // controller={(instance) => (controller = instance)}
               defaultValue={
                 objEditProfileHD.DISTRICT_NAME == ""
                   ? null
@@ -820,7 +824,7 @@ function EditProfile(props) {
                 borderRadius: 20,
                 color: "white",
               }}
-              controller={(instance) => (controller = instance)}
+              // controller={(instance) => (controller = instance)}
               defaultValue={
                 objEditProfileHD.SUB_DISTRICT_NAME == ""
                   ? null
@@ -929,7 +933,7 @@ function EditProfile(props) {
                 borderRadius: 20,
                 color: "white",
               }}
-              controller={(instance) => (controller = instance)}
+              // controller={(instance) => (controller = instance)}
               defaultValue={
                 objEditProfileHD.PROVINCE_NAME_ORDER == ""
                   ? null
@@ -976,7 +980,7 @@ function EditProfile(props) {
                 borderRadius: 20,
                 color: "white",
               }}
-              controller={(instance) => (controller = instance)}
+              // controller={(instance) => (controller = instance)}
               defaultValue={
                 objEditProfileHD.DISTRICT_NAME_ORDER == ""
                   ? null
@@ -1023,7 +1027,7 @@ function EditProfile(props) {
                 borderRadius: 20,
                 color: "white",
               }}
-              controller={(instance) => (controller = instance)}
+              // controller={(instance) => (controller = instance)}
               defaultValue={
                 objEditProfileHD.SUB_DISTRICT_NAME_ORDER == ""
                   ? null
@@ -1118,7 +1122,7 @@ function EditProfile(props) {
                   ต้องการ
                 </Text>
               </Block>
-              <Block row style={{ marginLeft: 50 }}>
+              <Block row style={{ marginLeft: 70 }}>
                 <RadioButton
                   value={1}
                   status={
@@ -1161,7 +1165,7 @@ function EditProfile(props) {
 
         <WangdekInfo />
       </ScrollView>
-      <ModalLoading loading={loading} />
+      <ModalLoading loading={!loading} />
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"

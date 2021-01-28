@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Image, StyleSheet, LogBox } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -7,6 +7,7 @@ import { connect } from "react-redux";
 import * as ActionLogin from "../actions/action-actives/ActionLogin";
 import * as firebase from "firebase";
 import * as Notifications from "expo-notifications";
+// import * as Permissions from "expo-permissions";
 // Screen //
 import HomeScreen from "../screens/Home";
 import ProfileScreen from "../screens/Profile";
@@ -14,7 +15,7 @@ import SettingsScreen from "../screens/Settings";
 import SignInScreen from "../screens/auth/SignIn";
 import SignUpScreen from "../screens/auth/SignUp";
 import EditProfileScreen from "../screens/auth/EditProfile";
-import ProductsScreen from "../screens/product-cart/ProductDetail";
+import ProductDetailScreen from "../screens/product-cart/ProductDetail";
 import CartScreen from "../screens/product-cart/CartScreen";
 import PaymentScreen from "../screens/payment/PaymentScreen";
 import PaymentNotifications from "../screens/payment/PaymentNotifications";
@@ -23,12 +24,14 @@ import ForgotPasswordScreen from "../screens/auth/ForgotPassword";
 import ChangePasswordScreen from "../screens/auth/ChangePassword";
 import FlashsaleProductScreen from "../screens/product-cart/FlashsaleProduct";
 import HistoryViewScreen from "../screens/HistoryView";
-import HistoryOrderScreen from "../screens/order-status/HistoryOrder";
 import FavoriteViewScreen from "../screens/FavoriteView";
 import ProductAllScreen from "../screens/product-cart/ProductAll";
 import PromotionsScreen from "../screens/notifications/Promotions";
 import FilterSearchScreen from "../screens/filter-search/FilterSearch";
 import EventsScreen from "../screens/events/Events";
+//History View
+import HistoryOrderScreen from "../screens/order-status/HistoryOrder";
+import OrderStatusScreen from "../screens/order-status/OrderStatus";
 //Order Screen & Notification-order
 import OrderScreen from "../screens/product-cart/OrderScreen";
 import UseCouponScreen from "../screens/product-cart/notification-order-screen/UseCoupon";
@@ -267,7 +270,7 @@ function ProductStack() {
     >
       <Stack.Screen
         name="Products"
-        component={ProductsScreen}
+        component={ProductDetailScreen}
         options={{
           header: ({ navigation, scene }) => (
             <Header
@@ -1011,7 +1014,7 @@ function MyTabs() {
 }
 
 function OnboardingStack(props) {
-  //#region BackpUp Firebase
+  // //#region BackpUp Firebase
   // const [expoPushToken, setExpoPushToken] = useState("");
   // const [notification, setNotification] = useState(false);
   // const notificationListener = useRef();
@@ -1022,17 +1025,17 @@ function OnboardingStack(props) {
   //     setExpoPushToken(token)
   //   );
 
-  // notificationListener.current = Notifications.addNotificationReceivedListener(
-  //   (notification) => {
-  //     setNotification(notification);
-  //     console.log(notification);
-  //   }
-  // );
-  // responseListener.current = Notifications.addNotificationResponseReceivedListener(
-  //   (response) => {
-  //     console.log(response);
-  //   }
-  // );
+  //   notificationListener.current = Notifications.addNotificationReceivedListener(
+  //     (notification) => {
+  //       setNotification(notification);
+  //       console.log(notification);
+  //     }
+  //   );
+  //   responseListener.current = Notifications.addNotificationResponseReceivedListener(
+  //     (response) => {
+  //       console.log(response);
+  //     }
+  //   );
   //   return () => {
   //     Notifications.removeNotificationSubscription(notificationListener);
   //     Notifications.removeNotificationSubscription(responseListener);
@@ -1058,7 +1061,7 @@ function OnboardingStack(props) {
   //   firebase.database().ref("ExpoToken").set({
   //     Token: token,
   //   });
-  //   // console.log(token);
+  //   console.log(token);
 
   //   if (Platform.OS === "android") {
   //     await Notifications.setNotificationChannelAsync("default", {
@@ -1070,7 +1073,7 @@ function OnboardingStack(props) {
   //   }
   //   return token;
   // }
-  //#endregion
+  // //#endregion
   useEffect(() => {
     LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
   }, []);

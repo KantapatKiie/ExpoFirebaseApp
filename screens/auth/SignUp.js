@@ -346,14 +346,14 @@ function SignUp(props) {
             password_confirmation: objSignUpHD.PASSWORD_2,
             sex: parseInt(checkedGender),
             birthday: (objSignUpHD.BIRTH_DATE).toString(),
-            telephone: parseInt(objSignUpHD.PHONE_NUMBER),
+            telephone: objSignUpHD.PHONE_NUMBER,
 
             address: objSignUpHD.ADDRESS_NAME,
             province: parseInt(objSignUpHD.PROVINCE_CODE),
             district: parseInt(objSignUpHD.DISTRICT_CODE),
             sub_district: parseInt(objSignUpHD.SUB_DISTRICT_CODE),
             postcode: parseInt(objSignUpHD.ZIP_CODE),
-            current_address: objSignUpHD.ADDRESS_NAME,
+            // current_address: objSignUpHD.ADDRESS_NAME,
 
             delivery_fullname:
               objSignUpHD.FIRST_NAME + " " + objSignUpHD.LAST_NAME,

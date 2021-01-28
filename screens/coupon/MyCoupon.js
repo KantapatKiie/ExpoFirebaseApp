@@ -121,13 +121,13 @@ function MyCoupon(props) {
             <Block style={{ marginTop: 15, alignSelf: "center" }}>
               <TouchableOpacity>
                 <Image
-                  source={require("../../assets/images/coupon/coupon2.png")}
+                  source={require("../../assets/images/coupon/coupon-1-use.png")}
                   style={{ height: 120, width: width - 160, marginTop: 15 }}
                 />
               </TouchableOpacity>
               <TouchableOpacity>
                 <Image
-                  source={require("../../assets/images/coupon/coupon2.png")}
+                  source={require("../../assets/images/coupon/coupon-2-use.png")}
                   style={{ height: 120, width: width - 160, marginTop: 15 }}
                 />
               </TouchableOpacity>

@@ -9,6 +9,7 @@ import { Provider } from "react-redux";
 import { rootReducer } from "./store/rootDuck";
 import * as Font from "expo-font";
 import AppLoading from "expo-app-loading";
+import { getToken, setToken } from "./store/mock/token";
 
 //SET STATE (store)
 const store = createStore(rootReducer);
@@ -23,6 +24,7 @@ export default class App extends React.Component {
   }
   componentDidMount() {
     this._loadingFont();
+    // setToken("");
   }
   async _loadingFont() {
     await Font.loadAsync({
