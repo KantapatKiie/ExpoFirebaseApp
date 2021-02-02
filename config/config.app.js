@@ -18,5 +18,9 @@ export const API_URL = {
 
   //API PAGE
   FAVORITE_VIRE_LIST_API: REACT_NATIVE_APP_API + "/user/favorite",
+  HISTORY_ORDER_LIST_API: REACT_NATIVE_APP_API + "/user/history/{search_orderid}",
+  HISTORY_ORDER_LIST_SEARCH_API: REACT_NATIVE_APP_API + "/user/history/",
+  HISTORY_ORDER_DETAIL_LIST_API: REACT_NATIVE_APP_API + "/user/history_detail/",
+
 
 };

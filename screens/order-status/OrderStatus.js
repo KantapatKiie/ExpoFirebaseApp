@@ -6,16 +6,28 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  SafeAreaView,
+  FlatList,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import * as ActionOrderStatus from "../../actions/action-order-status/ActionOrderStatus.js";
 import { Block, Text, theme, Input } from "galio-framework";
 import WangdekInfo from "../../components/WangdekInfo";
 import { formatTr } from "../../i18n/I18nProvider";
 import { Button } from "react-native-elements";
 import StepIndicator from "react-native-step-indicator";
-import product from "../../constants/products"
+import product from "../../constants/products";
+import ModalLoading from "../../components/ModalLoading";
+import { API_URL } from "../../config/config.app";
+import commaNumber from "comma-number";
+import { getToken } from "../../store/mock/token";
 
 const { height, width } = Dimensions.get("screen");
+const token = getToken();
+const rootImage = "http://10.0.1.37:8080";
 
 const firstIndicatorStyles = {
   stepIndicatorSize: 50,
@@ -32,17 +44,42 @@ const firstIndicatorStyles = {
   stepIndicatorCurrentColor: "#ff8400", //Current point
 };
 
+const cartListProductDetail = [
+  {
+    id: 13,
+    product_id: 4,
+    product_name_th: "เสื้อผ้า 002",
+    product_name_en: "Clothing 002",
+    image: "/storage/4/images.jfif",
+    quantity: 1,
+    amount_full: "0.00",
+    amount: "1.00",
+  },
+];
+
 function OrderStatus(props) {
-  const { objOrderStatus } = useSelector((state) => ({
-    objOrderStatus: state.actionOrderStatus.objOrderStatus,
-  }));
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  const { objOrderStatus, statusOrder, logistics_list } = useSelector(
+    (state) => ({
+      objOrderStatus: state.actionOrderStatus.objOrderStatus,
+      statusOrder: state.actionOrderStatus.statusOrder,
+      logistics_list: state.actionOrderStatus.logistics_list,
+      carts_list: state.actionOrderStatus.carts_list,
+    })
+  );
+  let status = statusOrder.status_th;
 
   useEffect(() => {
-    // setStateObj(products);
+    loadListCartProduct();
   }, []);
 
   //   Step Indicators
-  const [currentPosition, setCurrentPosition] = useState(0);
+  const [currentPosition, setCurrentPosition] = useState(3);
   const onStepPress = (position) => {
     setCurrentPosition(position);
   };
@@ -92,23 +129,22 @@ function OrderStatus(props) {
     />
   );
 
-  let status = "payment";
   const renderStatus = () => {
-    if (status == "payment") {
+    if (status == "ชำระเงินแล้ว") {
       return (
         <Image
           source={require("../../assets/images/order-filter/status1-icon.png")}
           style={styles.iconStatus}
         />
       );
-    } else if (status == "waitpay") {
+    } else if (status == "รอการชำระเงิน") {
       return (
         <Image
           source={require("../../assets/images/order-filter/status2-icon.png")}
           style={styles.iconStatus}
         />
       );
-    } else if (status == "waitcheck") {
+    } else if (status == "รอการตรวจสอบ") {
       return (
         <Image
           source={require("../../assets/images/order-filter/status3-icon.png")}
@@ -118,19 +154,31 @@ function OrderStatus(props) {
     }
     return null;
   };
-
-  const renderProdctOrderList = () => {
+  const [cartList, setCartList] = useState(cartListProductDetail);
+  const loadListCartProduct = async () => {
+    await checkPositionStatus();
+    setCartList("");
+    await axios
+      .get(API_URL.HISTORY_ORDER_DETAIL_LIST_API + objOrderStatus.code, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(function (response) {
+        setCartList(response.data.data.orders.carts_list);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const renderDetailStatus = ({ item }) => {
     return (
-      <Block
-        style={{
-          marginTop: 15,
-          width: width,
-          height: "12%",
-        }}
-      >
-        <Block row style={{ margin: 15 }}>
+      <Block style={{ height: 140, margin: 15 }} key={item.id}>
+        <Block row>
           <Image
-            source={require("../../assets/images/bg-p.jpg")}
+            source={{ uri: rootImage + item.image }}
             style={{ width: 100, height: 100 }}
           />
           <Block style={{ marginLeft: 15 }}>
@@ -141,7 +189,7 @@ function OrderStatus(props) {
                 fontSize: 18,
               }}
             >
-              My Mini Mixxie!'s Beach
+              {item.product_name_th}
             </Text>
             <Block row style={{ marginTop: "24%" }}>
               <Text
@@ -161,12 +209,12 @@ function OrderStatus(props) {
                   marginLeft: "40%",
                 }}
               >
-                1
+                {item.quantity}
               </Text>
             </Block>
           </Block>
         </Block>
-        <Block row style={{ margin: 15 }}>
+        <Block row>
           <Text
             style={{
               color: "black",
@@ -174,17 +222,17 @@ function OrderStatus(props) {
               fontSize: 25,
             }}
           >
-            ฿2,500
+            {"฿ " + commaNumber(item.amount_full)}
           </Text>
           <Text
             style={{
               color: "black",
               fontFamily: "kanitRegular",
               fontSize: 25,
-              marginLeft: "50%"
+              marginLeft: "50%",
             }}
           >
-            ฿2,500
+            {"฿ " + commaNumber(item.amount)}
           </Text>
         </Block>
       </Block>
@@ -320,10 +368,11 @@ function OrderStatus(props) {
         {/* Data */}
         <Block
           style={{
-            marginTop: 15,
+            marginTop: 5,
+            marginBottom: 5,
             backgroundColor: "white",
             width: width,
-            height: "14%",
+            height: 225,
           }}
         >
           <Block style={{ margin: 15 }}>
@@ -337,7 +386,7 @@ function OrderStatus(props) {
               ข้อมูลการสั่งซื้อ
             </Text>
           </Block>
-          <Block row>
+          <Block row style={{ width: width }}>
             <Block style={{ marginLeft: 15 }}>
               <Text
                 style={{
@@ -379,7 +428,7 @@ function OrderStatus(props) {
                 การชำระเงิน :
               </Text>
             </Block>
-            <Block style={{ marginLeft: "24%" }}>
+            <Block flex style={{ marginRight: 10 }}>
               <Text
                 style={{
                   color: "black",
@@ -388,7 +437,7 @@ function OrderStatus(props) {
                   textAlign: "right",
                 }}
               >
-                UCM789456123
+                {objOrderStatus.code}
               </Text>
               <Text
                 style={{
@@ -399,234 +448,259 @@ function OrderStatus(props) {
                   textAlign: "right",
                 }}
               >
-                8 ก.พ. 2564
+                {moment(objOrderStatus.created_at).format("DD MMM YYYY")}
               </Text>
-              <Block row>
-                {renderStatus()}
-                <Text
-                  style={{
-                    color: "#00c278",
-                    fontFamily: "kanitRegular",
-                    fontSize: 18,
-                    marginTop: 12,
-                  }}
-                >
-                  {"  "}ชำระเงินแล้ว
-                </Text>
+              <Block row style={{ alignSelf: "flex-end" }}>
+                <Block style={{ marginLeft: 17 }}>{renderStatus()}</Block>
+                <Block style={{ marginLeft: 5 }}>
+                  <Text
+                    style={
+                      statusOrder.status_th == "ชำระเงินแล้ว"
+                        ? styles.textStatusPayment
+                        : statusOrder.status_th == "รอการชำระเงิน"
+                        ? styles.textStatusWaitPayment
+                        : styles.textStatusWaitCheck
+                    }
+                  >
+                    {locale == "th"
+                      ? statusOrder.status_th
+                      : statusOrder.status_en}
+                  </Text>
+                </Block>
               </Block>
               <Text
                 style={{
                   color: "black",
                   fontFamily: "kanitRegular",
                   fontSize: 18,
-                  marginTop: 14,
+                  marginTop: 15,
                   textAlign: "right",
                 }}
               >
-                เครดิตการ์ด
+                {objOrderStatus.payment_type}
               </Text>
             </Block>
           </Block>
         </Block>
 
-        {/* Order Product */}
-        {renderProdctOrderList()}
+        {/* Order List */}
+        <SafeAreaView>
+          <FlatList
+            data={cartList}
+            style={styles.containers}
+            renderItem={renderDetailStatus}
+            keyExtractor={(item) => item.id.toString()}
+          />
+        </SafeAreaView>
 
         {/* EMS */}
+        {logistics_list.map((item) => (
+          <Block
+            key={item.id}
+            style={{
+              backgroundColor: "white",
+              width: width,
+              borderBottomWidth: 1,
+              borderBottomColor: "#e0e0e0",
+            }}
+          >
+            <Block style={{ margin: 25 }}>
+              <Block>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitBold",
+                    fontSize: 20,
+                  }}
+                >
+                  ช่องทางการจัดส่ง
+                </Text>
+                <Image
+                  source={{ uri: rootImage + item.image }}
+                  style={{ width: 170, height: 50, margin: 10 }}
+                />
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 18,
+                  }}
+                >
+                  {item.name_en + " - " + item.name_th}
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 18,
+                  }}
+                >
+                  ระยะเวลาในการส่ง : {item.period}
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 18,
+                  }}
+                >
+                  อัตราค่าบริการ : {commaNumber(item.base_price)} บาท
+                </Text>
+              </Block>
+            </Block>
+          </Block>
+        ))}
+
+        {/* Address Delivery */}
         <Block
           style={{
             backgroundColor: "white",
             width: width,
-            height: "25%",
             borderBottomWidth: 1,
             borderBottomColor: "#e0e0e0",
           }}
         >
           <Block style={{ margin: 25 }}>
-            <Block>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitBold",
-                  fontSize: 20,
-                }}
-              >
-                ช่องทางการจัดส่ง
-              </Text>
-              <Image
-                source={require("../../assets/images/bank_ems/ep-EMS.jpg")}
-                style={{ width: 170, height: 50, margin: 10 }}
-              />
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                }}
-              >
-                EMS - ไปรษณีย์ด่วนพิเศษ
-              </Text>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                }}
-              >
-                ระยะเวลาในการส่ง : 3 - 5 วัน
-              </Text>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                }}
-              >
-                อัตราค่าบริการ : 50 บาท
-              </Text>
-            </Block>
-            <Block>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitBold",
-                  fontSize: 20,
-                  marginTop: 15,
-                }}
-              >
-                ที่อยู่ในการจัดส่ง
-              </Text>
-              <Block row style={{ marginTop: 10 }}>
-                <Block>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    ชื่อ :
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    เบอร์โทร :
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    ที่อยู่ :
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    แขวง/ตำบล :
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    เขต/อำเภอ :
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    จังหวัด :
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    รหัสไปรษณีย์ :
-                  </Text>
-                </Block>
-                <Block style={{ marginLeft: 25 }}>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    ชื่อ
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    เบอร์โทร
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    ที่อยู่
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    แขวง/ตำบล
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    เขต/อำเภอ
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    จังหวัด
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    รหัสไปรษณีย์
-                  </Text>
-                </Block>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitBold",
+                fontSize: 20,
+                marginTop: 15,
+              }}
+            >
+              ที่อยู่ในการจัดส่ง
+            </Text>
+            <Block row style={{ marginTop: 10 }}>
+              <Block>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  ชื่อ :
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  เบอร์โทร :
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  ที่อยู่ :
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  แขวง/ตำบล :
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  เขต/อำเภอ :
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  จังหวัด :
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  รหัสไปรษณีย์ :
+                </Text>
+              </Block>
+              <Block style={{ marginLeft: 25 }}>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  {objOrderStatus.fullname}
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  {objOrderStatus.telephone}
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  {objOrderStatus.address}
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  {objOrderStatus.fullname}
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  {objOrderStatus.fullname}
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  {objOrderStatus.fullname}
+                </Text>
+                <Text
+                  style={{
+                    color: "black",
+                    fontFamily: "kanitRegular",
+                    fontSize: 16,
+                  }}
+                >
+                  {objOrderStatus.postcode}
+                </Text>
               </Block>
             </Block>
           </Block>
@@ -641,7 +715,7 @@ function OrderStatus(props) {
             borderBottomColor: "#e0e0e0",
           }}
         >
-          <Block style={{margin:25}}>
+          <Block style={{ margin: 25 }}>
             <Text
               style={{
                 color: "black",
@@ -658,7 +732,7 @@ function OrderStatus(props) {
                 fontFamily: "kanitRegular",
                 fontSize: 18,
                 textAlign: "right",
-                marginTop: 12
+                marginTop: 12,
               }}
             >
               ค่าจัดส่ง : ฿50.00
@@ -669,7 +743,7 @@ function OrderStatus(props) {
                 fontFamily: "kanitRegular",
                 fontSize: 18,
                 textAlign: "right",
-                marginTop: 12
+                marginTop: 12,
               }}
             >
               ส่วนลด : -฿50.00
@@ -680,7 +754,7 @@ function OrderStatus(props) {
                 fontFamily: "kanitRegular",
                 fontSize: 18,
                 textAlign: "right",
-                marginTop: 12
+                marginTop: 12,
               }}
             >
               ภาษี 7% : ฿65.80
@@ -691,7 +765,7 @@ function OrderStatus(props) {
                 fontFamily: "kanitRegular",
                 fontSize: 23,
                 textAlign: "right",
-                marginTop: 12
+                marginTop: 12,
               }}
             >
               ยอดรวมทั้งสิ้น : ฿13,990.00
@@ -702,7 +776,13 @@ function OrderStatus(props) {
         {/* Button */}
         <Block
           row
-          style={{ paddingTop: 40, paddingBottom: 40, alignSelf: "center", backgroundColor:"white" , width:width}}
+          style={{
+            paddingTop: 40,
+            paddingBottom: 40,
+            alignSelf: "center",
+            backgroundColor: "white",
+            width: width,
+          }}
         >
           <Button
             titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
@@ -721,7 +801,7 @@ function OrderStatus(props) {
             onPress={() => showToast()}
           />
         </Block>
-        
+
         <WangdekInfo />
       </ScrollView>
     </>
@@ -731,6 +811,10 @@ function OrderStatus(props) {
 export default connect(null, ActionOrderStatus.actions)(OrderStatus);
 
 const styles = StyleSheet.create({
+  containers: {
+    flex: 1,
+    marginVertical: 20,
+  },
   blockButton1: {
     flexDirection: "row",
     paddingLeft: 15,
@@ -742,7 +826,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0c66ed",
     borderRadius: 20,
     width: 170,
-    alignSelf: "center",
+    alignSelf: "flex-end",
   },
   buttonStyle2: {
     backgroundColor: "#ff4545",
@@ -750,9 +834,33 @@ const styles = StyleSheet.create({
     width: 170,
     alignSelf: "center",
   },
-  iconStatus:{
-    width: 20, height: 20,marginTop:15
-  }
+  iconStatus: {
+    width: 20,
+    height: 20,
+    marginTop: 15,
+  },
+  containersFL: {
+    flex: 1,
+    marginVertical: 20,
+  },
+  textStatusPayment: {
+    color: "#00c278",
+    fontFamily: "kanitRegular",
+    fontSize: 18,
+    marginTop: 12,
+  },
+  textStatusWaitPayment: {
+    color: "#8a8a8a",
+    fontFamily: "kanitRegular",
+    fontSize: 18,
+    marginTop: 12,
+  },
+  textStatusWaitCheck: {
+    color: "#f5d225",
+    fontFamily: "kanitRegular",
+    fontSize: 18,
+    marginTop: 12,
+  },
 });
 
 const styles2 = StyleSheet.create({
