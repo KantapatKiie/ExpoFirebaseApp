@@ -61,7 +61,7 @@ function FavoriteView(props) {
     setStateObj("");
     setLoading(false);
     await axios
-      .get(API_URL.FAVORITE_VIRE_LIST_API, {
+      .get(API_URL.FAVORITE_VIEW_LIST_API, {
         headers: {
           Accept: "application/json",
           Authorization: "Bearer " + (await token),
@@ -84,7 +84,7 @@ function FavoriteView(props) {
     setLoading(false);
     setNumList(numList + 1);
     await axios
-      .get(API_URL.FAVORITE_VIRE_LIST_API, {
+      .get(API_URL.FAVORITE_VIEW_LIST_API, {
         headers: {
           Accept: "application/json",
           Authorization: "Bearer " + (await token),
@@ -126,7 +126,7 @@ function FavoriteView(props) {
       });
       setStateObj(newStateObj);
       axios
-        .put(API_URL.FAVORITE_VIRE_LIST_API + "/" + key, {
+        .put(API_URL.FAVORITE_VIEW_LIST_API + "/" + key, {
           headers: {
             Accept: "*/*",
             Authorization: "Bearer " + (await token),
@@ -173,7 +173,9 @@ function FavoriteView(props) {
           onPress={() => props.navigation.navigate("Products")}
         >
           <Block flex space="between" style={styles.productDescription}>
-            <Block style={{ borderBottomWidth: 0.5, borderBottomColor:"#e0e0e0" }}>
+            <Block
+              style={{ borderBottomWidth: 0.5, borderBottomColor: "#e0e0e0" }}
+            >
               <Text
                 style={{
                   color: "black",

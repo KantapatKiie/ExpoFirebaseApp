@@ -72,17 +72,21 @@ function OrderStatus(props) {
       carts_list: state.actionOrderStatus.carts_list,
     })
   );
+
+  const [loading, setLoading] = useState(null);
   let status = statusOrder.status_th;
+  let TotalAmounts =
+    parseFloat(objOrderStatus.total_amount) +
+    parseFloat(objOrderStatus.delivery_charge) -
+    parseFloat(objOrderStatus.discount) +
+    parseFloat(objOrderStatus.vat);
 
   useEffect(() => {
-    loadListCartProduct();
+    loadingCartDetails();
   }, []);
 
-  //   Step Indicators
-  const [currentPosition, setCurrentPosition] = useState(3);
-  const onStepPress = (position) => {
-    setCurrentPosition(position);
-  };
+  // Step Indicators
+  const [currentPosition, setCurrentPosition] = useState(objOrderStatus.status);
   const getStepIndicatorIconConfig = ({ position }) => {
     const iconConfig = {
       name: "feed",
@@ -154,9 +158,10 @@ function OrderStatus(props) {
     }
     return null;
   };
+
   const [cartList, setCartList] = useState(cartListProductDetail);
-  const loadListCartProduct = async () => {
-    await checkPositionStatus();
+  const loadingCartDetails = async () => {
+    setLoading(false);
     setCartList("");
     await axios
       .get(API_URL.HISTORY_ORDER_DETAIL_LIST_API + objOrderStatus.code, {
@@ -167,18 +172,21 @@ function OrderStatus(props) {
         },
       })
       .then(function (response) {
+        setLoading(true);
         setCartList(response.data.data.orders.carts_list);
       })
       .catch(function (error) {
         console.log(error);
+        setLoading(true);
       });
+    setLoading(true);
   };
   const renderDetailStatus = ({ item }) => {
     return (
       <Block style={{ height: 140, margin: 15 }} key={item.id}>
         <Block row>
           <Image
-            source={{ uri: rootImage + item.image }}
+            source={{ uri: rootImage + item.product_image }}
             style={{ width: 100, height: 100 }}
           />
           <Block style={{ marginLeft: 15 }}>
@@ -214,12 +222,12 @@ function OrderStatus(props) {
             </Block>
           </Block>
         </Block>
-        <Block row>
+        <Block row style={{ margin: 15 }}>
           <Text
             style={{
               color: "black",
               fontFamily: "kanitRegular",
-              fontSize: 25,
+              fontSize: 24,
             }}
           >
             {"฿ " + commaNumber(item.amount_full)}
@@ -228,8 +236,8 @@ function OrderStatus(props) {
             style={{
               color: "black",
               fontFamily: "kanitRegular",
-              fontSize: 25,
-              marginLeft: "50%",
+              fontSize: 24,
+              marginLeft: "45%",
             }}
           >
             {"฿ " + commaNumber(item.amount)}
@@ -360,7 +368,6 @@ function OrderStatus(props) {
               renderStepIndicator={renderStepIndicators}
               currentPosition={currentPosition}
               stepCount={4}
-              onPress={onStepPress}
             />
           </Block>
         </Block>
@@ -544,7 +551,8 @@ function OrderStatus(props) {
                     fontSize: 18,
                   }}
                 >
-                  อัตราค่าบริการ : {commaNumber(item.base_price)} บาท
+                  อัตราค่าบริการ : {commaNumber(objOrderStatus.delivery_charge)}{" "}
+                  บาท
                 </Text>
               </Block>
             </Block>
@@ -672,7 +680,9 @@ function OrderStatus(props) {
                     fontSize: 16,
                   }}
                 >
-                  {objOrderStatus.fullname}
+                  {locale == "th"
+                    ? objOrderStatus.sub_district_name_th
+                    : objOrderStatus.sub_district_name_en}
                 </Text>
                 <Text
                   style={{
@@ -681,7 +691,9 @@ function OrderStatus(props) {
                     fontSize: 16,
                   }}
                 >
-                  {objOrderStatus.fullname}
+                  {locale == "th"
+                    ? objOrderStatus.district_name_th
+                    : objOrderStatus.district_name_en}
                 </Text>
                 <Text
                   style={{
@@ -690,7 +702,9 @@ function OrderStatus(props) {
                     fontSize: 16,
                   }}
                 >
-                  {objOrderStatus.fullname}
+                  {locale == "th"
+                    ? objOrderStatus.province_name_th
+                    : objOrderStatus.province_name_en}
                 </Text>
                 <Text
                   style={{
@@ -724,7 +738,7 @@ function OrderStatus(props) {
                 textAlign: "right",
               }}
             >
-              ยอดรวมค่าสินค้า : ฿6,700.00
+              ยอดรวมค่าสินค้า : ฿ {commaNumber(objOrderStatus.total_amount)}
             </Text>
             <Text
               style={{
@@ -735,7 +749,7 @@ function OrderStatus(props) {
                 marginTop: 12,
               }}
             >
-              ค่าจัดส่ง : ฿50.00
+              ค่าจัดส่ง : ฿ {commaNumber(parseFloat(objOrderStatus.delivery_charge).toFixed(2))}
             </Text>
             <Text
               style={{
@@ -746,7 +760,7 @@ function OrderStatus(props) {
                 marginTop: 12,
               }}
             >
-              ส่วนลด : -฿50.00
+              ส่วนลด : ฿ -{commaNumber(objOrderStatus.discount)}
             </Text>
             <Text
               style={{
@@ -757,7 +771,7 @@ function OrderStatus(props) {
                 marginTop: 12,
               }}
             >
-              ภาษี 7% : ฿65.80
+              ภาษี : ฿ {commaNumber(objOrderStatus.vat)}
             </Text>
             <Text
               style={{
@@ -768,7 +782,7 @@ function OrderStatus(props) {
                 marginTop: 12,
               }}
             >
-              ยอดรวมทั้งสิ้น : ฿13,990.00
+              ยอดรวมทั้งสิ้น : ฿ {commaNumber(TotalAmounts)}
             </Text>
           </Block>
         </Block>
@@ -788,9 +802,9 @@ function OrderStatus(props) {
             titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
             title={"ดาวน์โหลดใบเสร็จ"}
             type="solid"
-            onPress={() => props.navigation.navigate("Flash Sale")}
             containerStyle={styles.blockButton1}
             buttonStyle={styles.buttonStyle1}
+            // onPress={() => props.navigation.navigate("Flash Sale")}
           />
           <Button
             titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
@@ -798,12 +812,13 @@ function OrderStatus(props) {
             type="solid"
             containerStyle={styles.blockButton2}
             buttonStyle={styles.buttonStyle2}
-            onPress={() => showToast()}
+            // onPress={() => showToast()}
           />
         </Block>
 
         <WangdekInfo />
       </ScrollView>
+      <ModalLoading loading={!loading} />
     </>
   );
 }

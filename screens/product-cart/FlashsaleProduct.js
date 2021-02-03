@@ -1,63 +1,209 @@
 import React, { useState, useEffect } from "react";
 import { connect, useSelector } from "react-redux";
-import * as auth from "../../store/ducks/auth.duck";
 import {
   StyleSheet,
   View,
   TouchableOpacity,
-  ScrollView,
   Dimensions,
   SectionList,
   SafeAreaView,
   Image,
   FlatList,
-  TouchableHighlight,
   ImageBackground,
 } from "react-native";
-import * as ActionProduct from "../../actions/action-product/ActionProduct";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
+import { actions as ActionProduct } from "../../actions/action-product/ActionProduct";
+import { actions as ActionHome } from "../../actions/action-home/ActionHome";
 import { formatTr } from "../../i18n/I18nProvider";
 import { Block, Text } from "galio-framework";
 import WangdekInfo from "../../components/WangdekInfo";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
-import { ProgressBar, Colors } from 'react-native-paper';
+import { ProgressBar, Colors } from "react-native-paper";
 import CountDown from "react-native-countdown-component";
+import { API_URL } from "../../config/config.app";
+import commaNumber from "comma-number";
+import { getToken } from "../../store/mock/token";
+import ModalLoading from "../../components/ModalLoading";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+const token = getToken();
+const rootImage = "http://10.0.1.37:8080";
+
+const defaultListFalsesaleProduct = [
+  {
+    id: 1,
+    product_id: 3,
+    product_name_th: "เสื้อผ้า 001",
+    product_name_en: "Clothing 001",
+    product_image: "/storage/3/images-%281%29.jfif",
+    product_price: "500.00",
+    product_discount: "50.00",
+    product_sold: 1,
+    product_stock: 10,
+  },
+];
 
 function FlashsaleProduct(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  const { objHomeHD, listTrSearchHD, listCouponHD } = useSelector((state) => ({
+    objHomeHD: state.actionHomeHD.objHomeHD,
+    listTrSearchHD: state.actionHomeHD.listTrSearchHD,
+    listCouponHD: state.actionHomeHD.listCouponHD,
+  }));
   const { objProductActivity } = useSelector((state) => ({
     objProductActivity: state.actionProduct.objProductActivity,
   }));
+  const [loading, setLoading] = useState(null);
 
   useEffect(() => {
+    setLoading(false);
+    setNumList(2);
+    if (listTrSearchHD == "") {
+      loadFalshsaleRetry();
+    }
   }, []);
+
+  const loadFalshsaleRetry = async () => {
+    await axios
+      .get(API_URL.FALSH_SALE_VIEW_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+        params: {
+          page: 1,
+        },
+      })
+      .then(async (response) => {
+        props.setListTrSearchHD(response.data.data.lists);
+        // axios
+        // .get(API_URL.COUPON_LIST_TR_API, {
+        //   headers: {
+        //     Accept: "application/json",
+        //     Authorization: "Bearer " + (await token),
+        //     "Content-Type": "application/json",
+        //   },
+        // })
+        // .then(async (response) => {
+        //   console.log(response.data.data)
+        //   // props.setListCouponHD(response.data.data);
+        // })
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
 
   //FlatList Coupon
   const ListItemCoupon = ({ item }) => {
     return (
       <Block style={styles.itemCoupon}>
-        <TouchableOpacity onPress={() => props.navigation.navigate("Basket")}>
+        <TouchableOpacity
+          onPress={() => props.navigation.navigate("My Coupon")}
+        >
           <Image
-            source={item.uri}
+            source={{ uri: rootImage + item.image }}
             style={{ width: 170, height: 80, margin: 10 }}
           />
         </TouchableOpacity>
       </Block>
     );
   };
-  const [progressValue ,setProgressValue] = useState(0.65);
-  const onSelectProduct = () => {
-    let newObj = Object.assign({}, objProductActivity);
-    newObj.FLASHSALE = true;
-    props.setObjProductActivity(newObj);
-    props.navigation.navigate("Products");
-    // navigation.navigate("Products", { params: product });
-  };
-  const onLoadMoreProduct = () => {
-      console.log("load More");
-  }
 
+  const onSelectProduct = async (item) => {
+    let progressPercentage =
+      (item.product_sold - item.product_stock + item.product_stock) /
+      item.product_stock;
+    setLoading(true);
+    await axios
+      .get(API_URL.FALSH_SALE_VIEW_API + "/" + item.id, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(function (response) {
+        let newObj = Object.assign({}, objProductActivity);
+        newObj.FLASHSALE = true;
+        newObj.product_id = response.data.data.lists.product_id;
+        newObj.flash_sale_events_id =
+          response.data.data.lists.flash_sale_events_id;
+        newObj.flash_sales_id = response.data.data.lists.flash_sales_id;
+        newObj.TITLE =
+          locale == "th"
+            ? response.data.data.lists.product_name_th
+            : response.data.data.lists.product_name_en;
+        newObj.DETAIL =
+          locale == "th"
+            ? response.data.data.lists.product_description_th
+            : response.data.data.lists.product_description_en;
+        newObj.IMAGE = rootImage + response.data.data.lists.product_image;
+        newObj.PRICE = response.data.data.lists.product_price;
+        newObj.quantity = response.data.data.quantity;
+        newObj.discount = response.data.data.discount;
+
+        newObj.product_info_th =
+          locale == "th"
+            ? response.data.data.lists.product_info_th
+            : response.data.data.lists.product_info_en;
+        newObj.product_full_price = response.data.data.lists.product_full_price;
+        newObj.product_favorite = response.data.data.lists.product_favorite;
+
+        newObj.product_sold = item.product_sold;
+        newObj.timeEnds = objHomeHD.timeEnds;
+        newObj.progressPercent = progressPercentage;
+
+        setLoading(false);
+        props.setObjProductActivity(newObj);
+        props.navigation.navigate("Products");
+      })
+      .catch(function (error) {
+        console.log(error);
+        setLoading(false);
+      });
+  };
+
+  //Load More
+  const [numList, setNumList] = useState(2);
+  const [stateObj, setStateObj] = useState(defaultListFalsesaleProduct);
+  const onLoadMoreProduct = async () => {
+    setLoading(true);
+    setNumList(numList + 1);
+    await axios
+      .get(API_URL.FALSH_SALE_VIEW_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+        params: {
+          page: numList,
+        },
+      })
+      .then(function (response) {
+        const newConcatState = listTrSearchHD.concat(
+          response.data.data.product_lists
+        );
+        setStateObj(newConcatState);
+        setLoading(false);
+      })
+      .catch(function (error) {
+        console.log(error);
+        setLoading(false);
+      });
+  };
   return (
     <>
       <View style={styles.container}>
@@ -82,183 +228,201 @@ function FlashsaleProduct(props) {
                   {section.horizontal ? (
                     <FlatList
                       horizontal
-                      data={section.data}
+                      data={listCouponHD}
                       renderItem={({ item }) => <ListItemCoupon item={item} />}
                       showsHorizontalScrollIndicator={false}
+                      keyExtractor={(item) => item.id.toString()}
                     />
                   ) : null}
                 </Block>
 
                 {/* Flash Sale Count Down */}
-                <TouchableHighlight>
-                  <LinearGradient
-                    colors={["#00cef2", "#00c4b7", "#00d184"]}
-                    style={linerStyle.linearGradient}
+                <LinearGradient
+                  colors={["#00cef2", "#00c4b7", "#00d184"]}
+                  style={linerStyle.linearGradient}
+                >
+                  <Image
+                    source={require("../../assets/images/flashsale_head.png")}
+                    style={{
+                      width: width - 180,
+                      height: 28,
+                      alignSelf: "center",
+                      marginTop: 20,
+                      marginLeft: 20,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: "kanitRegular",
+                      color: "white",
+                      fontSize: 18,
+                      marginLeft: 25,
+                      marginTop: 17,
+                    }}
                   >
-                    <Image
-                      source={require("../../assets/images/flashsale_head.png")}
+                    Ends in
+                  </Text>
+                  {/* CountDownTime */}
+                  <Block row>
+                    <Block style={linerStyle.BlockTime}>
+                      <CountDown
+                        size={22}
+                        until={parseInt(objHomeHD.timeEnds)}
+                        digitStyle={{
+                          backgroundColor: "#ff4545",
+                          height: 30,
+                          width: 40,
+                        }}
+                        style={{
+                          marginLeft: 20,
+                          marginBottom: 20,
+                        }}
+                        digitTxtStyle={{
+                          color: "white",
+                          fontSize: 18,
+                          fontFamily: "kanitRegular",
+                        }}
+                        timeToShow={["H", "M", "S"]}
+                        timeLabelStyle={{
+                          color: "white",
+                          fontWeight: "bold",
+                        }}
+                        timeLabels={{ d: null, h: null, m: null, s: null }}
+                        separatorStyle={{ color: "white", marginBottom: 3.5 }}
+                        showSeparator
+                      />
+                    </Block>
+
+                    <Block
                       style={{
-                        width: width - 180,
-                        height: 28,
-                        alignSelf: "center",
-                        marginTop: 20,
-                        marginLeft: 20,
-                      }}
-                    />
-                    <Text
-                      style={{
-                        fontFamily: "kanitRegular",
-                        color: "white",
-                        fontSize: 18,
-                        marginLeft: 25,
-                        marginTop: 17,
+                        borderLeftWidth: 1,
+                        borderLeftColor: "#e0e0e0",
+                        marginTop: 10,
                       }}
                     >
-                      Ends in
-                    </Text>
-                    {/* CountDownTime */}
-                    <Block row>
-                      <Block style={linerStyle.BlockTime}>
-                        <CountDown
-                          size={22}
-                          until={60000}
-                          digitStyle={{
-                            backgroundColor: "#ff4545",
-                            height: 30,
-                            width: 40,
-                          }}
-                          style={{
-                            marginLeft: 20,
-                            marginBottom: 20,
-                          }}
-                          digitTxtStyle={{
-                            color: "white",
-                            fontSize: 18,
-                            fontFamily: "kanitRegular",
-                          }}
-                          timeToShow={["H", "M", "S"]}
-                          timeLabelStyle={{
-                            color: "white",
-                            fontWeight: "bold",
-                          }}
-                          timeLabels={{ d: null, h: null, m: null, s: null }}
-                          separatorStyle={{ color: "white", marginBottom: 3.5 }}
-                          showSeparator
-                          // onFinish={() => alert("Finished")}
-                        />
-                        <Text style={timeStyle.timeTextArrow}>{">"}</Text>
-                      </Block>
-
-                      <Block
+                      <Text
                         style={{
-                          borderLeftWidth: 1,
-                          borderLeftColor: "#e0e0e0",
-                          marginTop: 10,
+                          fontFamily: "kanitRegular",
+                          color: "white",
+                          fontSize: 18,
+                          marginLeft: 20,
+                          borderBottomWidth: 5,
+                          borderBottomColor: "yellow",
+                          borderRadius: 4,
+                          alignItems: "flex-start",
                         }}
                       >
-                        <Text
-                          style={{
-                            fontFamily: "kanitRegular",
-                            color: "white",
-                            fontSize: 18,
-                            marginLeft: 20,
-                            borderBottomWidth: 5,
-                            borderBottomColor: "yellow",
-                            borderRadius: 4,
-                            alignItems: "flex-start",
-                          }}
-                        >
-                          00:00 พรุ่งนี้
-                        </Text>
-                      </Block>
+                        00:00 พรุ่งนี้
+                      </Text>
                     </Block>
-                  </LinearGradient>
-                </TouchableHighlight>
+                  </Block>
+                </LinearGradient>
               </>
             )}
             renderSectionFooter={() => (
               <>
                 {/* Product List */}
                 <Block flex style={{ backgroundColor: "white", marginTop: 15 }}>
-                  <TouchableOpacity  onPress={() => onSelectProduct()}>
-                    <Block row style={{ margin: 10 }}>
-                      <ImageBackground
-                        source={require("../../assets/images/bg-p.jpg")}
-                        style={{
-                          width: 120,
-                          height: 100,
-                          alignSelf: "center",
-                        }}
-                      >
-                        <Block
+                  {listTrSearchHD.map((item) => (
+                    <TouchableOpacity
+                      onPress={() => onSelectProduct(item)}
+                      key={item.id}
+                    >
+                      <Block row style={{ margin: 10 }}>
+                        <ImageBackground
+                          source={{ uri: rootImage + item.product_image }}
                           style={{
-                            backgroundColor: "#ff0000",
-                            width: 40,
-                            height: 37,
-                            alignSelf: "flex-end",
+                            width: 120,
+                            height: 100,
+                            alignSelf: "center",
                           }}
                         >
-                          <Text
+                          <Block
                             style={{
-                              fontFamily: "kanitBold",
-                              color: "white",
-                              fontSize: 12.5,
-                              textAlign: "center",
-                              marginTop: 9,
+                              backgroundColor: "#ff0000",
+                              width: 40,
+                              height: 37,
+                              alignSelf: "flex-end",
                             }}
                           >
-                            -50%
+                            <Text
+                              style={{
+                                fontFamily: "kanitBold",
+                                color: "white",
+                                fontSize: 12.5,
+                                textAlign: "center",
+                                marginTop: 9,
+                              }}
+                            >
+                              {parseInt(item.product_discount).toFixed(0)}%
+                            </Text>
+                          </Block>
+                        </ImageBackground>
+                        {/* Detaill */}
+                        <Block flex style={{ marginLeft: 10 }}>
+                          <Text
+                            style={{
+                              fontFamily: "kanitRegular",
+                              color: "black",
+                              fontSize: 15,
+                            }}
+                          >
+                            {locale == "th"
+                              ? item.product_name_th
+                              : item.product_name_en}
+                          </Text>
+                          <Text
+                            style={{
+                              fontFamily: "kanitRegular",
+                              color: "black",
+                              fontSize: 15,
+                              borderBottomWidth: 1,
+                              marginTop: 5,
+                              borderBottomColor: "#e0e0e0",
+                            }}
+                          >
+                            ราคา : ฿{" "}
+                            {parseInt(commaNumber(item.product_price)).toFixed(
+                              2
+                            )}
+                          </Text>
+                          <ProgressBar
+                            progress={
+                              (item.product_sold -
+                                item.product_stock +
+                                item.product_stock) /
+                              item.product_stock
+                            }
+                            color={
+                              (item.product_sold -
+                                item.product_stock +
+                                item.product_stock) /
+                                item.product_stock ===
+                              1
+                                ? Colors.red800
+                                : "#00b1ba"
+                            }
+                            style={{
+                              borderRadius: 20,
+                              height: 10,
+                              marginTop: 15,
+                            }}
+                          />
+                          <Text
+                            style={{
+                              fontFamily: "kanitRegular",
+                              color: "black",
+                              fontSize: 15,
+                              textAlign: "right",
+                              marginTop: 5,
+                            }}
+                          >
+                            ขายแล้ว {item.product_sold} ชิ้น
                           </Text>
                         </Block>
-                      </ImageBackground>
-                      {/* Detaill */}
-                      <Block flex style={{ marginLeft: 10 }}>
-                        <Text
-                          style={{
-                            fontFamily: "kanitRegular",
-                            color: "black",
-                            fontSize: 15,
-                          }}
-                        >
-                          Enchantimals Starling Startfish
-                        </Text>
-                        <Text
-                          style={{
-                            fontFamily: "kanitRegular",
-                            color: "black",
-                            fontSize: 15,
-                            borderBottomWidth: 1,
-                            marginTop: 5,
-                            borderBottomColor: "#e0e0e0",
-                          }}
-                        >
-                          ราคา : ฿6,990
-                        </Text>
-                        <ProgressBar
-                          progress={progressValue}
-                          color={
-                            progressValue === 1 ? Colors.red800 : "#00b1ba"
-                          }
-                          style={{
-                            borderRadius: 20,
-                            height: 10,
-                            marginTop: 15,
-                          }}
-                        />
-                        <Text
-                          style={{
-                            fontFamily: "kanitRegular",
-                            color: "black",
-                            fontSize: 15,
-                            textAlign: "right",
-                            marginTop: 5,
-                          }}
-                        >
-                          ขายแล้ว 250 ชิ้น
-                        </Text>
                       </Block>
-                    </Block>
-                  </TouchableOpacity>
+                    </TouchableOpacity>
+                  ))}
                   {/* Load More */}
                   <TouchableOpacity onPress={onLoadMoreProduct}>
                     <Block style={{ alignSelf: "center" }}>
@@ -279,7 +443,6 @@ function FlashsaleProduct(props) {
                     </Block>
                   </TouchableOpacity>
                 </Block>
-                {/* Bottom info */}
                 <WangdekInfo />
               </>
             )}
@@ -292,11 +455,24 @@ function FlashsaleProduct(props) {
           />
         </SafeAreaView>
       </View>
+      <ModalLoading loading={loading} />
     </>
   );
 }
 
-export default connect(null, ActionProduct.actions)(FlashsaleProduct);
+const mapActions = {
+  setObjProductActivity: ActionProduct.setObjProductActivity,
+  clearObjProductActivity: ActionProduct.clearObjProductActivity,
+  setListTrProductActivity: ActionProduct.setListTrProductActivity,
+  pushListTrProductActivity: ActionProduct.pushListTrProductActivity,
+
+  setObjHomeHD: ActionHome.setObjHomeHD,
+  clearObjHomeHD: ActionHome.clearObjHomeHD,
+  setListTrSearchHD: ActionHome.setListTrSearchHD,
+  pushListTrSearchHD: ActionHome.pushListTrSearchHD,
+};
+
+export default connect(null, mapActions)(FlashsaleProduct);
 
 const styles = StyleSheet.create({
   container: {
@@ -386,7 +562,7 @@ const linerStyle = StyleSheet.create({
     alignItems: "flex-start",
     alignSelf: "flex-start",
     marginTop: 10,
-    width:width / 1.6
+    width: width / 1.6,
   },
 });
 
@@ -397,7 +573,7 @@ const timeStyle = StyleSheet.create({
     color: "white",
     marginBottom: 5,
     textAlign: "center",
-    fontFamily:"kanitRegular"
+    fontFamily: "kanitRegular",
   },
   timeTextArrow: {
     fontWeight: "500",
@@ -406,7 +582,7 @@ const timeStyle = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 1.5,
     marginTop: 2.5,
-    fontFamily:"kanitRegular"
+    fontFamily: "kanitRegular",
   },
 });
 

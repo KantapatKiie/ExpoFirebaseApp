@@ -5,7 +5,6 @@ import {
   Dimensions,
   Text,
   TouchableOpacity,
-  View,
   TextInput,
   ToastAndroid,
 } from "react-native";

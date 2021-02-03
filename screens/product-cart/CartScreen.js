@@ -68,7 +68,7 @@ function CartScreen(props) {
                 <Block row>
                   <Text style={styles.detailText}>จำนวน : </Text>
                   <NumericInput
-                    value={objCartScreen.COUNT}
+                    value={parseInt(objCartScreen.COUNT)}
                     onChange={(value) => onChangeValue(value)}
                     totalWidth={110}
                     totalHeight={35}

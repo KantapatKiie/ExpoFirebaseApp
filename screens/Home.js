@@ -14,69 +14,149 @@ import {
   ScrollView,
 } from "react-native";
 import axios from "axios";
-import { withNavigation } from "@react-navigation/compat";
-import { connect, useSelector } from "react-redux";
 import moment from "moment";
 import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import { StatusBar } from "expo-status-bar";
+import { withNavigation } from "@react-navigation/compat";
+import { connect, useSelector } from "react-redux";
 import { Block, Text, theme } from "galio-framework";
 import { Product } from "../components/";
 import products from "../constants/products";
-import { LinearGradient } from "expo-linear-gradient";
 import { formatTr } from "../i18n/I18nProvider";
 import * as ActionHome from "../actions/action-home/ActionHome";
 import WangdekInfo from "../components/WangdekInfo";
-import CountDown from "react-native-countdown-component";
 import Icons from "react-native-vector-icons/MaterialIcons";
-
-// import { getToken } from "../store/mock/token";
-// let token = getToken();
+import { API_URL } from "../config/config.app";
+import { getToken } from "../store/mock/token";
+import CountDownEvent from "../components/CountDownEvent";
 
 const { width } = Dimensions.get("screen");
+let token = getToken();
+const rootImage = "http://10.0.1.37:8080";
+
+const defalutCouponList = [
+  {
+    id: "1",
+    code: "A001",
+    image: "/storage/8/coupon-1.png",
+    title1_th: "title1_th",
+    title1_en: "title1_en",
+    title2_th: "title2_th",
+    title2_en: "title2_en",
+    valid_from: "2021-02-03 15:15:00",
+    valid_until: "2021-02-03 15:15:00",
+  },
+];
+const defalutInformationList = [
+  {
+    id: 1,
+    code: "A001",
+    image: "/storage/8/coupon-1.png",
+    title1_th: "title1_th",
+    title1_en: "title1_en",
+    title2_th: "title2_th",
+    title2_en: "title2_en",
+    valid_from: "2021-02-03 15:15:00",
+    valid_until: "2021-02-03 15:15:00",
+  },
+];
 
 function Home(props) {
-  const { objHomeHD, disabledInput } = useSelector((state) => ({
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  const { objHomeHD } = useSelector((state) => ({
     objHomeHD: state.actionHomeHD.objHomeHD,
-    disabledInput: state.actionHomeHD.disabledInput,
   }));
 
   useEffect(() => {
     setModalVisible(false); // Popup Coupon
-    // FlashsaleOnLoad(); // Flashsale onLoad
+    falshsaleOnloadData();
+    couponOnloadData();
   }, []);
 
-  const FlashsaleOnLoad = async () =>{
-    console.log("FlashsaleOnLoad");
-    await  axios
-    .get("http://wangdek.am2bmarketing.co.th/api/v1/flashsales?offset=1&limit=10")
-    .then(function (response) {
-      console.log(response.data);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-  }
-
-  //Time Everthing
+  // Time Everthing
   let LeftTime = moment(new Date()).format("HH:mm");
   let TimeActDay = moment(new Date()).format("DD");
   let TimeActMonth = moment(new Date()).format("MMM");
   let TimeActivity = moment(new Date()).format("DD MMM YYYY   |   HH:mm ");
 
-  //FlatList Coupon
+  // Flashsale onLoad
+  const [countDownTime, setCountDownTime] = useState(
+    parseInt(objHomeHD.timeEnds)
+  );
+  const falshsaleOnloadData = async () => {
+    await axios
+      .get(API_URL.FALSH_SALE_VIEW_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+        params: {
+          page: 1,
+        },
+      })
+      .then(async (response) => {
+        let objNew = Object.assign({}, objHomeHD);
+        let dateEnds = moment(response.data.data.end_at, "YYYY-MM-DD");
+        let dateTimeNow = moment(new Date(), "YYYY-MM-DD");
+        objNew.timeEnds = await dateEnds.diff(dateTimeNow, "times");
+
+        setCountDownTime(objNew.timeEnds);
+        props.setObjHomeHD(objNew);
+        props.setListTrSearchHD(response.data.data.lists);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+      setCountDownTime(objHomeHD.timeEnds);
+  };
+
+  // FlatList Coupon
+  const [couponList, setCouponList] = useState(defalutCouponList);
+  const couponOnloadData = async () => {
+    await axios
+      .get(API_URL.COUPON_LIST_TR_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(async (response) => {
+        setCouponList(response.data.data);
+        props.setListCouponHD(response.data.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
   const ListItemCoupon = ({ item }) => {
     return (
       <View style={styles2.item}>
         <TouchableOpacity onPress={() => props.navigation.navigate("Basket")}>
           <Image
-            source={item.uri}
+            source={{ uri: rootImage + item.image }}
             style={{ width: 170, height: 80, margin: 10 }}
           />
         </TouchableOpacity>
       </View>
     );
   };
-  //FlatList Information
+
+  const onClickFalshsaleDetail = () => {
+    props.setListCouponHD(couponList);
+    props.navigation.navigate("Flashsale Product");
+  };
+
+  // FlatList Information
+  const [informationList, setInformationList] = useState(defalutCouponList);
   const ListItemInformation = ({ item }) => {
     return (
       <View style={styles2.items}>
@@ -256,7 +336,6 @@ function Home(props) {
           <StatusBar style="auto" />
           <SafeAreaView style={{ flex: 1 }}>
             <SectionList
-              // contentContainerStyle={{ paddingHorizontal: 10 }}
               stickySectionHeadersEnabled={false}
               sections={COUPON_LIST}
               renderSectionHeader={({ section }) => (
@@ -274,82 +353,22 @@ function Home(props) {
                       WANGDEKFEST ลดล้างสต็อกครึ่งปี : เริ่ม{LeftTime}
                     </Text>
                   </Block>
-                  {/* Flash Sale Count Down */}
+                  {/* Count Down */}
                   <TouchableHighlight
-                    onPress={() =>
-                      props.navigation.navigate("Flashsale Product")
-                    }
+                    style={{ width: width }}
+                    onPress={onClickFalshsaleDetail}
                   >
-                    <LinearGradient
-                      colors={["#00cef2", "#00c4b7", "#00d184"]}
-                      style={linerStyle.linearGradient}
-                    >
-                      <Image
-                        source={require("../assets/images/flashsale_head.png")}
-                        style={{
-                          width: width - 50,
-                          height: 45,
-                          alignSelf: "center",
-                          marginTop: 20,
-                        }}
-                      />
-                      <Image
-                        source={require("../assets/images/onsale.png")}
-                        style={{
-                          width: 120,
-                          height: 50,
-                          marginTop: 20,
-                          marginLeft: 30,
-                        }}
-                      />
-                      {/* CountDownTime */}
-                      <Block style={linerStyle.BlockTime}>
-                        <CountDown
-                          size={22}
-                          until={70000}
-                          digitStyle={{
-                            backgroundColor: "#ff4545",
-                            height: 30,
-                            width: 40,
-                          }}
-                          style={{
-                            marginLeft: 20,
-                            marginBottom: 20,
-                          }}
-                          digitTxtStyle={{
-                            color: "white",
-                            fontSize: 18,
-                            fontFamily: "kanitRegular",
-                          }}
-                          timeToShow={["H", "M", "S"]}
-                          timeLabelStyle={{
-                            color: "white",
-                            fontWeight: "bold",
-                          }}
-                          timeLabels={{ d: null, h: null, m: null, s: null }}
-                          separatorStyle={{ color: "white", marginBottom: 3.5 }}
-                          showSeparator
-                          // onFinish={() => alert("Finished")}
-                        />
-                        <Image
-                          source={require("../assets/icons/arrow_right.png")}
-                        />
-                        {/* <Text style={timeStyle.timeTextArrow}>{">"}</Text> */}
-                      </Block>
-                    </LinearGradient>
+                    <CountDownEvent times={countDownTime} />
                   </TouchableHighlight>
                   {/* Coupon */}
                   <Block style={styles2.containerHeader}>
-                    {section.horizontal ? (
-                      <FlatList
-                        horizontal
-                        data={section.data}
-                        renderItem={({ item }) => (
-                          <ListItemCoupon item={item} />
-                        )}
-                        showsHorizontalScrollIndicator={false}
-                      />
-                    ) : null}
+                    <FlatList
+                      horizontal
+                      data={couponList}
+                      renderItem={({ item }) => <ListItemCoupon item={item} />}
+                      showsHorizontalScrollIndicator={false}
+                      keyExtractor={(item) => item.id.toString()}
+                    />
                   </Block>
                 </>
               )}
@@ -501,12 +520,11 @@ function Home(props) {
                       {VIEW_ALL + " >"}
                     </Text>
                   </TouchableOpacity>
-                  {/* Bottom info */}
                   <WangdekInfo />
                 </>
               )}
               renderItem={({ item, section }) => {
-                if (section.horizontal) {
+                if (section !== null) {
                   return null;
                 }
                 return <ListItem item={item} />;
@@ -758,6 +776,7 @@ const styles2 = StyleSheet.create({
     paddingLeft: 15,
     backgroundColor: "#486ec7",
     flexDirection: "column",
+    width: width,
   },
   blockHeaderInfo: {
     padding: 8,
@@ -821,57 +840,3 @@ const linerStyle = StyleSheet.create({
     marginRight: 5,
   },
 });
-
-const timeStyle = StyleSheet.create({
-  timeText: {
-    fontWeight: "800",
-    fontSize: 24,
-    color: "white",
-    marginBottom: 5,
-    textAlign: "center",
-    fontFamily: "kanitRegular",
-  },
-  timeTextArrow: {
-    fontWeight: "500",
-    fontSize: 22,
-    color: "white",
-    paddingLeft: 10,
-    paddingRight: 3,
-    marginBottom: 5,
-    fontFamily: "kanitRegular",
-  },
-  timeTextBlock: {
-    fontWeight: "bold",
-    fontSize: 25,
-    color: "white",
-    paddingLeft: 3,
-    paddingRight: 3,
-    marginBottom: 7,
-    fontFamily: "kanitRegular",
-  },
-});
-
-// //#region CountDown-Date
-// const [stateTime, setStateTime] = useState({
-//   eventDate: moment.duration().add({ hours: 12, minutes: 34, seconds: 56 }), // add 9 full days, 3 hours, 40 minutes and 50 seconds
-//   hours: 0,
-//   mins: 0,
-//   secs: 0,
-// });
-// const CountdownTime = async () => {
-//   await setInterval(() => {
-//     let { eventDate } = stateTime;
-//     eventDate = eventDate.subtract(1, "s");
-//     const hours = eventDate.hours();
-//     const mins = eventDate.minutes();
-//     const secs = eventDate.seconds();
-
-//     setStateTime({
-//       hours,
-//       mins,
-//       secs,
-//       eventDate,
-//     });
-//   }, 1000);
-// };
-// //#endregion

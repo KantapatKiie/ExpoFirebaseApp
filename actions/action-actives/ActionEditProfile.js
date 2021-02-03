@@ -47,7 +47,7 @@ const initialState = {
     //Push List EditProfile
     profile_id: 5,
     sex: 1,
-    birthday: "0000-00-00",
+    birthday: moment(new Date()).format("YYYY-MM-DD"),
     telephone: "1",
     address: "a",
     province_id: 1,

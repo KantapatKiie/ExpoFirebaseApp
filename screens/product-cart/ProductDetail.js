@@ -8,6 +8,11 @@ import {
   TouchableHighlight,
   ScrollView,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import { Block, Button, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import { actions as ActionProduct } from "../../actions/action-product/ActionProduct";
@@ -19,10 +24,20 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ProgressBar, Colors } from "react-native-paper";
 import CountDown from "react-native-countdown-component";
 import commaNumber from "comma-number";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+const token = getToken();
+// const rootImage = "http://10.0.1.37:8080";
 
 function ProductDetail(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
   const { objProductActivity } = useSelector((state) => ({
     objProductActivity: state.actionProduct.objProductActivity,
   }));
@@ -32,15 +47,14 @@ function ProductDetail(props) {
 
   useEffect(() => {}, []);
 
-  const [progressValue, setProgressValue] = useState(0.7);
-
-  const [favotite, setFavorite] = useState(false);
   const onClickFavorite = () => {
-    if (favotite === false) {
-      setFavorite(true);
+    let newFavorite = Object.assign({}, objProductActivity);
+    if (objProductActivity.product_favorite == 0) {
+      newFavorite.product_favorite = 1;
     } else {
-      setFavorite(false);
+      newFavorite.product_favorite = 0;
     }
+    props.setObjProductActivity(newFavorite);
   };
 
   // ReadMore
@@ -78,26 +92,38 @@ function ProductDetail(props) {
   //onChangeCount
   const onChangeValue = (value) => {
     let newObj = Object.assign({}, objProductActivity);
-    newObj.COUNT = value;
+    newObj.quantity = value;
     props.setObjProductActivity(newObj);
   };
-  const onclickAddProduct = () => {
-    let newObjCart = Object.assign({}, objCartBasket);
-    newObjCart.CART_ID = "CRTID001";
-    newObjCart.TITLE = objProductActivity.TITLE;
-    newObjCart.DETAIL = objProductActivity.DETAIL;
-    newObjCart.IMAGE = objProductActivity.IMAGE;
-    newObjCart.PRICE = objProductActivity.PRICE;
-    newObjCart.COUNT = objProductActivity.COUNT;
-    newObjCart.TOTAL_PRICE = objProductActivity.TOTAL_PRICE;
 
-    props.setObjCartBasket(newObjCart);
-    AsyncStorage["sessionCartBefore"] = newObjCart;
-    props.navigation.navigate("Cart");
+  const onclickAddProduct = async () => {
+    await 
+      axios({
+        method: "POST",
+        url: API_URL.ADD_CART_ORDER_LISTVIEW_API,
+        headers: {
+          Accept: "*/*",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+        data: {
+          flash_sale_events_id: objProductActivity.flash_sale_events_id,
+          flash_sales_id: objProductActivity.flash_sales_id,
+          product_id: objProductActivity.product_id,
+          product_quantity: objProductActivity.quantity,
+        },
+      })
+      .then(function (response) {
+        console.log(response.data);
+
+        // props.setObjCartBasket(newObjCart);
+        // AsyncStorage["sessionCartBefore"] = newObjCart;
+        // props.navigation.navigate("Cart");
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
-
-  console.log(props);
-
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -120,6 +146,7 @@ function ProductDetail(props) {
               }}
             />
           </Block>
+
           {/* Flashsale Type */}
           {objProductActivity.FLASHSALE ? (
             <LinearGradient
@@ -154,7 +181,7 @@ function ProductDetail(props) {
                     <Block style={linerStyle.BlockTime}>
                       <CountDown
                         size={22}
-                        until={60000}
+                        until={objProductActivity.timeEnds}
                         digitStyle={{
                           backgroundColor: "#ff4545",
                           height: 30,
@@ -198,11 +225,15 @@ function ProductDetail(props) {
                     marginLeft: 18,
                   }}
                 >
-                  ขายแล้ว 250 ชิ้น
+                  ขายแล้ว {objProductActivity.product_sold} ชิ้น
                 </Text>
                 <ProgressBar
-                  progress={progressValue}
-                  color={progressValue === 1 ? Colors.red800 : "#00b1ba"}
+                  progress={objProductActivity.progressPercent}
+                  color={
+                    objProductActivity.progressPercent === 1
+                      ? Colors.red800
+                      : "#00b1ba"
+                  }
                   style={{
                     borderRadius: 20,
                     height: 10,
@@ -214,14 +245,16 @@ function ProductDetail(props) {
               </Block>
             </LinearGradient>
           ) : null}
+
           {/* Title */}
           <Block row style={styles.blockTitle}>
             <Text style={styles.titleProduct}>{objProductActivity.TITLE}</Text>
+            {/* Favorite */}
             <Block style={styles.blockFavorite}>
               <TouchableOpacity onPress={onClickFavorite}>
                 <Image
                   source={
-                    favotite
+                    objProductActivity.product_favorite
                       ? require("../../assets/icons/I-heart.png")
                       : require("../../assets/icons/I-heart-o.png")
                   }
@@ -245,29 +278,43 @@ function ProductDetail(props) {
               </TouchableOpacity>
             </Block>
           </Block>
+
           {/* Detail */}
           <Block style={{ margin: 10 }}>
             <Text style={styles.detailText}>
-              รหัสสินค้า : {objProductActivity.TITLE}
+              รหัสสินค้า : {objProductActivity.product_id}
             </Text>
             <Text style={styles.detailText}>
-              ยี่ห้อ : {objProductActivity.TITLE}
+              ยี่ห้อ : {objProductActivity.product_brand}
             </Text>
             <Text style={styles.detailText}>
-              มีสินค้าทั้งหมด : {objProductActivity.TITLE}
+              มีสินค้าทั้งหมด : {objProductActivity.product_stock}
             </Text>
           </Block>
-          <Block row style={{ margin: 15, alignSelf: "flex-end" }}>
-            <Text style={styles.detailPrice1}>ราคา : </Text>
-            <Text style={styles.detailPrice2}>
-              ฿{commaNumber(objProductActivity.PRICE)}
-            </Text>
+          <Block row style={{ margin: 15, alignSelf: "flex-start" }}>
+            <Block
+              style={{ alignSelf: "flex-start", width: "45%", marginLeft: 15 }}
+            >
+              <Text style={styles.detailFullprice}>
+                ฿
+                {commaNumber(
+                  parseFloat(objProductActivity.product_full_price).toFixed(2)
+                )}
+              </Text>
+            </Block>
+            <Block row style={{ alignSelf: "flex-start", width: "50%" }}>
+              <Text style={styles.detailPrice1}>ราคา : </Text>
+              <Text style={styles.detailPrice2}>
+                ฿{commaNumber(parseFloat(objProductActivity.PRICE).toFixed(2))}
+              </Text>
+            </Block>
           </Block>
+
           {/* Count */}
           <Block row style={{ margin: 10 }}>
             <Text style={styles.detailText}>จำนวน : </Text>
             <NumericInput
-              value={objProductActivity.COUNT}
+              value={parseInt(objProductActivity.quantity)}
               onChange={(value) => onChangeValue(value)}
               totalWidth={125}
               totalHeight={32}
@@ -284,6 +331,7 @@ function ProductDetail(props) {
               containerStyle={{ marginLeft: 20, fontFamily: "kanitRegular" }}
             />
           </Block>
+
           {/* Share Facebook&Line */}
           <Block
             row
@@ -325,6 +373,7 @@ function ProductDetail(props) {
               />
             </TouchableOpacity>
           </Block>
+
           {/* Button */}
           <Block style={styles.padded}>
             <Button
@@ -445,6 +494,15 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 27,
     fontFamily: "kanitRegular",
+  },
+  detailFullprice: {
+    color: "#8f8f8f",
+    fontSize: 18,
+    fontFamily: "kanitRegular",
+    marginTop: 8,
+    textDecorationLine: "line-through",
+    textDecorationStyle: "solid",
+    textDecorationColor: "red",
   },
   blockFavorite: {
     backgroundColor: "#d1d1d1",
