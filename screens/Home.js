@@ -115,7 +115,7 @@ function Home(props) {
       .catch(function (error) {
         console.log(error);
       });
-      setCountDownTime(objHomeHD.timeEnds);
+    setCountDownTime(objHomeHD.timeEnds);
   };
 
   // FlatList Coupon

@@ -322,7 +322,7 @@ function FlashsaleProduct(props) {
             renderSectionFooter={() => (
               <>
                 {/* Product List */}
-                <Block flex style={{ backgroundColor: "white", marginTop: 15 }}>
+                <Block flex style={{ backgroundColor: "white", margin: 0 }}>
                   {listTrSearchHD.map((item) => (
                     <TouchableOpacity
                       onPress={() => onSelectProduct(item)}
