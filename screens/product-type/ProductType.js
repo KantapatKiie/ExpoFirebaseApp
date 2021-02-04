@@ -9,43 +9,123 @@ import {
   ScrollView,
   Dimensions,
   SafeAreaView,
-  LogBox,
 } from "react-native";
-import * as ActionProduct from "../../actions/action-product/ActionProduct";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
+import { actions as ActionProduct } from "../../actions/action-product/ActionProduct";
+import { actions as ActionProductType } from "../../actions/action-product-type/ActionProductType";
 import { Block, Text, theme, Input } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
-import products from "../../constants/products";
-import products2 from "../../constants/products2";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
+import commaNumber from "comma-number";
+import ModalLoading from "../../components/ModalLoading";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+let token = getToken();
+const rootImage = "http://10.0.1.37:8080";
+
+const defaultListProductType = [
+  {
+    id: 3,
+    name_th: "เสื้อผ้า 001",
+    name_en: "Clothing 001",
+    image: "/storage/3/images-%281%29.jfif",
+    price: "500.00",
+    total_quantity: "3",
+  },
+];
 
 function ProductType(props) {
-  // console.log(props);
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
   const { objProductActivity } = useSelector((state) => ({
     objProductActivity: state.actionProduct.objProductActivity,
   }));
+  const { objProductType } = useSelector((state) => ({
+    objProductType: state.actionProductType.objProductType,
+  }));
 
   useEffect(() => {
-    setStateObj(products);
+    // setStateObj(products);
+    loadDataProductListType();
   }, []);
 
-  const [stateObj, setStateObj] = useState([
-    {
-      key: "1",
-      title: "",
-      detail: "",
-      image: "1",
-      price: "0",
-      horizontal: true,
-    },
-  ]);
-  const [objFilter, setObjFilter] = useState({
-    filter_product: "",
-  });
-
-  const onClickProducts = () => {
-    const newConcatState = stateObj.concat(products2);
+  const [loading, setLoading] = useState(null);
+  const [stateObj, setStateObj] = useState(defaultListProductType);
+  const [numColumns] = useState(2);
+  const loadDataProductListType = async () => {
+    setLoading(true);
+    await axios
+      .get(objProductType.API_TYPE, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+          "X-localization": locale,
+        },
+        params: {
+          page: 1,
+        },
+      })
+      .then(async (response) => {
+        setLoading(false);
+        setStateObj(response.data.data.product_lists);
+      })
+      .catch(function (error) {
+        setLoading(false);
+        console.log(error);
+      });
+  };
+  const renderProduct = ({ item }) => {
+    return (
+      <Block flex style={styles.textContainerBlock1}>
+        <TouchableOpacity onPress={() => onSelectProduct(item)}>
+          <ImageBackground
+            source={{
+              uri: rootImage + item.image,
+            }}
+            style={styles.imageProduct}
+          ></ImageBackground>
+          <Block style={styles.productText}>
+            <Block flex space="between" style={styles.productDescription}>
+              <Text
+                style={{
+                  color: "black",
+                  fontFamily: "kanitRegular",
+                  fontSize: 15,
+                }}
+              >
+                {locale == "th" ? item.name_th : item.name_en}
+              </Text>
+              <Block
+                style={{ borderBottomWidth: 1, borderBottomColor: "#e0e0e0" }}
+              ></Block>
+              <Text
+                style={{
+                  color: "black",
+                  fontFamily: "kanitRegular",
+                  fontSize: 16,
+                }}
+              >
+                ราคา : ฿{commaNumber(parseFloat(item.price).toFixed(2))}
+              </Text>
+            </Block>
+          </Block>
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+  const onLoadMoreProduct = () => {
+    const newConcatState = stateObj.concat("products2");
     setStateObj(newConcatState);
   };
 
@@ -60,44 +140,6 @@ function ProductType(props) {
     newObj.FLASHSALE = false;
     props.setObjProductActivity(newObj);
     props.navigation.navigate("Products", { params: product });
-  };
-
-  const [numColumns] = useState(2);
-  const renderProduct = ({ item }) => {
-    return (
-      <Block flex style={styles.textContainerBlock1}>
-        <TouchableOpacity onPress={() => onSelectProduct(item)}>
-          <ImageBackground
-            source={{
-              uri: item.image,
-            }}
-            style={styles.imageProduct}
-          ></ImageBackground>
-          <Block style={styles.productText}>
-            <Block flex space="between" style={styles.productDescription}>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 13,
-                }}
-              >
-                {item.title}
-              </Text>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 14,
-                }}
-              >
-                ราคา : ฿{item.price}
-              </Text>
-            </Block>
-          </Block>
-        </TouchableOpacity>
-      </Block>
-    );
   };
 
   return (
@@ -127,6 +169,7 @@ function ProductType(props) {
             </Text>
           </Block>
         </TouchableOpacity>
+
         {/* Filter */}
         <Block row style={{ marginLeft: 10 }}>
           <Image
@@ -160,6 +203,7 @@ function ProductType(props) {
             </TouchableOpacity>
           </Block>
         </Block>
+
         {/* ListItem */}
         <SafeAreaView style={{ flex: 1 }}>
           <FlatList
@@ -169,9 +213,10 @@ function ProductType(props) {
             numColumns={numColumns}
           />
         </SafeAreaView>
+
         {/* Load More */}
         <TouchableOpacity
-          onPress={onClickProducts}
+          onPress={onLoadMoreProduct}
           style={{ marginBottom: 15 }}
         >
           <Text
@@ -184,11 +229,26 @@ function ProductType(props) {
         </TouchableOpacity>
         <WangdekInfo />
       </ScrollView>
+      <ModalLoading loading={loading} />
     </>
   );
 }
 
-export default connect(null, ActionProduct.actions)(ProductType);
+const mapActions = {
+  setObjProductActivity: ActionProduct.setObjProductActivity,
+  clearObjProductActivity: ActionProduct.clearObjProductActivity,
+  setListTrProductActivity: ActionProduct.setListTrProductActivity,
+  pushListTrProductActivity: ActionProduct.pushListTrProductActivity,
+
+  setObjProductType: ActionProductType.setObjProductType,
+  clearObjProductType: ActionProductType.clearObjProductType,
+  setListTrProductType: ActionProductType.setListTrProductType,
+  pushListTrProductType: ActionProductType.pushListTrProductType,
+};
+
+export default connect(null, mapActions)(ProductType);
+
+// export default connect(null, ActionProduct.actions)(ProductType);
 
 const styles = StyleSheet.create({
   container: {

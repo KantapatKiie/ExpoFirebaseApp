@@ -54,6 +54,11 @@ function CountDownEvent(props) {
               backgroundColor: "#ff4545",
               height: 30,
               width: 40,
+              shadowColor: "black",
+              shadowOffset: { width: 4, height: 4 },
+              shadowRadius: 4,
+              shadowOpacity: 0.1,
+              elevation: 2,
             }}
             style={{
               marginLeft: 20,

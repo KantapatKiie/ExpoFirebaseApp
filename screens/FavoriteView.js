@@ -240,6 +240,7 @@ function FavoriteView(props) {
             style={styles.containers}
             renderItem={renderProduct}
             numColumns={numColumns}
+            keyExtractor={(item) => item.id.toString()}
           />
           <TouchableOpacity
             onPress={loadMoreListProduct}

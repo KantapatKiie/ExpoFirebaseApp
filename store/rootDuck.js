@@ -19,12 +19,12 @@ import * as actionHistoryOrder from "../actions/action-history-order/ActionHisto
 import * as actionFavoriteView from "../actions/action-favorite-view/ActionFavoriteView";
 import * as actionPromotions from "../actions/action-promotions/ActionPromotions";
 import * as actionProductAll from "../actions/action-product-all/ActionProductAll";
-import * as actionProductToys from "../actions/action-product-toys/ActionProductToys";
 import * as actionMyCoupon from "../actions/action-my-coupon/ActionMyCoupon";
 import * as actionFilterSearch from "../actions/action-filter-search/ActionFilterSearch";
 import * as actionOrderStatus from "../actions/action-order-status/ActionOrderStatus";
 import * as actionOrder from "../actions/action-order-status/ActionOrder";
 import * as actionEvents from "../actions/action-events/ActionEvents";
+import * as actionProductType from "../actions/action-product-type/ActionProductType";
 import * as i18n from "./ducks/i18n";
 
 export const rootReducer = combineReducers({
@@ -48,12 +48,12 @@ export const rootReducer = combineReducers({
   actionFavoriteView: actionFavoriteView.reducer,
   actionPromotions: actionPromotions.reducer,
   actionProductAll: actionProductAll.reducer,
-  actionProductToys: actionProductToys.reducer,
   actionMyCoupon: actionMyCoupon.reducer,
   actionFilterSearch: actionFilterSearch.reducer,
   actionOrderStatus: actionOrderStatus.reducer,
   actionOrder: actionOrder.reducer,
   actionEvents: actionEvents.reducer,
+  actionProductType: actionProductType.reducer,
 });
 
 export function* rootSaga() {

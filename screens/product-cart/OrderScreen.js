@@ -2,37 +2,53 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Image,
+  SafeAreaView,
+  FlatList,
   StyleSheet,
   Dimensions,
   ScrollView,
   Modal,
   TouchableOpacity,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import * as ActionOrder from "../../actions/action-order-status/ActionOrder";
-import products from "../../constants/products";
+import * as ActionCart from "../../actions/action-cart/ActionCart";
 import WangdekInfo from "../../components/WangdekInfo";
 import { Icon } from "../../components/";
 import { Button } from "react-native-elements";
 import commaNumber from "comma-number";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
+import ModalLoading from "../../components/ModalLoading";
 
 const { height, width } = Dimensions.get("screen");
+const token = getToken();
+const rootImage = "http://10.0.1.37:8080";
 
 function OrderScreen(props) {
-  const { objOrderScreen } = useSelector((state) => ({
-    objOrderScreen: state.actionOrder.objOrderScreen,
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  // const { objOrderScreen } = useSelector((state) => ({
+  //   objOrderScreen: state.actionOrder.objOrderScreen,
+  // }));
+  const { objCartScreen, listTrCartScreen } = useSelector((state) => ({
+    objCartScreen: state.actionCart.objCartScreen,
+    listTrCartScreen: state.actionCart.listTrCartScreen,
   }));
 
   useEffect(() => {
     // props.clearObjOrderScreen();
   }, []);
-
-  const onChangeValue = (value) => {
-    let newObj = Object.assign({}, objOrderScreen);
-    newObj.COUNT = value;
-    props.setObjOrderScreen(newObj);
-  };
 
   //#region modalConfirm
   const [modalVisible, setModalVisible] = useState(false);
@@ -94,7 +110,46 @@ function OrderScreen(props) {
     </Modal>
   );
   //#endregion
+  const renderOrderLists = ({ item }) => {
+    return (
+      <Block style={styles.blockProduct} key={item.cart_id}>
+        <Block row>
+          <Block style={styles.blockSemiImage}>
+            <Image
+              source={{ uri: rootImage + item.product_image }}
+              style={styles.imageProduct}
+            />
+          </Block>
+          {/* Detail */}
+          <Block style={styles.blockSemiImage2}>
+            <Block style={{ width: 220 }}>
+              <Text style={styles.fontTitleProduct}>
+                {locale == "th" ? item.product_name_th : item.product_name_en}
+              </Text>
+            </Block>
 
+            <Block row style={{ marginTop: 60 }}>
+              <Text style={styles.detailText}>จำนวน : </Text>
+              <Text style={styles.detailText}>{item.quantity}</Text>
+            </Block>
+          </Block>
+        </Block>
+        {/* Count */}
+        <Block row style={{ margin: 15, alignSelf: "center" }}>
+          <Block style={{ width: "55%" }}>
+            <Text style={styles.fontPriceProductFullPrice}>
+              ฿{commaNumber(parseFloat(item.product_full_price).toFixed(2))}
+            </Text>
+          </Block>
+          <Block style={{ width: "45%" }}>
+            <Text style={styles.fontPriceProduct}>
+              ฿{commaNumber(parseFloat(item.product_price).toFixed(2))}
+            </Text>
+          </Block>
+        </Block>
+      </Block>
+    );
+  };
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -113,37 +168,16 @@ function OrderScreen(props) {
           </Block>
         </TouchableOpacity>
 
-        {products.map((item) => (
-          <Block style={styles.blockProduct} key={item.key}>
-            <Block row>
-              <Block style={styles.blockSemiImage}>
-                <Image
-                  source={{ uri: item.image }}
-                  style={styles.imageProduct}
-                />
-              </Block>
-              <Block style={styles.blockSemiImage2}>
-                <Block style={{ height: "60%", width: "80%" }}>
-                  <Text style={styles.fontTitleProduct}>{item.title}</Text>
-                </Block>
-
-                <Block row>
-                  <Text style={styles.detailText}>จำนวน : </Text>
-                  <Text style={styles.detailText}>1</Text>
-                </Block>
-              </Block>
-            </Block>
-
-            <Block row style={{ width: "90%", alignSelf: "center" }}>
-              <Block style={{ width: "75%", alignSelf: "center" }}>
-                <Text style={styles.fontPriceProduct}>฿{commaNumber(item.price)}</Text>
-              </Block>
-              <Block style={{ width: "25%", alignSelf: "center" }}>
-                <Text style={styles.fontPriceProduct}>฿{commaNumber(item.price)}</Text>
-              </Block>
-            </Block>
-          </Block>
-        ))}
+        {/* Product List */}
+        <SafeAreaView>
+          <FlatList
+            data={listTrCartScreen}
+            style={styles.containers}
+            renderItem={renderOrderLists}
+            numColumns={1}
+            keyExtractor={(item) => item.cart_id.toString()}
+          />
+        </SafeAreaView>
 
         {infoItem.map((item) => (
           <Block style={styles.blockHeaderInfo} key={item.key}>
@@ -178,7 +212,7 @@ function OrderScreen(props) {
         >
           <Button
             titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-            title={"ซื้อสินค้าเพิ่เติม"}
+            title={"ซื้อสินค้าเพิ่มเติม"}
             type="solid"
             containerStyle={styles.blockButton1}
             buttonStyle={styles.buttonStyle1}
@@ -190,7 +224,7 @@ function OrderScreen(props) {
             type="solid"
             containerStyle={styles.blockButton2}
             buttonStyle={styles.buttonStyle2}
-            onPress={() => props.navigation.navigate("Product Order")}
+            onPress={() => props.navigation.navigate("Order Status")}
           />
         </Block>
 
@@ -201,7 +235,8 @@ function OrderScreen(props) {
   );
 }
 
-export default connect(null, ActionOrder.actions)(OrderScreen);
+// export default connect(null, ActionOrder.actions)(OrderScreen);
+export default connect(null, ActionCart.actions)(OrderScreen);
 
 const styles = StyleSheet.create({
   container: {
@@ -213,10 +248,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
   },
+  containers: {
+    flex: 1,
+    marginVertical: 20,
+  },
   blockProduct: {
     backgroundColor: "#ededed",
     width: width,
-    height: height / 4,
+    height: height / 4.2,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
   },
@@ -240,6 +279,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "black",
   },
+  fontPriceProductFullPrice: {
+    fontFamily: "kanitRegular",
+    fontSize: 18,
+    color: "#8f8f8f",
+    textDecorationLine: "line-through",
+    textDecorationStyle: "solid",
+  },
   blockButton1: {
     flexDirection: "row",
   },
@@ -260,11 +306,11 @@ const styles = StyleSheet.create({
   },
   blockHeaderInfo: {
     paddingLeft: 25,
-    paddingTop:8,
+    paddingTop: 8,
     backgroundColor: "#f7f7f7",
-    height:55,
-    borderBottomWidth:1,
-    borderBottomColor:"#e0e0e0"
+    height: 55,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
   },
 });
 
@@ -337,4 +383,3 @@ const infoItem = [
     page: "Use Address Delivery",
   },
 ];
-

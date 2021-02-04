@@ -3,13 +3,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 
 const actionTypes = {
-  setObjCartScreenins: "OBJ_CART_BASKET_HD",
-  clearObjCartScreen: "CLEAR_OBJ_CART_BASKET",
-  setDisabledInput: "SET_DISABLED_INPUT_CART_BASKET",
-  pushListTrCartScreen: "PUSH_LIST_TR_CART_BASKET",
-  setListTrCartScreen: "SET_LIST_TR_CART_BASKET",
-  removeListTrCartScreen: "REMOVE_LIST_TR_CART_BASKET",
-  setEditable: "SET_EDITABLE_CART_BASKET"
+  setObjCartScreenins: "OBJ_CART_ORDER_STATUS_VIEW_HD",
+  clearObjCartScreen: "CLEAR_OBJ_CART_ORDER_STATUS_VIEW",
+  setDisabledInput: "SET_DISABLED_INPUT_CART_ORDER_STATUS_VIEW",
+  pushListTrCartScreen: "PUSH_LIST_TR_CART_ORDER_STATUS_VIEW",
+  setListTrCartScreen: "SET_LIST_TR_CART_ORDER_STATUS_VIEW",
+  removeListTrCartScreen: "REMOVE_LIST_TR_CART_ORDER_STATUS_VIEW",
+  setEditable: "SET_EDITABLE_CART_ORDER_STATUS_VIEW"
 };
 
 const initialState = {

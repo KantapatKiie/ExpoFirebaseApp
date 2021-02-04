@@ -12,6 +12,7 @@ import {
   ImageBackground,
   Modal,
   ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -22,15 +23,18 @@ import { StatusBar } from "expo-status-bar";
 import { withNavigation } from "@react-navigation/compat";
 import { connect, useSelector } from "react-redux";
 import { Block, Text, theme } from "galio-framework";
-import { Product } from "../components/";
-import products from "../constants/products";
 import { formatTr } from "../i18n/I18nProvider";
-import * as ActionHome from "../actions/action-home/ActionHome";
+import { actions as ActionHome } from "../actions/action-home/ActionHome";
+import { actions as ActionProduct } from "../actions/action-product/ActionProduct";
+import { actions as ActionProductType } from "../actions/action-product-type/ActionProductType";
 import WangdekInfo from "../components/WangdekInfo";
 import Icons from "react-native-vector-icons/MaterialIcons";
 import { API_URL } from "../config/config.app";
 import { getToken } from "../store/mock/token";
 import CountDownEvent from "../components/CountDownEvent";
+import commaNumber from "comma-number";
+import ModalLoading from "../components/ModalLoading";
+import { useScrollToTop } from "@react-navigation/native";
 
 const { width } = Dimensions.get("screen");
 let token = getToken();
@@ -47,6 +51,26 @@ const defalutCouponList = [
     title2_en: "title2_en",
     valid_from: "2021-02-03 15:15:00",
     valid_until: "2021-02-03 15:15:00",
+  },
+];
+const defalutBestsaleProduct = [
+  {
+    id: 2,
+    name_th: "กระเป๋า เอ",
+    name_en: "Bag A",
+    image: "/storage/2/download-%281%29.jfif",
+    price: "1000.00",
+    total_quantity: "4",
+  },
+];
+const defalutPopularProduct = [
+  {
+    id: 2,
+    name_th: "กระเป๋า เอ",
+    name_en: "Bag A",
+    image: "/storage/2/download-%281%29.jfif",
+    price: "1000.00",
+    total_quantity: "4",
   },
 ];
 const defalutInformationList = [
@@ -73,12 +97,20 @@ function Home(props) {
   const { objHomeHD } = useSelector((state) => ({
     objHomeHD: state.actionHomeHD.objHomeHD,
   }));
+  const { objProductActivity } = useSelector((state) => ({
+    objProductActivity: state.actionProduct.objProductActivity,
+  }));
+  const { objProductType } = useSelector((state) => ({
+    objProductType: state.actionProductType.objProductType,
+  }));
 
   useEffect(() => {
     setModalVisible(false); // Popup Coupon
-    falshsaleOnloadData();
-    couponOnloadData();
-  }, []);
+    loadDataFlashsale();
+    loadDataCoupon();
+    loadDataBestsaler();
+    loadDataPopularsaler();
+  }, [countDownTime, couponList, listBestsale, listPopularSale]);
 
   // Time Everthing
   let LeftTime = moment(new Date()).format("HH:mm");
@@ -86,11 +118,12 @@ function Home(props) {
   let TimeActMonth = moment(new Date()).format("MMM");
   let TimeActivity = moment(new Date()).format("DD MMM YYYY   |   HH:mm ");
 
+  const [loading, setLoading] = useState(null);
   // Flashsale onLoad
   const [countDownTime, setCountDownTime] = useState(
     parseInt(objHomeHD.timeEnds)
   );
-  const falshsaleOnloadData = async () => {
+  const loadDataFlashsale = async () => {
     await axios
       .get(API_URL.FALSH_SALE_VIEW_API, {
         headers: {
@@ -118,9 +151,9 @@ function Home(props) {
     setCountDownTime(objHomeHD.timeEnds);
   };
 
-  // FlatList Coupon
+  // Coupon
   const [couponList, setCouponList] = useState(defalutCouponList);
-  const couponOnloadData = async () => {
+  const loadDataCoupon = async () => {
     await axios
       .get(API_URL.COUPON_LIST_TR_API, {
         headers: {
@@ -140,7 +173,9 @@ function Home(props) {
   const ListItemCoupon = ({ item }) => {
     return (
       <View style={styles2.item}>
-        <TouchableOpacity onPress={() => props.navigation.navigate("Basket")}>
+        <TouchableOpacity
+          onPress={() => props.navigation.navigate("My Coupon")}
+        >
           <Image
             source={{ uri: rootImage + item.image }}
             style={{ width: 170, height: 80, margin: 10 }}
@@ -150,9 +185,231 @@ function Home(props) {
     );
   };
 
+  // Flashsale Detail
   const onClickFalshsaleDetail = () => {
     props.setListCouponHD(couponList);
     props.navigation.navigate("Flashsale Product");
+  };
+
+  // Best Selling
+  const [listBestsale, setListBestsale] = useState(defalutBestsaleProduct);
+  const loadDataBestsaler = async () => {
+    await axios
+      .get(API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+          "X-localization": locale,
+        },
+        params: {
+          page: 1,
+        },
+      })
+      .then(async (response) => {
+        setListBestsale(response.data.data.product_lists);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const renderBestsaler = ({ item }) => {
+    const selectProductBestsale = async (item) => {
+      setLoading(true);
+      await axios
+        .get(API_URL.PRODUCT_SEARCH_HD_API + item.id, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        })
+        .then(function (response) {
+          let newObj = Object.assign({}, objProductActivity);
+          newObj.FLASHSALE = false;
+          newObj.product_id = response.data.data.id;
+
+          newObj.TITLE =
+            locale == "th"
+              ? response.data.data.name_th
+              : response.data.data.name_en;
+          if (locale == "th") {
+            newObj.DETAIL = response.data.data.description_th;
+          } else {
+            newObj.DETAIL = response.data.data.description_en;
+          }
+          newObj.IMAGE = rootImage + response.data.data.image;
+          newObj.PRICE = response.data.data.price;
+          newObj.product_full_price = response.data.data.full_price;
+          newObj.quantity = 1;
+          newObj.discount = 0;
+          if (locale == "th") {
+            newObj.product_info_th = response.data.data.info_th;
+          } else {
+            newObj.product_info_th = response.data.data.info_en;
+          }
+          newObj.product_favorite = response.data.data.favorite;
+
+          props.setObjProductActivity(newObj);
+          setLoading(false);
+
+          props.navigation.navigate("Products");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+    };
+    return (
+      <Block flex style={{ marginTop: 10, marginLeft: 7 }} key={item.id}>
+        <TouchableOpacity onPress={() => selectProductBestsale(item)}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={pdStyle.imageProduct}
+          />
+          <Block flex space="between" flex style={pdStyle.productDescription}>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 15,
+              }}
+            >
+              {locale == "th" ? item.name_th : item.name_en}
+            </Text>
+            <Block
+              style={{ borderBottomWidth: 1, borderBottomColor: "#e0e0e0" }}
+            ></Block>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 17,
+              }}
+            >
+              ราคา : {"฿"}
+              {commaNumber(parseFloat(item.price).toFixed(2))}
+            </Text>
+          </Block>
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+  const loadMoreBestsaler = () => {
+    let newObj = Object.assign({}, objProductType);
+    newObj.API_TYPE = API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API;
+    props.setObjProductType(newObj);
+    props.navigation.navigate("Product Type");
+  };
+
+  // Popular selling
+  const [listPopularSale, setListPopularSale] = useState(defalutPopularProduct);
+  const loadDataPopularsaler = async () => {
+    await axios
+      .get(API_URL.POPULARITY_PRODUCT_LISTVIEW_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+          "X-localization": locale,
+        },
+        params: {
+          page: 1,
+        },
+      })
+      .then(async (response) => {
+        setListPopularSale(response.data.data.product_lists);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const renderPopularsaler = ({ item }) => {
+    const selectProductPopulatrity = async (item) => {
+      setLoading(true);
+      await axios
+        .get(API_URL.PRODUCT_SEARCH_HD_API + item.id, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        })
+        .then(function (response) {
+          let newObj = Object.assign({}, objProductActivity);
+          newObj.FLASHSALE = false;
+          newObj.product_id = response.data.data.id;
+
+          newObj.TITLE =
+            locale == "th"
+              ? response.data.data.name_th
+              : response.data.data.name_en;
+          if (locale == "th") {
+            newObj.DETAIL = response.data.data.description_th;
+          } else {
+            newObj.DETAIL = response.data.data.description_en;
+          }
+          newObj.IMAGE = rootImage + response.data.data.image;
+          newObj.PRICE = response.data.data.price;
+          newObj.product_full_price = response.data.data.full_price;
+          newObj.quantity = 1;
+          newObj.discount = 0;
+          if (locale == "th") {
+            newObj.product_info_th = response.data.data.info_th;
+          } else {
+            newObj.product_info_th = response.data.data.info_en;
+          }
+          newObj.product_favorite = response.data.data.favorite;
+
+          setLoading(false);
+          props.setObjProductActivity(newObj);
+          props.navigation.navigate("Products");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+    };
+    return (
+      <Block flex style={{ marginTop: 10, marginLeft: 7 }} key={item.id}>
+        <TouchableOpacity onPress={() => selectProductPopulatrity(item)}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={pdStyle.imageProduct}
+          />
+          <Block flex style={pdStyle.productDescription}>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 15,
+              }}
+            >
+              {locale == "th" ? item.name_th : item.name_en}
+            </Text>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 17,
+                marginTop: 10,
+                borderTopWidth: 1,
+                borderTopColor: "#e0e0e0",
+              }}
+            >
+              ราคา : {"฿"}
+              {commaNumber(parseFloat(item.price).toFixed(2))}
+            </Text>
+          </Block>
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+  const loadMorePopularity = () => {
+    let newObj = Object.assign({}, objProductType);
+    newObj.API_TYPE = API_URL.POPULARITY_PRODUCT_LISTVIEW_API;
+    props.setObjProductType(newObj);
+    props.navigation.navigate("Product Type");
   };
 
   // FlatList Information
@@ -218,7 +475,7 @@ function Home(props) {
             <Text style={styles2.TextActivity}>{item.body}</Text>
             <Text style={styles2.TextActivity}>&nbsp;</Text>
             <TouchableOpacity
-              onPress={() => props.navigation.navigate("Basket")}
+              onPress={() => props.navigation.navigate("News Relation Detail")}
               style={{
                 backgroundColor: item.colorEtc,
                 borderRadius: 10,
@@ -246,10 +503,32 @@ function Home(props) {
   //#region PopupCoupon
   const [modalVisible, setModalVisible] = useState(false);
   const ModalNotification = () => {
+    const renderModalCouponList = ({ item }) => {
+      return (
+        <Block row style={{ marginBottom: 15 }}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={{ width: 130, height: 55 }}
+          />
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#00e099",
+              width: 80,
+              height: 24,
+              borderRadius: 20,
+              alignSelf: "center",
+              marginLeft: 15,
+            }}
+          >
+            <Text style={styles.fontCoupon}>COLLECT</Text>
+          </TouchableOpacity>
+        </Block>
+      );
+    };
     return (
       <>
         <Modal
-          animationType="fade"
+          animationType="none"
           transparent={true}
           visible={modalVisible}
           onRequestClose={() => {
@@ -268,42 +547,15 @@ function Home(props) {
               </TouchableOpacity>
               <Text style={styles.modalText}>You have received coupons</Text>
               <ScrollView showsVerticalScrollIndicator={false}>
-                <Block row style={{ marginBottom: 15 }}>
-                  <Image
-                    source={require("../assets/images/coupon/coupon-1-md.png")}
-                    style={{ width: 130, height: 55 }}
+                <SafeAreaView style={{ flex: 1 }}>
+                  <FlatList
+                    data={couponList}
+                    style={styles.containers}
+                    renderItem={renderModalCouponList}
+                    numColumns={1}
+                    keyExtractor={(item) => item.id.toString()}
                   />
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: "#00e099",
-                      width: 80,
-                      height: 24,
-                      borderRadius: 20,
-                      alignSelf: "center",
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Text style={styles.fontCoupon}>COLLECT</Text>
-                  </TouchableOpacity>
-                </Block>
-                <Block row style={{ marginBottom: 15 }}>
-                  <Image
-                    source={require("../assets/images/coupon/coupon-2-md.png")}
-                    style={{ width: 130, height: 55 }}
-                  />
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: "#00e099",
-                      width: 80,
-                      height: 24,
-                      borderRadius: 20,
-                      alignSelf: "center",
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Text style={styles.fontCoupon}>COLLECT</Text>
-                  </TouchableOpacity>
-                </Block>
+                </SafeAreaView>
               </ScrollView>
               <TouchableOpacity
                 style={{ ...styles.openButton, backgroundColor: "#4a5aed" }}
@@ -378,67 +630,65 @@ function Home(props) {
                   <Block flex style={styles.textContainerBlock1}>
                     <Text
                       style={{
-                        fontSize: 25,
+                        fontSize: 27,
                         color: "white",
                         marginTop: 20,
                         fontFamily: "kanitRegular",
+                        textAlign: "center",
                       }}
                     >
                       {GOOD_PRODUCT}
                     </Text>
-                    <Block flex style={{ marginTop: 25 }}>
-                      <Block flex style={styles.containerBlock}>
-                        <Block flex row>
-                          <Product
-                            product={products[7]}
-                            style={{ marginRight: theme.SIZES.BASE }}
-                          />
-                          <Product product={products[5]} />
-                        </Block>
-                      </Block>
-                      <Block flex style={styles.containerBlock}>
-                        <Block flex row>
-                          <Product
-                            product={products[6]}
-                            style={{ marginRight: theme.SIZES.BASE }}
-                          />
-                          <Product product={products[8]} />
-                        </Block>
-                      </Block>
-                    </Block>
+                    <FlatList
+                      data={listBestsale}
+                      style={styles.containers}
+                      renderItem={renderBestsaler}
+                      numColumns={2}
+                      keyExtractor={(item) => item.id.toString()}
+                      listKey={(item) => item.id.toString()}
+                    />
+                    <TouchableOpacity
+                      onPress={loadMoreBestsaler}
+                      style={{ marginBottom: 40, marginTop: 15 }}
+                    >
+                      <Text
+                        style={{
+                          alignSelf: "center",
+                          marginTop: 10,
+                          color: "white",
+                          fontFamily: "kanitRegular",
+                          borderBottomWidth: 5,
+                          borderBottomColor: "white",
+                          borderRadius: 2,
+                        }}
+                      >
+                        {VIEW_ALL + " >"}
+                      </Text>
+                    </TouchableOpacity>
                   </Block>
+
                   {/* Popular product */}
                   <Block flex style={styles.textContainerBlock2}>
-                    <Text style={{ fontSize: 25, fontFamily: "kanitRegular" }}>
-                      {POPULAR_PRODUCT}
-                    </Text>
-                    <Block
-                      flex
+                    <Text
                       style={{
-                        marginTop: 25,
+                        fontSize: 25,
+                        fontFamily: "kanitRegular",
+                        textAlign: "center",
                       }}
                     >
-                      <Block flex style={styles.containerBlock}>
-                        <Block flex row>
-                          <Product
-                            product={products[1]}
-                            style={{ marginRight: theme.SIZES.BASE }}
-                          />
-                          <Product product={products[2]} />
-                        </Block>
-                      </Block>
-                    </Block>
-                    <Block flex style={styles.containerBlock}>
-                      <Block flex row>
-                        <Product
-                          product={products[3]}
-                          style={{ marginRight: theme.SIZES.BASE }}
-                        />
-                        <Product product={products[4]} />
-                      </Block>
-                    </Block>
+                      {POPULAR_PRODUCT}
+                    </Text>
+                    <FlatList
+                      data={listPopularSale}
+                      style={styles.containers}
+                      renderItem={renderPopularsaler}
+                      numColumns={2}
+                      keyExtractor={(item) => item.id.toString()}
+                      listKey={(item) => item.id.toString()}
+                    />
                     <TouchableOpacity
-                      onPress={() => props.navigation.navigate("Basket")}
+                      onPress={loadMorePopularity}
+                      style={{ marginBottom: 25, marginTop: 15 }}
                     >
                       <Text
                         style={{
@@ -447,7 +697,7 @@ function Home(props) {
                           color: "black",
                           fontFamily: "kanitRegular",
                           borderBottomWidth: 5,
-                          borderBottomColor: "#00bcd1",
+                          borderBottomColor: "#0fa8db",
                           borderRadius: 2,
                         }}
                       >
@@ -455,6 +705,7 @@ function Home(props) {
                       </Text>
                     </TouchableOpacity>
                   </Block>
+
                   {/* Public relations */}
                   <Block
                     flex
@@ -503,7 +754,7 @@ function Home(props) {
                   </Block>
                   <TouchableOpacity
                     onPress={() => props.navigation.navigate("News Relation")}
-                    style={{ marginBottom: 15 }}
+                    style={{ marginBottom: 30, marginTop: 15 }}
                   >
                     <Text
                       style={{
@@ -520,6 +771,7 @@ function Home(props) {
                       {VIEW_ALL + " >"}
                     </Text>
                   </TouchableOpacity>
+
                   <WangdekInfo />
                 </>
               )}
@@ -534,11 +786,34 @@ function Home(props) {
         </View>
       </Block>
       <ModalNotification />
+      <ModalLoading loading={loading} />
     </>
   );
 }
 
-export default withNavigation(connect(null, ActionHome.actions)(Home));
+const mapActions = {
+  setObjHomeHD: ActionHome.setObjHomeHD,
+  clearObjHomeHD: ActionHome.clearObjHomeHD,
+  setListTrSearchHD: ActionHome.setListTrSearchHD,
+  setListCouponHD: ActionHome.setListCouponHD,
+  pushListTrSearchHD: ActionHome.pushListTrSearchHD,
+
+  //Product Detail
+  setObjProductActivity: ActionProduct.setObjProductActivity,
+  clearObjProductActivity: ActionProduct.clearObjProductActivity,
+  setListTrProductActivity: ActionProduct.setListTrProductActivity,
+  pushListTrProductActivity: ActionProduct.pushListTrProductActivity,
+
+  //Product Type
+  setObjProductType: ActionProductType.setObjProductType,
+  clearObjProductType: ActionProductType.clearObjProductType,
+  setListTrProductType: ActionProductType.setListTrProductType,
+  pushListTrProductType: ActionProductType.pushListTrProductType,
+};
+
+export default withNavigation(connect(null, mapActions)(Home));
+
+// export default withNavigation(connect(null, ActionHome.actions)(Home));
 
 const COUPON_LIST = [
   {
@@ -636,6 +911,10 @@ const styles = StyleSheet.create({
   home: {
     width: width,
   },
+  containers: {
+    flex: 1,
+    marginVertical: 20,
+  },
   containerBlock: {
     flex: 1,
     flexDirection: "row",
@@ -644,15 +923,12 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   textContainerBlock1: {
-    alignItems: "center",
-    alignSelf: "center",
-    backgroundColor: "#00d184",
+    backgroundColor: "#10c985",
     padding: 5,
+    width: width,
     // marginTop: 10,
   },
   textContainerBlock2: {
-    alignItems: "center",
-    alignSelf: "center",
     backgroundColor: "#ffffff",
     marginTop: 25,
     padding: 5,
@@ -769,7 +1045,7 @@ const styles2 = StyleSheet.create({
     backgroundColor: "white",
   },
   containerHeader: {
-    backgroundColor: "#4967ad",
+    backgroundColor: "#486ec7",
   },
   blockHeader: {
     padding: 8,
@@ -821,22 +1097,51 @@ const styles2 = StyleSheet.create({
   },
 });
 
-const linerStyle = StyleSheet.create({
-  container: {
-    flex: 1,
+const pdStyle = StyleSheet.create({
+  image: {
+    borderRadius: 4,
+    marginTop: -20,
+  },
+  textContainerBlock1: {
+    padding: 5,
+    flexWrap: "wrap",
+  },
+  imageProduct: {
+    resizeMode: "cover",
+    width: 180,
+    height: 150,
+    borderTopRightRadius: 2,
+    borderTopLeftRadius: 2,
+  },
+  productText: {
+    width: 180,
+    height: 80,
+  },
+  productDescription: {
+    width: 180,
+    height: 80,
+    padding: 10,
+    backgroundColor: "white",
+    borderBottomEndRadius: 3,
+    borderBottomLeftRadius: 3,
+    shadowColor: theme.COLORS.BLACK,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    elevation: 2,
+  },
+  item: {
+    backgroundColor: "#4D243D",
     alignItems: "center",
     justifyContent: "center",
-  },
-  linearGradient: {
-    justifyContent: "flex-end",
-    height: 150,
-  },
-  BlockTime: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    alignSelf: "flex-end",
-    marginBottom: 5,
-    marginRight: 5,
+    margin: 5,
+    height: width / 3, // approximate a square
+  },
+  itemInvisible: {
+    backgroundColor: "transparent",
+  },
+  itemText: {
+    color: "#fff",
   },
 });

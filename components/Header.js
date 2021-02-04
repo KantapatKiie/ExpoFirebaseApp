@@ -12,22 +12,39 @@ import {
   Image,
   FlatList,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import { StatusBar } from "expo-status-bar";
-import { Block, NavBar, Input, Text, theme } from "galio-framework";
-import Icon from "./Icon";
+import { Block, NavBar, Text, theme } from "galio-framework";
 import materialTheme from "../constants/Theme";
 import Icons from "react-native-vector-icons/MaterialIcons";
-import { Feather } from "@expo/vector-icons";
-// import { API_URL } from "../config/config.app";
+import { API_URL } from "../config/config.app";
+import { getToken } from "../store/mock/token";
+import { connect, useSelector } from "react-redux";
+// import { Feather } from "@expo/vector-icons";
 
-const { height, width } = Dimensions.get("window");
+const {  width } = Dimensions.get("window");
+let token = getToken();
+const rootImage = "http://10.0.1.37:8080";
+
+const defaultListProductType = [
+  {
+    id: 1,
+    name_th: "เครื่องประดับ",
+    name_en: "Accessories",
+    image: "/storage/16/icon-01.png",
+  },
+];
 
 const ModalNotification = ({ style, navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   return (
     <>
       <Modal
-        animationType="fade"
+        animationType="none"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
@@ -65,7 +82,7 @@ const ModalSearch = ({ style, navigation }) => {
   return (
     <>
       <Modal
-        animationType="fade"
+        animationType="none"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
@@ -104,7 +121,7 @@ const ModalFavorite = ({ style, navigation }) => {
   return (
     <>
       <Modal
-        animationType="fade"
+        animationType="none"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
@@ -156,9 +173,19 @@ const BasketButton = ({ style, navigation }) => {
 };
 
 function Header(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
   const [objSearch, setObjSearch] = useState({
     SEARCH_NO: "",
   });
+
+  useEffect(() => {
+    loadDataProductType();
+  }, []);
 
   const renderLogo = () => {
     return (
@@ -720,6 +747,19 @@ function Header(props) {
             isWhite={white}
           />,
         ];
+      case "Flashsale Product":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
 
       default:
         break;
@@ -1245,6 +1285,19 @@ function Header(props) {
             isWhite={white}
           />,
         ];
+      case "Flashsale Product":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
 
       default:
         break;
@@ -1252,14 +1305,32 @@ function Header(props) {
   };
 
   //renderFucntion Tabs
+  const [listProductType, setListProductType] = useState(
+    defaultListProductType
+  );
+  const loadDataProductType = async () => {
+    await axios
+      .get(API_URL.CATEGORY_PRODUCT_LISTVIEW_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          // "Content-Type": "application/json",
+        },
+      })
+      .then(async (response) => {
+        setListProductType(response.data.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
   const ListTypeProduct = ({ item }) => {
     return (
-      <Block style={styles2.item}>
+      <Block style={styles2.itemType}>
         <TouchableOpacity
-          shadowless
           onPress={() => props.navigation.navigate("Product Type", item)}
         >
-          <Image source={item.icon} />
+          <Image source={{ uri : rootImage + item.image}} style={{width:79, height: 68}}/>
         </TouchableOpacity>
       </Block>
     );
@@ -1276,17 +1347,13 @@ function Header(props) {
             scrollEnabled={false}
             renderSectionHeader={({ section }) => (
               <>
-                {section.horizontal ? (
-                  <>
                     <FlatList
                       horizontal
-                      data={section.data}
+                      data={listProductType}
                       renderItem={({ item }) => <ListTypeProduct item={item} />}
                       showsHorizontalScrollIndicator={false}
-                      showsVerticalScrollIndicator={false}
+                      keyExtractor={(item) => item.id.toString()}
                     />
-                  </>
-                ) : null}
               </>
             )}
             renderItem={({ item, section }) => {
@@ -1302,7 +1369,7 @@ function Header(props) {
   };
   const ListBrandProduct = ({ item }) => {
     return (
-      <Block style={styles2.item}>
+      <Block style={styles2.itemBrand}>
         <TouchableOpacity
           shadowless
           onPress={() => props.navigation.navigate("Product Type", item)}
@@ -1319,7 +1386,7 @@ function Header(props) {
           <SectionList
             contentContainerStyle={{ paddingHorizontal: 0 }}
             stickySectionHeadersEnabled={false}
-            sections={sectionBrand}
+            sections={sectionProductBrand}
             scrollEnabled={false}
             renderSectionHeader={({ section }) => (
               <>
@@ -1502,7 +1569,7 @@ const styles = StyleSheet.create({
 const styles2 = StyleSheet.create({
   container1: {
     backgroundColor: "#f5f5f5",
-    height: 92,
+    height: 82,
     padding: 0,
   },
   container2: {
@@ -1517,9 +1584,13 @@ const styles2 = StyleSheet.create({
     marginTop: 20,
     marginBottom: 5,
   },
-  item: {
-    margin: 5,
-    height: 92,
+  itemType: {
+    margin: 8,
+    height: 65,
+  },
+  itemBrand: {
+    margin: 4,
+    height: 72,
   },
   itemPhoto: {
     width: 90,
@@ -1576,7 +1647,7 @@ const sectionProductType = [
     ],
   },
 ];
-const sectionBrand = [
+const sectionProductBrand = [
   {
     // title: "Title Text",
     horizontal: true,

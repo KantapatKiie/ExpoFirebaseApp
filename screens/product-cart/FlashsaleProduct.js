@@ -21,7 +21,6 @@ import { actions as ActionHome } from "../../actions/action-home/ActionHome";
 import { formatTr } from "../../i18n/I18nProvider";
 import { Block, Text } from "galio-framework";
 import WangdekInfo from "../../components/WangdekInfo";
-import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { ProgressBar, Colors } from "react-native-paper";
 import CountDown from "react-native-countdown-component";
@@ -67,6 +66,7 @@ function FlashsaleProduct(props) {
 
   useEffect(() => {
     setLoading(false);
+    setStateObj(listTrSearchHD);
     setNumList(2);
     if (listTrSearchHD == "") {
       loadFalshsaleRetry();
@@ -123,8 +123,10 @@ function FlashsaleProduct(props) {
 
   const onSelectProduct = async (item) => {
     let progressPercentage =
-      (item.product_sold - item.product_stock + item.product_stock) /
-      item.product_stock;
+      item.product_stock == 0
+        ? 1
+        : (item.product_sold - item.product_stock + item.product_stock) /
+          item.product_stock;
     setLoading(true);
     await axios
       .get(API_URL.FALSH_SALE_VIEW_API + "/" + item.id, {
@@ -132,6 +134,7 @@ function FlashsaleProduct(props) {
           Accept: "application/json",
           Authorization: "Bearer " + (await token),
           "Content-Type": "application/json",
+          // "X-localization" : locale
         },
       })
       .then(function (response) {
@@ -207,7 +210,6 @@ function FlashsaleProduct(props) {
   return (
     <>
       <View style={styles.container}>
-        <StatusBar style="auto" />
         <SafeAreaView style={{ flex: 1 }}>
           <SectionList
             stickySectionHeadersEnabled={false}
@@ -323,7 +325,7 @@ function FlashsaleProduct(props) {
               <>
                 {/* Product List */}
                 <Block flex style={{ backgroundColor: "white", margin: 0 }}>
-                  {listTrSearchHD.map((item) => (
+                  {stateObj.map((item) => (
                     <TouchableOpacity
                       onPress={() => onSelectProduct(item)}
                       key={item.id}
@@ -388,17 +390,21 @@ function FlashsaleProduct(props) {
                           </Text>
                           <ProgressBar
                             progress={
-                              (item.product_sold -
-                                item.product_stock +
-                                item.product_stock) /
-                              item.product_stock
+                              item.product_stock == 0
+                                ? 1
+                                : (item.product_sold -
+                                    item.product_stock +
+                                    item.product_stock) /
+                                  item.product_stock
                             }
                             color={
-                              (item.product_sold -
-                                item.product_stock +
-                                item.product_stock) /
-                                item.product_stock ===
-                              1
+                              item.product_stock == 0
+                                ? Colors.red800
+                                : (item.product_sold -
+                                    item.product_stock +
+                                    item.product_stock) /
+                                    item.product_stock ===
+                                  1
                                 ? Colors.red800
                                 : "#00b1ba"
                             }

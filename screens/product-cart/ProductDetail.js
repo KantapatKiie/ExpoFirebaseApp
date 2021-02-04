@@ -5,7 +5,7 @@ import {
   StatusBar,
   Dimensions,
   TouchableOpacity,
-  TouchableHighlight,
+  ToastAndroid,
   ScrollView,
 } from "react-native";
 import axios from "axios";
@@ -105,6 +105,7 @@ function ProductDetail(props) {
           Accept: "*/*",
           Authorization: "Bearer " + (await token),
           "Content-Type": "application/json",
+          "X-localization" : locale
         },
         data: {
           flash_sale_events_id: objProductActivity.flash_sale_events_id,
@@ -114,11 +115,9 @@ function ProductDetail(props) {
         },
       })
       .then(function (response) {
-        console.log(response.data);
-
-        // props.setObjCartBasket(newObjCart);
-        // AsyncStorage["sessionCartBefore"] = newObjCart;
+        ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
         // props.navigation.navigate("Cart");
+        // AsyncStorage["sessionCartBefore"] = newObjCart;
       })
       .catch(function (error) {
         console.log(error);
@@ -293,7 +292,7 @@ function ProductDetail(props) {
           </Block>
           <Block row style={{ margin: 15, alignSelf: "flex-start" }}>
             <Block
-              style={{ alignSelf: "flex-start", width: "45%", marginLeft: 15 }}
+              style={{ alignSelf: "flex-start", width: "45%", marginLeft: 5 }}
             >
               <Text style={styles.detailFullprice}>
                 ฿
@@ -314,6 +313,7 @@ function ProductDetail(props) {
           <Block row style={{ margin: 10 }}>
             <Text style={styles.detailText}>จำนวน : </Text>
             <NumericInput
+              initValue={parseInt(objProductActivity.quantity)}
               value={parseInt(objProductActivity.quantity)}
               onChange={(value) => onChangeValue(value)}
               totalWidth={125}
