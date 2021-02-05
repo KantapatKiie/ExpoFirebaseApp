@@ -79,6 +79,7 @@ function FavoriteView(props) {
         console.log(error);
         setLoading(true);
       });
+    setLoading(true);
   };
   const loadMoreListProduct = async () => {
     setLoading(false);

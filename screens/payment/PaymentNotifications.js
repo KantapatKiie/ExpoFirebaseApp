@@ -8,7 +8,11 @@ import {
   TextInput,
   ToastAndroid,
 } from "react-native";
+import axios from "axios";
 import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import { Block, Input } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import * as ActionPaymentNotifications from "../../actions/action-payment/ActionPaymentNotifications";
@@ -18,11 +22,24 @@ import WangdekInfo from "../../components/WangdekInfo";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import DropDownPicker from "react-native-dropdown-picker";
-import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
+import ModalLoading from "../../components/ModalLoading";
+import * as ExpoFileSystem from 'expo-file-system'
+import RNImageConverter from 'react-native-image-converter';
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+let token = getToken();
 
 function PaymentNotifications(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  const [loading, setLoading] = useState(null);
   const { objPaymentNotificationHD } = useSelector((state) => ({
     objPaymentNotificationHD:
       state.actionPaymentNotifications.objPaymentNotificationHD,
@@ -34,10 +51,13 @@ function PaymentNotifications(props) {
       fullname: "",
       telephone: "",
       email: "",
-      money_transfer: 0,
+      money_transfer: "",
+      bank_code: 0,
+      bank_name: "",
       transfer_date: moment(new Date()).format("DD/MM/YYYY"),
       transfer_time: moment(new Date()).format("HH : mm"),
     });
+    getBankList();
   }, []);
 
   const [objSearch, setObjSearch] = useState({
@@ -45,17 +65,19 @@ function PaymentNotifications(props) {
     fullname: "",
     telephone: "",
     email: "",
-    money_transfer: 0,
+    money_transfer: "",
+    bank_code: 0,
+    bank_name: "",
     transfer_date: moment(new Date()).format("DD/MM/YYYY"),
     transfer_time: moment(new Date()).format("HH : mm"),
   });
 
-  //Block 1 
+  //Block 1
   const onChangeOrderNumber = (e) => {
     let newObj = Object.assign({}, objSearch);
-    newObj.order_no = e
+    newObj.order_no = e;
     setObjSearch(newObj);
-  }
+  };
 
   //DatePicker
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -93,21 +115,54 @@ function PaymentNotifications(props) {
     setTimePickerVisibility(false);
   };
 
-  // Transfer Money
-  const [bank, setBank] = useState();
-  const itenBank = [
+  const [bankList, setBankList] = useState([
     {
-      label: "ธนาคารไทยพาณิชย์ - SCB",
-      value: "scb",
-      hidden: true,
+      label: objSearch.bank_name,
+      value: objSearch.bank_code,
     },
-    {
-      label: "ธนาคารกรุงเทพ - BKK",
-      value: "bkk",
-    },
-  ];
+  ]);
+  const getBankList = async () => {
+    await axios
+      .get(API_URL.BANK_LIST_HD_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(function (response) {
+        let newlstBin = response.data.data.map(function (item) {
+          item.label = locale == "th" ? item.bank_name_th : item.bank_name_en;
+          item.value = item.id;
+          return item;
+        });
+        setBankList(newlstBin);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
   const onChangeBank = (item) => {
-    setBank(item);
+    let newObj = Object.assign({}, objSearch);
+    newObj.bank_code = item.value;
+    newObj.bank_name = item.label;
+    setObjSearch(newObj);
+  };
+
+  const onChangeFullname = (e) => {
+    let newObj = Object.assign({}, objSearch);
+    newObj.fullname = e;
+    setObjSearch(newObj);
+  };
+  const onChangePhoneNumber = (e) => {
+    let newObj = Object.assign({}, objSearch);
+    newObj.fullname = e;
+    setObjSearch(newObj);
+  };
+  const onChangeEmail = (e) => {
+    let newObj = Object.assign({}, objSearch);
+    newObj.fullname = e;
+    setObjSearch(newObj);
   };
   const onChangeTransferMoney = (e) => {
     let newObj = Object.assign({}, objSearch);
@@ -118,22 +173,85 @@ function PaymentNotifications(props) {
   // Image Picker Profile
   const [imagePicker, setImagePicker] = useState(null);
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
+    let result = await DocumentPicker.getDocumentAsync({
+      type: "*/*",
+      allowsEditing: false,
       aspect: [4, 3],
       quality: 1,
     });
-    console.log(result.uri);
+
+    // const path = result.uri.replace("file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540kiieky%252Fexpofirebase/DocumentPicker/", "");
+    // var binary = path.getAsBinary();
+
+    // const fileContent = await ExpoFileSystem.readAsStringAsync(path);
+    // const content = JSON.stringify(fileContent);
+
+    // console.log(content)
+    RNImageConverter.getJPEG(result.uri, (newFile) => {
+      console.log(newFile);
+    });
+
     if (!result.cancelled) {
       setImagePicker(result.uri);
     } else {
       ToastAndroid.show("Not Seleted Images", ToastAndroid.SHORT);
     }
   };
+  
 
-  const showToast = () => {
-    ToastAndroid.show("Test ToastAndriod React Native !", ToastAndroid.SHORT);
+  const onPaymentTransfer = async () => {
+    setLoading(true);
+    await axios({
+      method: "GET",
+      url: API_URL.CHECK_ORDER_PAYMENT_API,
+      headers: {
+        Accept: "*/*",
+        Authorization: "Bearer " + (await token),
+        // "Content-Type": "application/json",
+        "Content-Type": "multipart/form-data",
+        "X-localization": locale,
+      },
+      data: {
+        order: objSearch.order_no,
+      },
+    })
+      .then(async (response) => {
+        if (response.data.success !== true) {
+          setLoading(false);
+          ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        } else {
+          await axios({
+            method: "POST",
+            url: API_URL.PAYMENTS_TRANSFER_API,
+            headers: {
+              Accept: "*/*",
+              Authorization: "Bearer " + (await token),
+              // "Content-Type": "application/json",
+              "Content-Type": "multipart/form-data",
+              "X-localization": locale,
+            },
+            data: {
+              orders_code : objSearch.order_no,
+              bank_accounts_id  : (objSearch.bank_code).toString(),
+              fullname  : objSearch.fullname,
+              contact  : objSearch.telephone,
+              email  : objSearch.email,
+              payment_date  : moment(objSearch.transfer_date).format("YYYY-MM-DD"),
+              payment_time  : objSearch.transfer_time,
+              amount  : objSearch.money_transfer,
+              image  : imagePicker,
+            },
+          }).then(function (response) {
+            setLoading(false);
+            ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+          });
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+        setLoading(false);
+      });
+    setLoading(false);
   };
 
   return (
@@ -142,7 +260,7 @@ function PaymentNotifications(props) {
         style={{ backgroundColor: "white" }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Block 1 */}
+        {/* Title Order */}
         <Block style={styles.blockStyle}>
           <Text
             style={{
@@ -171,14 +289,15 @@ function PaymentNotifications(props) {
           <Block style={styles.inputView}>
             <TextInput
               style={styles.inputText}
-                placeholder={"หมายเลขสั่งซื้อ"}
+              placeholder={"หมายเลขสั่งซื้อ"}
               placeholderTextColor="#808080"
               value={objSearch.order_no}
-                onChangeText={onChangeOrderNumber}
+              onChangeText={onChangeOrderNumber}
             />
           </Block>
         </Block>
-        {/* Block 2 */}
+
+        {/* Detail */}
         <Block style={styles.blockStyle}>
           <Text
             style={{
@@ -207,10 +326,10 @@ function PaymentNotifications(props) {
           <Block style={styles.inputView}>
             <TextInput
               style={styles.inputText}
-              //   placeholder={"กรอกรหัสผ่านใหม่"}
+              placeholder={"ชื่อ-นามสกุล"}
               placeholderTextColor="#808080"
               value={objSearch.fullname}
-              //   onChangeText={onChangePassword1}
+              onChangeText={onChangeFullname}
             />
           </Block>
           <Block style={{ marginBottom: 5 }}>
@@ -228,10 +347,11 @@ function PaymentNotifications(props) {
           <Block style={styles.inputView}>
             <TextInput
               style={styles.inputText}
-              //   placeholder={"กรอกรหัสผ่านใหม่"}
+              placeholder={"เบอร์โทรศัพท์"}
               placeholderTextColor="#808080"
               value={objSearch.telephone}
-              //   onChangeText={onChangePassword1}
+              onChangeText={onChangePhoneNumber}
+              keyboardType={"phone-pad"}
             />
           </Block>
           <Block style={{ marginBottom: 5 }}>
@@ -249,14 +369,16 @@ function PaymentNotifications(props) {
           <Block style={styles.inputView}>
             <TextInput
               style={styles.inputText}
-              //   placeholder={"กรอกรหัสผ่านใหม่"}
+              placeholder={"example@mail.com"}
               placeholderTextColor="#808080"
               value={objSearch.email}
-              //   onChangeText={onChangePassword1}
+              onChangeText={onChangeEmail}
+              keyboardType={"email-address"}
             />
           </Block>
         </Block>
-        {/* Block 3 */}
+
+        {/* Bank */}
         <Block style={styles.blockStyle}>
           <Text
             style={{
@@ -269,7 +391,7 @@ function PaymentNotifications(props) {
             โอนเข้าบัญชี
           </Text>
           <DropDownPicker
-            items={itenBank}
+            items={bankList}
             containerStyle={{ height: 40, width: width - 45 }}
             style={{ backgroundColor: "#fafafa" }}
             itemStyle={{
@@ -294,9 +416,13 @@ function PaymentNotifications(props) {
               borderRadius: 20,
               color: "white",
             }}
-            onChangeItem={onChangeBank}
+            defaultValue={
+              objSearch.bank_name == "" ? null : objSearch.bank_code
+            }
+            onChangeItem={(item) => onChangeBank(item)}
           />
         </Block>
+        {/* Date */}
         <Block style={styles.container2}>
           <Block row>
             <Block flex>
@@ -385,7 +511,8 @@ function PaymentNotifications(props) {
             />
           </Block>
         </Block>
-        {/* Block Upload  */}
+
+        {/* Upload  */}
         <TouchableOpacity style={{ paddingLeft: "5%" }} onPress={pickImage}>
           <Block style={{ alignSelf: "center" }}>
             <Text
@@ -446,13 +573,14 @@ function PaymentNotifications(props) {
             borderBottomColor: "#e0e0e0",
           }}
         ></Block>
+
         {/* Button */}
         <Block row style={{ paddingTop: 40, paddingBottom: 40 }}>
           <Button
             titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
             title={formatTr("CANCEL").toString()}
             type="solid"
-            onPress={() => props.navigation.navigate("Flash Sale")}
+            onPress={() => props.navigation.navigate("Home")}
             containerStyle={styles.blockButton1}
             buttonStyle={styles.buttonStyle1}
           />
@@ -462,11 +590,12 @@ function PaymentNotifications(props) {
             type="solid"
             containerStyle={styles.blockButton2}
             buttonStyle={styles.buttonStyle2}
-            onPress={() => showToast()}
+            onPress={onPaymentTransfer}
           />
         </Block>
         <WangdekInfo />
       </ScrollView>
+      <ModalLoading loading={loading} />
     </>
   );
 }

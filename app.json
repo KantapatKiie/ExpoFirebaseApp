@@ -20,7 +20,8 @@
       "buildNumber": "1.0.0",
       "config": {
         "googleMapsApiKey": "AIzaSyBOPwrViKPYbjD7ASVKheIlwHFq5GP4Qyg"
-      }
+      },
+      "usesIcloudStorage": true
     },
     "android": {
       "googleServicesFile": "./google-services.json",

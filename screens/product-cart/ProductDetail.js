@@ -7,12 +7,14 @@ import {
   TouchableOpacity,
   ToastAndroid,
   ScrollView,
+  Share,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
 import "moment-duration-format";
 import "moment/locale/th";
 import "moment/locale/en-au";
+import { formatTr } from "../../i18n/I18nProvider";
 import { Block, Button, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import { actions as ActionProduct } from "../../actions/action-product/ActionProduct";
@@ -29,7 +31,16 @@ import { getToken } from "../../store/mock/token";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
-// const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://10.0.1.37:8080";
+
+const defaultSocialsMedia =[
+  {
+    id: 1,
+    name: "facebook",
+    url: "https://www.facebook.com/xxx",
+    image: "/storage/24/fb-share.png"
+  },
+]
 
 function ProductDetail(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -45,17 +56,9 @@ function ProductDetail(props) {
     objCartBasket: state.actionCart.objCartBasket,
   }));
 
-  useEffect(() => {}, []);
-
-  const onClickFavorite = () => {
-    let newFavorite = Object.assign({}, objProductActivity);
-    if (objProductActivity.product_favorite == 0) {
-      newFavorite.product_favorite = 1;
-    } else {
-      newFavorite.product_favorite = 0;
-    }
-    props.setObjProductActivity(newFavorite);
-  };
+  useEffect(() => {
+    loadDataSocialsMedia();
+  }, [dataSocials]);
 
   // ReadMore
   const renderTruncatedFooter = (handlePress) => {
@@ -89,35 +92,103 @@ function ProductDetail(props) {
     );
   };
 
-  //onChangeCount
+  const onClickFavorite = () => {
+    let newFavorite = Object.assign({}, objProductActivity);
+    if (objProductActivity.product_favorite == 0) {
+      newFavorite.product_favorite = 1;
+    } else {
+      newFavorite.product_favorite = 0;
+    }
+    props.setObjProductActivity(newFavorite);
+  };
   const onChangeValue = (value) => {
     let newObj = Object.assign({}, objProductActivity);
     newObj.quantity = value;
     props.setObjProductActivity(newObj);
   };
 
-  const onclickAddProduct = async () => {
-    await 
-      axios({
-        method: "POST",
-        url: API_URL.ADD_CART_ORDER_LISTVIEW_API,
-        headers: {
-          Accept: "*/*",
-          Authorization: "Bearer " + (await token),
-          "Content-Type": "application/json",
-          "X-localization" : locale
-        },
-        data: {
-          flash_sale_events_id: objProductActivity.flash_sale_events_id,
-          flash_sales_id: objProductActivity.flash_sales_id,
-          product_id: objProductActivity.product_id,
-          product_quantity: objProductActivity.quantity,
-        },
-      })
+  const addProductToCarts = async () => {
+    await axios({
+      method: "POST",
+      url: API_URL.ADD_CART_ORDER_LISTVIEW_API,
+      headers: {
+        Accept: "*/*",
+        Authorization: "Bearer " + (await token),
+        "Content-Type": "application/json",
+        "X-localization": locale,
+      },
+      data: {
+        flash_sale_events_id: objProductActivity.flash_sale_events_id,
+        flash_sales_id: objProductActivity.flash_sales_id,
+        product_id: objProductActivity.product_id,
+        product_quantity: objProductActivity.quantity,
+      },
+    })
       .then(function (response) {
         ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
         // props.navigation.navigate("Cart");
         // AsyncStorage["sessionCartBefore"] = newObjCart;
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const buyProductToCart = async () => {
+    await axios({
+      method: "POST",
+      url: API_URL.ADD_CART_ORDER_LISTVIEW_API,
+      headers: {
+        Accept: "*/*",
+        Authorization: "Bearer " + (await token),
+        "Content-Type": "application/json",
+        "X-localization": locale,
+      },
+      data: {
+        flash_sale_events_id: objProductActivity.flash_sale_events_id,
+        flash_sales_id: objProductActivity.flash_sales_id,
+        product_id: objProductActivity.product_id,
+        product_quantity: objProductActivity.quantity,
+      },
+    })
+      .then(function (response) {
+        ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
+  const [dataSocials, setDataSocials] = useState(defaultSocialsMedia);
+  const loadDataSocialsMedia = async () => {
+    await axios
+      .get(API_URL.SOCIALS_LIST_HD_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(async (response) => {
+        setDataSocials(response.data.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const shareLinkSocials = (item) => {
+     Share.share(
+      {
+        title: "Share message website",
+        message: "Message",
+        url: item.url,
+      },
+      {
+        dialogTitle: "Share website",
+        tintColor: "black",
+      }
+    )
+      .then(function (response) {
+        ToastAndroid.show(response.data, ToastAndroid.SHORT);
       })
       .catch(function (error) {
         console.log(error);
@@ -332,7 +403,7 @@ function ProductDetail(props) {
             />
           </Block>
 
-          {/* Share Facebook&Line */}
+          {/* Share Socials */}
           <Block
             row
             style={{
@@ -352,26 +423,19 @@ function ProductDetail(props) {
             >
               แชร์ :
             </Text>
-            <TouchableOpacity>
-              <Image
-                source={require("../../assets/images/fb-share.png")}
-                style={{
-                  width: 30,
-                  height: 30,
-                  marginLeft: 10,
-                }}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Image
-                source={require("../../assets/images/line-share.png")}
-                style={{
-                  width: 30,
-                  height: 30,
-                  marginLeft: 10,
-                }}
-              />
-            </TouchableOpacity>
+
+            {dataSocials.map((item) => (
+              <TouchableOpacity onPress={() => shareLinkSocials(item)} key={item.id}>
+                <Image
+                  source={{ uri: rootImage + item.image }}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    marginLeft: 12,
+                  }}
+                />
+              </TouchableOpacity>
+            ))}
           </Block>
 
           {/* Button */}
@@ -380,7 +444,7 @@ function ProductDetail(props) {
               shadowless
               style={styles.button1}
               color={"black"}
-              onPress={onclickAddProduct}
+              onPress={addProductToCarts}
             >
               <Text
                 style={{
@@ -396,7 +460,7 @@ function ProductDetail(props) {
               shadowless
               style={styles.button2}
               color={"black"}
-              onPress={onclickAddProduct}
+              onPress={buyProductToCart}
             >
               <Text
                 style={{
@@ -439,6 +503,7 @@ const mapActions = {
   setListTrCartBasket: ActionCart.setListTrCartBasket,
   pushListTrCartBasket: ActionCart.pushListTrCartBasket,
 };
+
 export default connect(null, mapActions)(ProductDetail);
 
 const styles = StyleSheet.create({
@@ -567,25 +632,5 @@ const linerStyle = StyleSheet.create({
     alignItems: "flex-start",
     alignSelf: "flex-start",
     width: width / 1.6,
-  },
-});
-
-const timeStyle = StyleSheet.create({
-  timeText: {
-    fontWeight: "800",
-    fontSize: 22,
-    color: "white",
-    marginBottom: 5,
-    textAlign: "center",
-    fontFamily: "kanitRegular",
-  },
-  timeTextArrow: {
-    fontWeight: "500",
-    fontSize: 22,
-    color: "white",
-    paddingLeft: 10,
-    paddingRight: 1.5,
-    marginTop: 2.5,
-    fontFamily: "kanitRegular",
   },
 });

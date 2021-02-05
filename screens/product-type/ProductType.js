@@ -17,7 +17,7 @@ import "moment/locale/th";
 import "moment/locale/en-au";
 import { actions as ActionProduct } from "../../actions/action-product/ActionProduct";
 import { actions as ActionProductType } from "../../actions/action-product-type/ActionProductType";
-import { Block, Text, theme, Input } from "galio-framework";
+import { Block, Text, theme } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
 import { API_URL } from "../../config/config.app";
@@ -50,40 +50,48 @@ function ProductType(props) {
   const { objProductActivity } = useSelector((state) => ({
     objProductActivity: state.actionProduct.objProductActivity,
   }));
-  const { objProductType } = useSelector((state) => ({
+  const { objProductType, listTrProductType } = useSelector((state) => ({
     objProductType: state.actionProductType.objProductType,
+    listTrProductType: state.actionProductType.listTrProductType,
   }));
-
-  useEffect(() => {
-    // setStateObj(products);
-    loadDataProductListType();
-  }, []);
-
+  
   const [loading, setLoading] = useState(null);
   const [stateObj, setStateObj] = useState(defaultListProductType);
-  const [numColumns] = useState(2);
+
+  useEffect(() => {
+      loadDataProductListType();
+  }, [listTrProductType]);
+
   const loadDataProductListType = async () => {
-    setLoading(true);
-    await axios
-      .get(objProductType.API_TYPE, {
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer " + (await token),
-          "Content-Type": "application/json",
-          "X-localization": locale,
-        },
-        params: {
-          page: 1,
-        },
-      })
-      .then(async (response) => {
-        setLoading(false);
-        setStateObj(response.data.data.product_lists);
-      })
-      .catch(function (error) {
-        setLoading(false);
-        console.log(error);
-      });
+    setStateObj("");
+    if (objProductType.TABS_TYPE == true) {
+      setStateObj(listTrProductType);
+    } else if (objProductType.HOME_TYPE == true) {
+      setLoading(true);
+      await axios
+        .get(objProductType.API_TYPE, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+            "X-localization": locale,
+          },
+          params: {
+            page: 1,
+          },
+        })
+        .then(async (response) => {
+          setLoading(false);
+          setStateObj(response.data.data.product_lists);
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+    } else {
+      setLoading(false);
+    }
+    setLoading(false);
   };
   const renderProduct = ({ item }) => {
     return (
@@ -145,7 +153,6 @@ function ProductType(props) {
   return (
     <>
       <ScrollView
-        showsVerticalScrollIndicator={false}
         style={{ backgroundColor: "white" }}
       >
         {/* Title */}
@@ -210,7 +217,8 @@ function ProductType(props) {
             data={stateObj}
             style={styles.containers}
             renderItem={renderProduct}
-            numColumns={numColumns}
+            numColumns={2}
+            keyExtractor={(item) => item.id.toString()}
           />
         </SafeAreaView>
 

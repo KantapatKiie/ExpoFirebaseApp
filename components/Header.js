@@ -24,9 +24,11 @@ import Icons from "react-native-vector-icons/MaterialIcons";
 import { API_URL } from "../config/config.app";
 import { getToken } from "../store/mock/token";
 import { connect, useSelector } from "react-redux";
+import { actions as ActionProductType } from "../actions/action-product-type/ActionProductType";
+import ModalLoading from "../components/ModalLoading";
 // import { Feather } from "@expo/vector-icons";
 
-const {  width } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 let token = getToken();
 const rootImage = "http://10.0.1.37:8080";
 
@@ -38,139 +40,14 @@ const defaultListProductType = [
     image: "/storage/16/icon-01.png",
   },
 ];
-
-const ModalNotification = ({ style, navigation }) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  return (
-    <>
-      <Modal
-        animationType="none"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Coming soon!</Text>
-            <TouchableHighlight
-              style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
-              onPress={() => {
-                setModalVisible(!modalVisible);
-              }}
-            >
-              <Text style={styles.textStyle}>Close</Text>
-            </TouchableHighlight>
-          </View>
-        </View>
-      </Modal>
-
-      <TouchableOpacity
-        style={[styles.button, style]}
-        onPress={() => navigation.navigate("Notifications")}
-        // onPress={() => { setModalVisible(true);}}
-      >
-        <Icons name="notifications" color={"#383838"} size={20} />
-        <Block middle style={styles.notify} />
-      </TouchableOpacity>
-    </>
-  );
-};
-const ModalSearch = ({ style, navigation }) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  return (
-    <>
-      <Modal
-        animationType="none"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Coming soon!</Text>
-            <TouchableHighlight
-              style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
-              onPress={() => {
-                setModalVisible(!modalVisible);
-              }}
-            >
-              <Text style={styles.textStyle}>Close</Text>
-            </TouchableHighlight>
-          </View>
-        </View>
-      </Modal>
-
-      <TouchableOpacity
-        style={[styles.button, style]}
-        onPress={() => navigation.navigate("Filter Search")}
-      >
-        <Icons name="search" color={"#383838"} size={20} />
-        {/* <Feather name="search" size={20} /> */}
-
-        {/* <Block middle style={styles.notify} /> */}
-      </TouchableOpacity>
-    </>
-  );
-};
-const ModalFavorite = ({ style, navigation }) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  return (
-    <>
-      <Modal
-        animationType="none"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Coming soon!</Text>
-            <TouchableHighlight
-              style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
-              onPress={() => {
-                setModalVisible(!modalVisible);
-              }}
-            >
-              <Text style={styles.textStyle}>Close</Text>
-            </TouchableHighlight>
-          </View>
-        </View>
-      </Modal>
-
-      <TouchableOpacity
-        style={[styles.button, style]}
-        onPress={() => navigation.navigate("Favorite View")}
-        // onPress={() => { setModalVisible(true);}}
-      >
-        <Icons name="favorite" color={"#383838"} size={20} />
-        {/* <Block middle style={styles.notify} /> */}
-      </TouchableOpacity>
-    </>
-  );
-};
-const BasketButton = ({ style, navigation }) => {
-  return (
-    <>
-      <TouchableOpacity
-        style={[styles.button, style]}
-        onPress={() => navigation.navigate("Cart")}
-      >
-        {/* <Icons name="shopping_cart" color={"black"} size={20} /> */}
-        <Image
-          source={require("../assets/icons/cart.png")}
-          style={{ width: 20, height: 20 }}
-        />
-        <Block middle style={styles.notify} />
-      </TouchableOpacity>
-    </>
-  );
-};
+const defaultListProductBrands = [
+  {
+    id: 1,
+    name_th: "Mega Bloks",
+    name_en: "Mega Bloks",
+    image: "/storage/16/icon-01.png",
+  },
+];
 
 function Header(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -179,13 +56,167 @@ function Header(props) {
   } else {
     moment.locale("en-au");
   }
-  const [objSearch, setObjSearch] = useState({
-    SEARCH_NO: "",
-  });
+  const [loading, setLoading] = useState(null);
+  const { objProductType } = useSelector((state) => ({
+    objProductType: state.actionProductType.objProductType,
+  }));
 
   useEffect(() => {
     loadDataProductType();
+    loadDataCountCarts();
   }, []);
+
+  const ModalNotification = ({ style, navigation }) => {
+    const [modalVisible, setModalVisible] = useState(false);
+    return (
+      <>
+        <Modal
+          animationType="none"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Coming soon!</Text>
+              <TouchableHighlight
+                style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                onPress={() => {
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>Close</Text>
+              </TouchableHighlight>
+            </View>
+          </View>
+        </Modal>
+
+        <TouchableOpacity
+          style={[styles.button, style]}
+          onPress={() => navigation.navigate("Notifications")}
+          // onPress={() => { setModalVisible(true);}}
+        >
+          <Icons name="notifications" color={"#383838"} size={20} />
+          <Block middle style={styles.notify} />
+        </TouchableOpacity>
+      </>
+    );
+  };
+  const ModalSearch = ({ style, navigation }) => {
+    const [modalVisible, setModalVisible] = useState(false);
+    return (
+      <>
+        <Modal
+          animationType="none"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Coming soon!</Text>
+              <TouchableHighlight
+                style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                onPress={() => {
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>Close</Text>
+              </TouchableHighlight>
+            </View>
+          </View>
+        </Modal>
+
+        <TouchableOpacity
+          style={[styles.button, style]}
+          onPress={() => navigation.navigate("Filter Search")}
+        >
+          <Icons name="search" color={"#383838"} size={20} />
+          {/* <Feather name="search" size={20} /> */}
+
+          {/* <Block middle style={styles.notify} /> */}
+        </TouchableOpacity>
+      </>
+    );
+  };
+  const ModalFavorite = ({ style, navigation }) => {
+    const [modalVisible, setModalVisible] = useState(false);
+    return (
+      <>
+        <Modal
+          animationType="none"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Coming soon!</Text>
+              <TouchableHighlight
+                style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                onPress={() => {
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>Close</Text>
+              </TouchableHighlight>
+            </View>
+          </View>
+        </Modal>
+
+        <TouchableOpacity
+          style={[styles.button, style]}
+          onPress={() => navigation.navigate("Favorite View")}
+          // onPress={() => { setModalVisible(true);}}
+        >
+          <Icons name="favorite" color={"#383838"} size={20} />
+          {/* <Block middle style={styles.notify} /> */}
+        </TouchableOpacity>
+      </>
+    );
+  };
+  //Basket Button
+  const [ countCarts, setCountCarts] = useState(0)
+  const loadDataCountCarts = async () => {
+    await axios
+      .get(API_URL.COUNT_CART_ORDER_LISTVIEW_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+          "X-localization": locale,
+        },
+      })
+      .then(async (response) => {
+        setCountCarts(response.data.data.result);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const BasketButton = ({ style, navigation }) => {
+    return (
+      <>
+        <TouchableOpacity
+          style={[styles.button, style]}
+          onPress={() => navigation.navigate("Cart")}
+        >
+          {/* <Icons name="shopping_cart" color={"black"} size={20} /> */}
+          <Image
+            source={require("../assets/icons/cart.png")}
+            style={{ width: 20, height: 20 }}
+          />
+          {countCarts > 0 ? <Block middle style={styles.notify} /> : null}
+        </TouchableOpacity>
+      </>
+    );
+  };
 
   const renderLogo = () => {
     return (
@@ -1305,6 +1336,7 @@ function Header(props) {
   };
 
   //renderFucntion Tabs
+  //Type Bar
   const [listProductType, setListProductType] = useState(
     defaultListProductType
   );
@@ -1323,19 +1355,47 @@ function Header(props) {
       .catch(function (error) {
         console.log(error);
       });
-  }
+  };
   const ListTypeProduct = ({ item }) => {
+    const categoryProductType = async (item) => {
+      setLoading(true);
+      await axios
+        .get(API_URL.CATEGORY_PRODUCT_SEARCH_API + item.id, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: 1,
+          },
+        })
+        .then((response) => {
+          let newObj = Object.assign({}, objProductType);
+          newObj.TABS_TYPE = true;
+          props.setObjProductType(newObj);
+          props.setListTrProductType(response.data.data);
+          setLoading(false);
+          props.navigation.navigate("Product Type");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+      setLoading(false);
+    };
     return (
       <Block style={styles2.itemType}>
-        <TouchableOpacity
-          onPress={() => props.navigation.navigate("Product Type", item)}
-        >
-          <Image source={{ uri : rootImage + item.image}} style={{width:79, height: 68}}/>
+        <TouchableOpacity onPress={() => categoryProductType(item)}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={{ width: 79, height: 68 }}
+          />
         </TouchableOpacity>
       </Block>
     );
   };
-  const renderTabs = () => {
+  const renderTabType = () => {
     return (
       <Block style={styles2.container1}>
         <StatusBar style="auto" />
@@ -1347,13 +1407,13 @@ function Header(props) {
             scrollEnabled={false}
             renderSectionHeader={({ section }) => (
               <>
-                    <FlatList
-                      horizontal
-                      data={listProductType}
-                      renderItem={({ item }) => <ListTypeProduct item={item} />}
-                      showsHorizontalScrollIndicator={false}
-                      keyExtractor={(item) => item.id.toString()}
-                    />
+                <FlatList
+                  horizontal
+                  data={listProductType}
+                  renderItem={({ item }) => <ListTypeProduct item={item} />}
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item) => item.id.toString()}
+                />
               </>
             )}
             renderItem={({ item, section }) => {
@@ -1367,19 +1427,42 @@ function Header(props) {
       </Block>
     );
   };
-  const ListBrandProduct = ({ item }) => {
+  //Brands Bar
+  const [listProductBrands, setListProductBrands] = useState(
+    defaultListProductBrands
+  );
+  const loadDataProductBrands = async () => {
+    await axios
+      .get(API_URL.CATEGORY_PRODUCT_LISTVIEW_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          // "Content-Type": "application/json",
+        },
+      })
+      .then(async (response) => {
+        setListProductBrands(response.data.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const ListProductBrands = ({ item }) => {
+    const categoryProductBrands = () => {
+      let newObj = Object.assign({}, objProductType);
+      newObj.API_TYPE = API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API;
+      props.setObjProductType(newObj);
+      props.navigation.navigate("Product Type", item);
+    };
     return (
       <Block style={styles2.itemBrand}>
-        <TouchableOpacity
-          shadowless
-          onPress={() => props.navigation.navigate("Product Type", item)}
-        >
+        <TouchableOpacity shadowless onPress={categoryProductBrands}>
           <Image source={item.icon} style={styles2.itemPhoto} />
         </TouchableOpacity>
       </Block>
     );
   };
-  const renderTabViews = () => {
+  const renderTabBrands = () => {
     return (
       <Block style={styles2.container2}>
         <SafeAreaView style={{ flex: 1 }}>
@@ -1394,7 +1477,7 @@ function Header(props) {
                   <FlatList
                     horizontal
                     data={section.data}
-                    renderItem={({ item }) => <ListBrandProduct item={item} />}
+                    renderItem={({ item }) => <ListProductBrands item={item} />}
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}
                   />
@@ -1417,9 +1500,8 @@ function Header(props) {
     if (search || tabs) {
       return (
         <Block center>
-          {/* {search ? renderSearch() : null} */}
-          {tabs ? renderTabs() : null}
-          {tabs ? renderTabViews() : null}
+          {tabs ? renderTabType() : null}
+          {tabs ? renderTabBrands() : null}
         </Block>
       );
     }
@@ -1449,11 +1531,20 @@ function Header(props) {
         />
         {renderHeader()}
       </Block>
+      <ModalLoading loading={loading} />
     </>
   );
 }
 
-export default withNavigation(Header);
+const mapActions = {
+  //Product Type
+  setObjProductType: ActionProductType.setObjProductType,
+  clearObjProductType: ActionProductType.clearObjProductType,
+  setListTrProductType: ActionProductType.setListTrProductType,
+  pushListTrProductType: ActionProductType.pushListTrProductType,
+};
+
+export default withNavigation(connect(null, mapActions)(Header));
 
 const styles = StyleSheet.create({
   button: {
@@ -1609,7 +1700,6 @@ const styles2 = StyleSheet.create({
 
 const sectionProductType = [
   {
-    // title: "Title Text",
     horizontal: true,
     data: [
       {
@@ -1649,7 +1739,6 @@ const sectionProductType = [
 ];
 const sectionProductBrand = [
   {
-    // title: "Title Text",
     horizontal: true,
     data: [
       {

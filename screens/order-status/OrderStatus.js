@@ -14,18 +14,17 @@ import moment from "moment";
 import "moment/locale/th";
 import "moment/locale/en-au";
 import * as ActionOrderStatus from "../../actions/action-order-status/ActionOrderStatus.js";
-import { Block, Text, theme, Input } from "galio-framework";
+import { Block, Text } from "galio-framework";
 import WangdekInfo from "../../components/WangdekInfo";
 import { formatTr } from "../../i18n/I18nProvider";
 import { Button } from "react-native-elements";
 import StepIndicator from "react-native-step-indicator";
-import product from "../../constants/products";
 import ModalLoading from "../../components/ModalLoading";
 import { API_URL } from "../../config/config.app";
 import commaNumber from "comma-number";
 import { getToken } from "../../store/mock/token";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
 const token = getToken();
 const rootImage = "http://10.0.1.37:8080";
 
@@ -749,7 +748,10 @@ function OrderStatus(props) {
                 marginTop: 12,
               }}
             >
-              ค่าจัดส่ง : ฿ {commaNumber(parseFloat(objOrderStatus.delivery_charge).toFixed(2))}
+              ค่าจัดส่ง : ฿{" "}
+              {commaNumber(
+                parseFloat(objOrderStatus.delivery_charge).toFixed(2)
+              )}
             </Text>
             <Text
               style={{
@@ -761,6 +763,18 @@ function OrderStatus(props) {
               }}
             >
               ส่วนลด : ฿ -{commaNumber(objOrderStatus.discount)}
+            </Text>
+            <Text
+              style={{
+                color: "red",
+                fontFamily: "kanitRegular",
+                fontSize: 18,
+                textAlign: "right",
+                marginTop: 12,
+              }}
+            >
+              ส่วนลดโปรโมชั่น : ฿ -
+              {commaNumber(objOrderStatus.discount_promotion)}
             </Text>
             <Text
               style={{

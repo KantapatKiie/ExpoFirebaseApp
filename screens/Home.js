@@ -12,7 +12,6 @@ import {
   ImageBackground,
   Modal,
   ScrollView,
-  useWindowDimensions,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -34,7 +33,7 @@ import { getToken } from "../store/mock/token";
 import CountDownEvent from "../components/CountDownEvent";
 import commaNumber from "comma-number";
 import ModalLoading from "../components/ModalLoading";
-import { useScrollToTop } from "@react-navigation/native";
+// import { useScrollToTop } from "@react-navigation/native";
 
 const { width } = Dimensions.get("screen");
 let token = getToken();
@@ -43,7 +42,7 @@ const rootImage = "http://10.0.1.37:8080";
 const defalutCouponList = [
   {
     id: "1",
-    code: "A001",
+    code: "",
     image: "/storage/8/coupon-1.png",
     title1_th: "title1_th",
     title1_en: "title1_en",
@@ -94,6 +93,7 @@ function Home(props) {
   } else {
     moment.locale("en-au");
   }
+  const [loading, setLoading] = useState(null);
   const { objHomeHD } = useSelector((state) => ({
     objHomeHD: state.actionHomeHD.objHomeHD,
   }));
@@ -118,7 +118,6 @@ function Home(props) {
   let TimeActMonth = moment(new Date()).format("MMM");
   let TimeActivity = moment(new Date()).format("DD MMM YYYY   |   HH:mm ");
 
-  const [loading, setLoading] = useState(null);
   // Flashsale onLoad
   const [countDownTime, setCountDownTime] = useState(
     parseInt(objHomeHD.timeEnds)
@@ -207,7 +206,11 @@ function Home(props) {
         },
       })
       .then(async (response) => {
-        setListBestsale(response.data.data.product_lists);
+        var lstBestSale = [];
+        for (let i = 0; i < 4; i++) {
+          lstBestSale.push(response.data.data.product_lists[i]);
+        }
+        setListBestsale(lstBestSale);
       })
       .catch(function (error) {
         console.log(error);
@@ -298,6 +301,7 @@ function Home(props) {
   const loadMoreBestsaler = () => {
     let newObj = Object.assign({}, objProductType);
     newObj.API_TYPE = API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API;
+    newObj.HOME_TYPE = true;
     props.setObjProductType(newObj);
     props.navigation.navigate("Product Type");
   };
@@ -318,7 +322,11 @@ function Home(props) {
         },
       })
       .then(async (response) => {
-        setListPopularSale(response.data.data.product_lists);
+        var lstPopular = [];
+        for (let i = 0; i < 4; i++) {
+          lstPopular.push(response.data.data.product_lists[i]);
+        }
+        setListPopularSale(lstPopular);
       })
       .catch(function (error) {
         console.log(error);
@@ -408,6 +416,7 @@ function Home(props) {
   const loadMorePopularity = () => {
     let newObj = Object.assign({}, objProductType);
     newObj.API_TYPE = API_URL.POPULARITY_PRODUCT_LISTVIEW_API;
+    newObj.HOME_TYPE = true;
     props.setObjProductType(newObj);
     props.navigation.navigate("Product Type");
   };
@@ -590,7 +599,7 @@ function Home(props) {
             <SectionList
               stickySectionHeadersEnabled={false}
               sections={COUPON_LIST}
-              renderSectionHeader={({ section }) => (
+              renderSectionHeader={() => (
                 <>
                   {/* Festival */}
                   <Block style={styles2.blockHeader}>
@@ -605,6 +614,7 @@ function Home(props) {
                       WANGDEKFEST ลดล้างสต็อกครึ่งปี : เริ่ม{LeftTime}
                     </Text>
                   </Block>
+
                   {/* Count Down */}
                   <TouchableHighlight
                     style={{ width: width }}
@@ -612,12 +622,15 @@ function Home(props) {
                   >
                     <CountDownEvent times={countDownTime} />
                   </TouchableHighlight>
+
                   {/* Coupon */}
                   <Block style={styles2.containerHeader}>
                     <FlatList
                       horizontal
                       data={couponList}
-                      renderItem={({ item }) => <ListItemCoupon item={item} />}
+                      renderItem={({ item }) =>
+                        item.code !== "" ? <ListItemCoupon item={item} /> : null
+                      }
                       showsHorizontalScrollIndicator={false}
                       keyExtractor={(item) => item.id.toString()}
                     />
@@ -707,70 +720,72 @@ function Home(props) {
                   </Block>
 
                   {/* Public relations */}
-                  <Block
-                    flex
-                    style={{ backgroundColor: "#f7f7f7", marginBottom: 25 }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 25,
-                        color: "black",
-                        paddingTop: 25,
-                        alignSelf: "center",
-                        fontFamily: "kanitRegular",
-                      }}
+                  <Block>
+                    <Block
+                      flex
+                      style={{ backgroundColor: "#f7f7f7", marginBottom: 25 }}
                     >
-                      {NEWS_RELEASE}
-                    </Text>
-                    <SafeAreaView style={{ flex: 1, marginTop: 25 }}>
-                      <SectionList
-                        stickySectionHeadersEnabled={false}
-                        sections={INFORMATION}
-                        renderSectionHeader={({ section }) => (
-                          <>
-                            <Block style={styles2.containerHeader2}>
-                              {section.horizontal ? (
-                                <FlatList
-                                  horizontal
-                                  data={section.data}
-                                  renderItem={({ item }) => (
-                                    <ListItemInformation item={item} />
-                                  )}
-                                  showsHorizontalScrollIndicator={false}
-                                />
-                              ) : null}
-                            </Block>
-                          </>
-                        )}
-                        // renderSectionFooter={() => <></>}
-                        renderItem={({ item, section }) => {
-                          if (section.horizontal) {
-                            return null;
-                          }
-                          return <ListItemInformation item={item} />;
+                      <Text
+                        style={{
+                          fontSize: 25,
+                          color: "black",
+                          paddingTop: 25,
+                          alignSelf: "center",
+                          fontFamily: "kanitRegular",
                         }}
-                      />
-                    </SafeAreaView>
-                  </Block>
-                  <TouchableOpacity
-                    onPress={() => props.navigation.navigate("News Relation")}
-                    style={{ marginBottom: 30, marginTop: 15 }}
-                  >
-                    <Text
-                      style={{
-                        alignSelf: "center",
-                        color: "black",
-                        fontFamily: "kanitRegular",
-                        borderBottomWidth: 5,
-                        borderBottomColor: "#00bcd1",
-                        borderRadius: 2,
-                      }}
-                      size={14}
-                      color={theme.COLORS.PRIMARY}
+                      >
+                        {NEWS_RELEASE}
+                      </Text>
+                      <SafeAreaView style={{ flex: 1, marginTop: 25 }}>
+                        <SectionList
+                          stickySectionHeadersEnabled={false}
+                          sections={INFORMATION}
+                          renderSectionHeader={({ section }) => (
+                            <>
+                              <Block style={styles2.containerHeader2}>
+                                {section.horizontal ? (
+                                  <FlatList
+                                    horizontal
+                                    data={section.data}
+                                    renderItem={({ item }) => (
+                                      <ListItemInformation item={item} />
+                                    )}
+                                    showsHorizontalScrollIndicator={false}
+                                  />
+                                ) : null}
+                              </Block>
+                            </>
+                          )}
+                          // renderSectionFooter={() => <></>}
+                          renderItem={({ item, section }) => {
+                            if (section.horizontal) {
+                              return null;
+                            }
+                            return <ListItemInformation item={item} />;
+                          }}
+                        />
+                      </SafeAreaView>
+                    </Block>
+                    <TouchableOpacity
+                      onPress={() => props.navigation.navigate("News Relation")}
+                      style={{ marginBottom: 30, marginTop: 15 }}
                     >
-                      {VIEW_ALL + " >"}
-                    </Text>
-                  </TouchableOpacity>
+                      <Text
+                        style={{
+                          alignSelf: "center",
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          borderBottomWidth: 5,
+                          borderBottomColor: "#00bcd1",
+                          borderRadius: 2,
+                        }}
+                        size={14}
+                        color={theme.COLORS.PRIMARY}
+                      >
+                        {VIEW_ALL + " >"}
+                      </Text>
+                    </TouchableOpacity>
+                  </Block>
 
                   <WangdekInfo />
                 </>
@@ -812,8 +827,6 @@ const mapActions = {
 };
 
 export default withNavigation(connect(null, mapActions)(Home));
-
-// export default withNavigation(connect(null, ActionHome.actions)(Home));
 
 const COUPON_LIST = [
   {

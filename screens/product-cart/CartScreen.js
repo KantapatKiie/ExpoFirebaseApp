@@ -7,12 +7,14 @@ import {
   TouchableOpacity,
   SafeAreaView,
   FlatList,
+  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
 import "moment-duration-format";
 import "moment/locale/th";
 import "moment/locale/en-au";
+import { formatTr } from "../../i18n/I18nProvider";
 import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import * as ActionCart from "../../actions/action-cart/ActionCart";
@@ -71,6 +73,7 @@ function CartScreen(props) {
         Accept: "*/*",
         Authorization: "Bearer " + (await token),
         "Content-Type": "application/json",
+        "X-localization": locale,
       },
     })
       .then(function (response) {
@@ -84,7 +87,6 @@ function CartScreen(props) {
         console.log(false);
       });
   };
-
   const renderCartLists = ({ item }) => {
     const onChangeNumericInputValue = (value) => {
       let oldlst = listCarts.filter((key) => key.product_id != item.product_id);
@@ -96,6 +98,26 @@ function CartScreen(props) {
       });
 
       setListCarts(newStateObj);
+    };
+    const onDeleteProduct = async (value) => {
+      let oldlst = listCarts.filter((item) => item.cart_id !== value);
+      setListCarts(oldlst);
+      await axios({
+        method: "DELETE",
+        url: API_URL.ADD_CART_ORDER_LISTVIEW_API + "/" + value,
+        headers: {
+          Accept: "*/*",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+          "X-localization": locale,
+        },
+      })
+        .then(function (response) {
+          ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        })
+        .catch(function (error) {
+          console.log(false);
+        });
     };
     return (
       <Block style={styles.blockProduct} key={item.cart_id}>
@@ -152,11 +174,7 @@ function CartScreen(props) {
             </Text>
           </Block>
           <Block style={{ marginLeft: 25 }}>
-            <TouchableOpacity
-              onPress={() => {
-                console.log("Delete");
-              }}
-            >
+            <TouchableOpacity onPress={() => onDeleteProduct(item.cart_id)}>
               <Image
                 source={require("../../assets/images/order-filter/delete-icon.png")}
                 style={{ height: 35, width: 35, borderRadius: 25 }}
@@ -168,9 +186,28 @@ function CartScreen(props) {
     );
   };
 
-  const onChangeOrderPage = () => {
-    props.setListTrCartScreen(listCarts);
-    props.navigation.navigate("Order Screen");
+  const addCartListProducts = async () => {
+    setLoading(true);
+      await axios({
+        method: "POST",
+        url: API_URL.SAVE_CART_ORDER_LISTVIEW_API,
+        headers: {
+          Accept: "*/*",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+          "X-localization": locale,
+        },
+        data: listCarts,
+      })
+        .then(function (response) {
+          props.setListTrCartScreen(listCarts);
+          setLoading(false);
+          props.navigation.navigate("Order Screen");
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    setLoading(false);
   };
 
   return (
@@ -221,7 +258,7 @@ function CartScreen(props) {
             type="solid"
             containerStyle={styles.blockButton2}
             buttonStyle={styles.buttonStyle2}
-            onPress={onChangeOrderPage}
+            onPress={addCartListProducts}
           />
         </Block>
 
@@ -300,57 +337,5 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: 150,
     alignSelf: "center",
-  },
-});
-
-//Style Modal
-const styles2 = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modal: {
-    backgroundColor: "#00000099",
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  modalContainer: {
-    backgroundColor: "#f9fafb",
-    width: "80%",
-    borderRadius: 13,
-  },
-  modalHeader: {},
-  title: {
-    fontWeight: "bold",
-    fontSize: 20,
-    padding: 15,
-    color: "#000",
-  },
-  divider: {
-    width: "100%",
-    height: 1,
-    backgroundColor: "lightgray",
-  },
-  modalBody: {
-    backgroundColor: "#fff",
-    paddingVertical: 25,
-    paddingHorizontal: 10,
-  },
-  modalFooter: {},
-  actions: {
-    borderRadius: 5,
-    marginHorizontal: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  actionText: {
-    color: "#fff",
-  },
-  bloxStyle: {
-    marginTop: 10,
   },
 });

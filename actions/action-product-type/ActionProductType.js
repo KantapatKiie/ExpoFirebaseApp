@@ -21,10 +21,12 @@ const initialState = {
     price: "500.00",
     total_quantity: "3",
 
+    HOME_TYPE: false,
+    TABS_TYPE: false,
     API_TYPE: "http://10.0.1.37:8080/api/v1/products/best_selling",
     FLASHSALE: false,
   },
-  // listTrProductType: [],
+  listTrProductType: [],
   // disabledInput: false,
   // editable: false,
 };

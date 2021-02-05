@@ -17,8 +17,8 @@ import "moment/locale/th";
 import "moment/locale/en-au";
 import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
-import * as ActionOrder from "../../actions/action-order-status/ActionOrder";
-import * as ActionCart from "../../actions/action-cart/ActionCart";
+import { actions as ActionOrder } from "../../actions/action-order-status/ActionOrder";
+import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
 import WangdekInfo from "../../components/WangdekInfo";
 import { Icon } from "../../components/";
 import { Button } from "react-native-elements";
@@ -110,6 +110,8 @@ function OrderScreen(props) {
     </Modal>
   );
   //#endregion
+  
+  // Order List
   const renderOrderLists = ({ item }) => {
     return (
       <Block style={styles.blockProduct} key={item.cart_id}>
@@ -179,6 +181,7 @@ function OrderScreen(props) {
           />
         </SafeAreaView>
 
+        {/* List Other */}
         {infoItem.map((item) => (
           <Block style={styles.blockHeaderInfo} key={item.key}>
             <TouchableOpacity
@@ -235,8 +238,18 @@ function OrderScreen(props) {
   );
 }
 
-// export default connect(null, ActionOrder.actions)(OrderScreen);
-export default connect(null, ActionCart.actions)(OrderScreen);
+
+const mapActions = {
+  setobjOrderScreen: ActionOrder.setobjOrderScreen,
+  clearobjOrderScreen: ActionOrder.clearobjOrderScreen,
+  setListTrOrder: ActionOrder.setListTrOrder,
+  
+  setObjCartScreen: ActionCart.setObjCartScreen,
+  clearObjCartScreen: ActionCart.clearObjCartScreen,
+  setListTrCartScreen: ActionCart.setListTrCartScreen,
+};
+
+export default connect(null, mapActions)(OrderScreen);
 
 const styles = StyleSheet.create({
   container: {

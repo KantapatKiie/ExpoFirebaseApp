@@ -1014,7 +1014,7 @@ function MyTabs() {
 }
 
 function OnboardingStack(props) {
-  // //#region BackpUp Firebase
+  //#region BackpUp Firebase
   // const [expoPushToken, setExpoPushToken] = useState("");
   // const [notification, setNotification] = useState(false);
   // const notificationListener = useRef();
@@ -1073,10 +1073,11 @@ function OnboardingStack(props) {
   //   }
   //   return token;
   // }
-  // //#endregion
+  //#endregion
+
   useEffect(() => {
-    LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
-  }, []);
+    LogBox.ignoreLogs(["VirtualizedLists should never be nested!"]);
+  }, [props]);
   return (
     <>
       <Stack.Navigator>
