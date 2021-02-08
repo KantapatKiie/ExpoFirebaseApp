@@ -6905,11 +6905,6 @@ react-native-gesture-handler@~1.8.0:
     invariant "^2.2.4"
     prop-types "^15.7.2"
 
-react-native-image-converter@^0.4.2:
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/react-native-image-converter/-/react-native-image-converter-0.4.2.tgz#b12b8ec37bc42cb3ff74a78d7fbacee8bc8f8c3d"
-  integrity sha512-y6rEZLSNseIfoMQyFYQmzLc9rKV5i+HWccOW88IPN5828C2nYorwobVBUrA3hC9C277ZFm7U5XMMxgrSl+h2sw==
-
 react-native-image-slider-show@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/react-native-image-slider-show/-/react-native-image-slider-show-1.0.3.tgz#4df4c0ba520074f7a5513cca9a83ea48ac8868a5"

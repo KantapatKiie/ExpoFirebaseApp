@@ -945,7 +945,7 @@ function SignIn(props) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ paddingLeft: "15%" }}
-                  onPress={() => props.navigation.navigate("History Order")}
+                  onPress={() => props.navigation.navigate("History View")}
                 >
                   <Image
                     source={require("../../assets/iconSignIn/history2-icon.png")}

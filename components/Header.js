@@ -30,7 +30,8 @@ import ModalLoading from "../components/ModalLoading";
 
 const { width } = Dimensions.get("window");
 let token = getToken();
-const rootImage = "http://10.0.1.37:8080";
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://newpclinic.com/wd";
 
 const defaultListProductType = [
   {
@@ -43,9 +44,9 @@ const defaultListProductType = [
 const defaultListProductBrands = [
   {
     id: 1,
-    name_th: "Mega Bloks",
-    name_en: "Mega Bloks",
-    image: "/storage/16/icon-01.png",
+    name_th: "Barbie",
+    name_en: "Barbie",
+    image: "/storage/29/brand-01.png",
   },
 ];
 
@@ -63,8 +64,9 @@ function Header(props) {
 
   useEffect(() => {
     loadDataProductType();
+    loadDataProductBrands();
     loadDataCountCarts();
-  }, []);
+  }, [null]);
 
   const ModalNotification = ({ style, navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
@@ -181,8 +183,8 @@ function Header(props) {
       </>
     );
   };
-  //Basket Button
-  const [ countCarts, setCountCarts] = useState(0)
+  //Basket Button & Count Cart
+  const [countCarts, setCountCarts] = useState(0);
   const loadDataCountCarts = async () => {
     await axios
       .get(API_URL.COUNT_CART_ORDER_LISTVIEW_API, {
@@ -193,10 +195,15 @@ function Header(props) {
           "X-localization": locale,
         },
       })
-      .then(async (response) => {
-        setCountCarts(response.data.data.result);
+      .then((response) => {
+        if (response.data.data.result !== "undefined") {
+          setCountCarts(response.data.data.result);
+        } else {
+          setCountCarts(null);
+        }
       })
       .catch(function (error) {
+        setCountCarts(null);
         console.log(error);
       });
   };
@@ -1340,17 +1347,18 @@ function Header(props) {
   const [listProductType, setListProductType] = useState(
     defaultListProductType
   );
+  //////Bug ไม่ต้องใช้ token//////
   const loadDataProductType = async () => {
     await axios
       .get(API_URL.CATEGORY_PRODUCT_LISTVIEW_API, {
         headers: {
           Accept: "application/json",
           Authorization: "Bearer " + (await token),
-          // "Content-Type": "application/json",
+          "Content-Type": "application/json",
         },
       })
-      .then(async (response) => {
-        setListProductType(response.data.data);
+      .then(function (response) {
+         setListProductType(response.data.data);
       })
       .catch(function (error) {
         console.log(error);
@@ -1398,29 +1406,25 @@ function Header(props) {
   const renderTabType = () => {
     return (
       <Block style={styles2.container1}>
-        <StatusBar style="auto" />
         <SafeAreaView style={{ flex: 1 }}>
           <SectionList
             contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 0 }}
             stickySectionHeadersEnabled={false}
             sections={sectionProductType}
             scrollEnabled={false}
-            renderSectionHeader={({ section }) => (
-              <>
-                <FlatList
-                  horizontal
-                  data={listProductType}
-                  renderItem={({ item }) => <ListTypeProduct item={item} />}
-                  showsHorizontalScrollIndicator={false}
-                  keyExtractor={(item) => item.id.toString()}
-                />
-              </>
+            renderSectionHeader={() => (
+              <FlatList
+                horizontal
+                data={listProductType}
+                renderItem={({ item }) => <ListTypeProduct item={item} />}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                listKey={(item) => item.id.toString()}
+                keyExtractor={(item) => item.id.toString()}
+              />
             )}
-            renderItem={({ item, section }) => {
-              if (section.horizontal) {
-                return null;
-              }
-              return <ListItem item={item} />;
+            renderItem={() => {
+              return null;
             }}
           />
         </SafeAreaView>
@@ -1431,16 +1435,17 @@ function Header(props) {
   const [listProductBrands, setListProductBrands] = useState(
     defaultListProductBrands
   );
+  //////Bug ไม่ต้องใช้ token//////
   const loadDataProductBrands = async () => {
     await axios
-      .get(API_URL.CATEGORY_PRODUCT_LISTVIEW_API, {
+      .get(API_URL.BRANDS_PRODUCT_LISTVIEW_API, {
         headers: {
           Accept: "application/json",
           Authorization: "Bearer " + (await token),
-          // "Content-Type": "application/json",
+          "Content-Type": "application/json",
         },
       })
-      .then(async (response) => {
+      .then(function (response) {
         setListProductBrands(response.data.data);
       })
       .catch(function (error) {
@@ -1448,16 +1453,45 @@ function Header(props) {
       });
   };
   const ListProductBrands = ({ item }) => {
-    const categoryProductBrands = () => {
-      let newObj = Object.assign({}, objProductType);
-      newObj.API_TYPE = API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API;
-      props.setObjProductType(newObj);
-      props.navigation.navigate("Product Type", item);
+    const categoryProductBrands = async (item) => {
+      console.log(item.id)
+      setLoading(true);
+      await axios
+        .get(API_URL.BRANDS_PRODUCT_LISTVIEW_API + item.id + "/products", {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: 1,
+          },
+        })
+        .then(function (response) {
+          console.log(response.data.data)
+          let newObj = Object.assign({}, objProductType);
+          newObj.TABS_TYPE = true;
+          props.setObjProductType(newObj);
+          props.setListTrProductType(response.data.data);
+          setLoading(false);
+          props.navigation.navigate("Product Type");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+      setLoading(false);
     };
     return (
       <Block style={styles2.itemBrand}>
-        <TouchableOpacity shadowless onPress={categoryProductBrands}>
-          <Image source={item.icon} style={styles2.itemPhoto} />
+        <TouchableOpacity
+          shadowless
+          onPress={() => categoryProductBrands(item)}
+        >
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={{ width: 75, height: 35 }}
+          />
         </TouchableOpacity>
       </Block>
     );
@@ -1471,41 +1505,33 @@ function Header(props) {
             stickySectionHeadersEnabled={false}
             sections={sectionProductBrand}
             scrollEnabled={false}
-            renderSectionHeader={({ section }) => (
-              <>
-                {section.horizontal ? (
-                  <FlatList
-                    horizontal
-                    data={section.data}
-                    renderItem={({ item }) => <ListProductBrands item={item} />}
-                    showsHorizontalScrollIndicator={false}
-                    showsVerticalScrollIndicator={false}
-                  />
-                ) : null}
-              </>
+            renderSectionHeader={() => (
+              <FlatList
+                horizontal
+                data={listProductBrands}
+                renderItem={({ item }) => <ListProductBrands item={item} />}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                listKey={(item) => item.id.toString()}
+                keyExtractor={(item) => item.id.toString()}
+              />
             )}
-            renderItem={({ item, section }) => {
-              if (section.horizontal) {
-                return null;
-              }
-              return <ListItem item={item} />;
+            renderItem={() => {
+              return null;
             }}
           />
         </SafeAreaView>
       </Block>
     );
   };
-  const { search, tabs } = props;
+  // const { search, tabs } = props;
   const renderHeader = () => {
-    if (search || tabs) {
-      return (
-        <Block center>
-          {tabs ? renderTabType() : null}
-          {tabs ? renderTabBrands() : null}
-        </Block>
-      );
-    }
-    return null;
+    return (
+      <Block center>
+        {renderTabType()}
+        {renderTabBrands()}
+      </Block>
+    );
   };
 
   const { back, title, transparent } = props;
@@ -1656,7 +1682,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-
 const styles2 = StyleSheet.create({
   container1: {
     backgroundColor: "#f5f5f5",

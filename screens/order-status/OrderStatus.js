@@ -26,7 +26,8 @@ import { getToken } from "../../store/mock/token";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
-const rootImage = "http://10.0.1.37:8080";
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://newpclinic.com/wd";
 
 const firstIndicatorStyles = {
   stepIndicatorSize: 50,

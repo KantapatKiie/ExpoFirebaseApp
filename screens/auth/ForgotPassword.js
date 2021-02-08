@@ -77,7 +77,7 @@ function ForgotPassword(props) {
               props.setObjLogin(newLogin);
 
               await setToken(res.auth_token);
-              props.navigation.navigate("Home");
+              props.navigation.navigate("Flash Sale");
             })
             .catch((err) => console.log("error:", err.message));
         }, 120);

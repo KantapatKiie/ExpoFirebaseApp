@@ -28,7 +28,7 @@ function HowTo(props) {
       <ScrollView showsVerticalScrollIndicator={false}>
         <Block style={{ backgroundColor: "white" }}>
           {/* Title */}
-          <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
+          <TouchableOpacity onPress={() => props.navigation.navigate("Flash Sale")}>
             <Block
               row
               style={{

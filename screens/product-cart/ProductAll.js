@@ -4,162 +4,562 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  View,
   Dimensions,
+  SafeAreaView,
+  FlatList,
+  SectionList,
 } from "react-native";
-import * as ActionProductAll from "../../actions/action-product-all/ActionProductAll";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
+import { actions as ActionProductAll } from "../../actions/action-product-all/ActionProductAll";
+import { actions as ActionProduct } from "../../actions/action-product/ActionProduct";
+import { actions as ActionPromotions } from "../../actions/action-promotions/ActionPromotions";
 import { Block, Text, theme } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
-import products from "../../constants/products";
-import { Product } from "../../components";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
+import commaNumber from "comma-number";
+import ModalLoading from "../../components/ModalLoading";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+let token = getToken();
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://newpclinic.com/wd";
+
+const defalutBestsaleProduct = [
+  {
+    id: 2,
+    name_th: "กระเป๋า เอ",
+    name_en: "Bag A",
+    image: "/storage/2/download-%281%29.jfif",
+    price: "1000.00",
+    total_quantity: "4",
+  },
+];
+const defalutPopularProduct = [
+  {
+    id: 2,
+    name_th: "กระเป๋า เอ",
+    name_en: "Bag A",
+    image: "/storage/2/download-%281%29.jfif",
+    price: "1000.00",
+    total_quantity: "4",
+  },
+];
+const defalutPromotionsProduct = [
+  {
+    id: 2,
+    name_th: "กระเป๋า เอ",
+    name_en: "Bag A",
+    image: "/storage/2/download-%281%29.jfif",
+    price: "1000.00",
+    total_quantity: "4",
+  },
+];
 
 function ProductAll(props) {
-  const { objProductAll } = useSelector((state) => ({
-    objProductAll: state.actionProductAll.objProductAll,
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  const [loading, setLoading] = useState(null);
+  const { objProductActivity } = useSelector((state) => ({
+    objProductActivity: state.actionProduct.objProductActivity,
   }));
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    loadDataBestsaler();
+    loadDataPopularsaler();
+    // loadDataPromotions();
+  }, []);
 
-  const [stateObj, setStateObj] = useState([
-    {
-      title: "",
-      detail: "",
-    },
-  ]);
+  // Best selling
+  const [listBestsale, setListBestsale] = useState(defalutBestsaleProduct);
+  const loadDataBestsaler = async () => {
+    await axios
+      .get(API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+          // "X-localization": locale,
+        },
+        params: {
+          page: 1,
+        },
+      })
+      .then(function (response) {
+        var lstBestSale = response.data.data.product_lists;
+        let newlstBestsale = [];
+        for (let i = 0; i < 4; i++) {
+          newlstBestsale.push(lstBestSale[i]);
+        }
+        setListBestsale(newlstBestsale);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const renderBestsaler = ({ item }) => {
+    const selectProductBestsale = async (item) => {
+      setLoading(true);
+      await axios
+        .get(API_URL.PRODUCT_SEARCH_HD_API + item.id, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        })
+        .then(function (response) {
+          let newObj = Object.assign({}, objProductActivity);
+          newObj.FLASHSALE = false;
+          newObj.product_id = response.data.data.id;
+
+          newObj.TITLE =
+            locale == "th"
+              ? response.data.data.name_th
+              : response.data.data.name_en;
+          if (locale == "th") {
+            newObj.DETAIL = response.data.data.description_th;
+          } else {
+            newObj.DETAIL = response.data.data.description_en;
+          }
+          newObj.IMAGE = rootImage + response.data.data.image;
+          newObj.PRICE = response.data.data.price;
+          newObj.product_full_price = response.data.data.full_price;
+          newObj.quantity = 1;
+          newObj.discount = 0;
+          if (locale == "th") {
+            newObj.product_info_th = response.data.data.info_th;
+          } else {
+            newObj.product_info_th = response.data.data.info_en;
+          }
+          newObj.product_favorite = response.data.data.favorite;
+
+          props.setObjProductActivity(newObj);
+          setLoading(false);
+
+          props.navigation.navigate("Products");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+    };
+    return (
+      <Block row style={{ marginTop: 10, marginLeft: 11 }} key={item.id}>
+        <TouchableOpacity onPress={() => selectProductBestsale(item)}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={pdStyle.imageProduct}
+          />
+          <Block flex space="between" flex style={pdStyle.productDescription}>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 15,
+              }}
+            >
+              {locale == "th" ? item.name_th : item.name_en}
+            </Text>
+            <Block
+              style={{ borderBottomWidth: 1, borderBottomColor: "#e0e0e0" }}
+            ></Block>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 17,
+              }}
+            >
+              ราคา : {"฿"}
+              {commaNumber(parseFloat(item.price).toFixed(2))}
+            </Text>
+          </Block>
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+
+  // Popular selling
+  const [listPopularSale, setListPopularSale] = useState(defalutPopularProduct);
+  const loadDataPopularsaler = async () => {
+    await axios
+      .get(API_URL.POPULARITY_PRODUCT_LISTVIEW_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+          "X-localization": locale,
+        },
+        params: {
+          page: 1,
+        },
+      })
+      .then(function (response) {
+        let lstPopular = response.data.data.product_lists;
+        let newlstPopular = [];
+        for (let i = 0; i < 4; i++) {
+          newlstPopular.push(lstPopular[i]);
+        }
+        setListPopularSale(lstPopular);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const renderPopularsaler = ({ item }) => {
+    const selectProductPopulatrity = async (item) => {
+      setLoading(true);
+      await axios
+        .get(API_URL.PRODUCT_SEARCH_HD_API + item.id, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        })
+        .then(function (response) {
+          let newObj = Object.assign({}, objProductActivity);
+          newObj.FLASHSALE = false;
+          newObj.product_id = response.data.data.id;
+
+          newObj.TITLE =
+            locale == "th"
+              ? response.data.data.name_th
+              : response.data.data.name_en;
+          if (locale == "th") {
+            newObj.DETAIL = response.data.data.description_th;
+          } else {
+            newObj.DETAIL = response.data.data.description_en;
+          }
+          newObj.IMAGE = rootImage + response.data.data.image;
+          newObj.PRICE = response.data.data.price;
+          newObj.product_full_price = response.data.data.full_price;
+          newObj.quantity = 1;
+          newObj.discount = 0;
+          if (locale == "th") {
+            newObj.product_info_th = response.data.data.info_th;
+          } else {
+            newObj.product_info_th = response.data.data.info_en;
+          }
+          newObj.product_favorite = response.data.data.favorite;
+
+          setLoading(false);
+          props.setObjProductActivity(newObj);
+          props.navigation.navigate("Products");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+    };
+    return (
+      <Block row style={{ marginTop: 10, marginLeft: 8 }} key={item.id}>
+        <TouchableOpacity onPress={() => selectProductPopulatrity(item)}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={pdStyle.imageProduct}
+          />
+          <Block flex style={pdStyle.productDescription}>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 15,
+              }}
+            >
+              {locale == "th" ? item.name_th : item.name_en}
+            </Text>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 17,
+                marginTop: 10,
+                borderTopWidth: 1,
+                borderTopColor: "#e0e0e0",
+              }}
+            >
+              ราคา : {"฿"}
+              {commaNumber(parseFloat(item.price).toFixed(2))}
+            </Text>
+          </Block>
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+
+  // Popular selling
+  const [listPromotions, setListPromotions] = useState(
+    defalutPromotionsProduct
+  );
+  const loadDataPromotions = async () => {
+    await axios
+      .get(API_URL.PROMOTIONS_LISTVIEW_HD_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+          "X-localization": locale,
+        },
+        params: {
+          page: 1,
+        },
+      })
+      .then(function (response) {
+        let lstPromotions = response.data.data.promotions_detail_lists;
+        let newlstPromotions = [];
+        for (let i = 0; i < 4; i++) {
+          newlstPromotions.push(lstPromotions[i]);
+        }
+        setListPromotions(newlstPromotions);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const renderPromotions = ({ item }) => {
+    const selectProductPromotions = async (item) => {
+      setLoading(true);
+      await axios
+        .get(API_URL.PROMOTIONS_SEARCH_HD_API + item.id, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        })
+        .then(function (response) {
+          let newObj = Object.assign({}, objProductActivity);
+          newObj.FLASHSALE = false;
+          newObj.product_id = response.data.data.id;
+
+          newObj.TITLE =
+            locale == "th"
+              ? response.data.data.name_th
+              : response.data.data.name_en;
+          if (locale == "th") {
+            newObj.DETAIL = response.data.data.description_th;
+          } else {
+            newObj.DETAIL = response.data.data.description_en;
+          }
+          newObj.IMAGE = rootImage + response.data.data.image;
+          newObj.PRICE = response.data.data.price;
+          newObj.product_full_price = response.data.data.full_price;
+          newObj.quantity = 1;
+          newObj.discount = 0;
+          if (locale == "th") {
+            newObj.product_info_th = response.data.data.info_th;
+          } else {
+            newObj.product_info_th = response.data.data.info_en;
+          }
+          newObj.product_favorite = response.data.data.favorite;
+
+          setLoading(false);
+          props.setObjProductActivity(newObj);
+          props.navigation.navigate("Products");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+    };
+    return (
+      <Block row style={{ marginTop: 10, marginLeft: 7 }} key={item.id}>
+        <TouchableOpacity onPress={() => selectProductPromotions(item)}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={pdStyle.imageProduct}
+          />
+          <Block flex style={pdStyle.productDescription}>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 15,
+              }}
+            >
+              {locale == "th" ? item.name_th : item.name_en}
+            </Text>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 17,
+                marginTop: 10,
+                borderTopWidth: 1,
+                borderTopColor: "#e0e0e0",
+              }}
+            >
+              ราคา : {"฿"}
+              {commaNumber(parseFloat(item.price).toFixed(2))}
+            </Text>
+          </Block>
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+
+  //#region Translate
+  var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
+  var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
+  var PROMOTION_PRODUCT = formatTr("PROMOTION_PRODUCT").toString();
+  var VIEW_ALL = formatTr("VIEW_ALL").toString();
+  //#endregion
 
   return (
     <>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={{ backgroundColor: "white" }}
-      >
-        {/* Image Promotion */}
-        <Image
-          source={require("../../assets/images/HowTo/banner-1.jpg")}
-          style={{ width: width, height: 350 }}
-        />
-        {/* Best seller product */}
-        <Block flex style={styles.textContainerBlocks1}>
-          <Text
-            style={{
-              fontSize: 25,
-              color: "white",
-              marginTop: 20,
-              fontFamily: "kanitRegular",
-            }}
-          >
-            {formatTr("GOOD_PRODUCT")}
-          </Text>
-          <Block flex style={{ marginTop: 25 }}>
-            <Block flex style={styles.containerBlock}>
-              <Block flex row>
-                <Product
-                  product={products[7]}
-                  style={{ marginRight: theme.SIZES.BASE }}
-                />
-                <Product product={products[5]} />
-              </Block>
-            </Block>
-            <Block flex style={styles.containerBlock}>
-              <Block flex row>
-                <Product
-                  product={products[6]}
-                  style={{ marginRight: theme.SIZES.BASE }}
-                />
-                <Product product={products[8]} />
-              </Block>
-            </Block>
-          </Block>
-        </Block>
-        {/* Popular product */}
-        <Block flex style={styles.textContainerBlock2}>
-          <Text style={{ fontSize: 25, fontFamily: "kanitRegular" }}>
-            {formatTr("POPULAR_PRODUCT")}
-          </Text>
-          <Block
-            flex
-            style={{
-              marginTop: 25,
-            }}
-          >
-            <Block flex style={styles.containerBlock}>
-              <Block flex row>
-                <Product
-                  product={products[1]}
-                  style={{ marginRight: theme.SIZES.BASE }}
-                />
-                <Product product={products[2]} />
-              </Block>
-            </Block>
-          </Block>
-          <Block flex style={styles.containerBlock}>
-            <Block flex row>
-              <Product
-                product={products[3]}
-                style={{ marginRight: theme.SIZES.BASE }}
-              />
-              <Product product={products[4]} />
-            </Block>
-          </Block>
-        </Block>
-        {/* Popular Promotion */}
-        <Block flex style={styles.textContainerBlock2}>
-          <Text style={{ fontSize: 25, fontFamily: "kanitRegular" }}>
-            {formatTr("PROMOTION_PRODUCT")}
-          </Text>
-          <Block
-            flex
-            style={{
-              marginTop: 25,
-            }}
-          >
-            <Block flex style={styles.containerBlock}>
-              <Block flex row>
-                <Product
-                  product={products[1]}
-                  style={{ marginRight: theme.SIZES.BASE }}
-                />
-                <Product product={products[2]} />
-              </Block>
-            </Block>
-          </Block>
-          <Block flex style={styles.containerBlock}>
-            <Block flex row>
-              <Product
-                product={products[3]}
-                style={{ marginRight: theme.SIZES.BASE }}
-              />
-              <Product product={products[4]} />
-            </Block>
-          </Block>
-          <TouchableOpacity
-            onPress={() => props.navigation.navigate("Promotions")}
-          >
-            <Text
-              style={{
-                alignSelf: "center",
-                marginTop: 10,
-                color: "black",
-                fontFamily: "kanitRegular",
-                borderBottomWidth: 5,
-                borderBottomColor: "#ff002f",
-                borderRadius: 2,
+      <Block flex center style={{ width: width }}>
+        <View style={{ backgroundColor: "white" }}>
+          <SafeAreaView style={{ flex: 1 }}>
+            <SectionList
+              stickySectionHeadersEnabled={false}
+              sections={PRODUCT_LIST}
+              renderSectionHeader={() => (
+                <>
+                  {/* Image Promotion */}
+                  <Image
+                    source={require("../../assets/images/HowTo/banner-1.jpg")}
+                    style={{ width: width, height: 320 }}
+                  />
+
+                  {/* Best seller product */}
+                  <Block flex style={styles.textContainerBlocks1}>
+                    <Block style={{ alignSelf: "center" }}>
+                      <Text
+                        style={{
+                          fontSize: 27,
+                          color: "white",
+                          marginTop: 20,
+                          fontFamily: "kanitRegular",
+                          textAlign: "center",
+                        }}
+                      >
+                        {GOOD_PRODUCT}
+                      </Text>
+                    </Block>
+                    <FlatList
+                      data={listBestsale}
+                      style={styles.containers}
+                      renderItem={renderBestsaler}
+                      numColumns={2}
+                      keyExtractor={(item) => item.id.toString()}
+                      listKey={(item) => item.id.toString()}
+                    />
+                  </Block>
+
+                  {/* Popular product */}
+                  <Block flex style={styles.textContainerBlock2}>
+                    <Block style={{ alignSelf: "center" }}>
+                      <Text
+                        style={{
+                          fontSize: 25,
+                          fontFamily: "kanitRegular",
+                          textAlign: "center",
+                        }}
+                      >
+                        {POPULAR_PRODUCT}
+                      </Text>
+                    </Block>
+                    <FlatList
+                      data={listPopularSale}
+                      style={styles.containers}
+                      renderItem={renderPopularsaler}
+                      numColumns={2}
+                      keyExtractor={(item) => item.id.toString()}
+                      listKey={(item) => item.id.toString()}
+                    />
+                  </Block>
+
+                  {/* Promotion product */}
+                  <Block flex style={styles.textContainerBlock3}>
+                    <Block style={{ alignSelf: "center" }}>
+                      <Text
+                        style={{
+                          fontSize: 25,
+                          fontFamily: "kanitRegular",
+                          textAlign: "center",
+                          marginTop: 20,
+                        }}
+                      >
+                        {PROMOTION_PRODUCT}
+                      </Text>
+                    </Block>
+                    <FlatList
+                      data={listPromotions}
+                      style={styles.containers}
+                      renderItem={renderPromotions}
+                      numColumns={2}
+                      keyExtractor={(item) => item.id.toString()}
+                      listKey={(item) => item.id.toString()}
+                    />
+                    <TouchableOpacity
+                      style={{
+                        marginBottom: 25,
+                        marginTop: 10,
+                        alignSelf: "center",
+                      }}
+                      onPress={() => props.navigation.navigate("Promotions")}
+                    >
+                      <Text
+                        style={{
+                          marginTop: 10,
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          borderBottomWidth: 5,
+                          borderBottomColor: "#ff002f",
+                          borderRadius: 2,
+                          textAlign: "center",
+                        }}
+                      >
+                        {VIEW_ALL + " >"}
+                      </Text>
+                    </TouchableOpacity>
+                  </Block>
+                </>
+              )}
+              renderSectionFooter={() => <>{<WangdekInfo />}</>}
+              renderItem={({ item, section }) => {
+                if (section !== null) {
+                  return null;
+                }
+                return <ListItem item={item} />;
               }}
-            >
-              {formatTr("VIEW_ALL") + " >"}
-            </Text>
-          </TouchableOpacity>
-        </Block>
-        <WangdekInfo />
-      </ScrollView>
+            />
+          </SafeAreaView>
+        </View>
+      </Block>
+      <ModalLoading loading={loading} />
     </>
   );
 }
 
-export default connect(null, ActionProductAll.actions)(ProductAll);
+const mapActions = {
+  //Default Actions
+  setObjProductAll: ActionProductAll.setObjProductAll,
+
+  //Product Detail
+  setObjProductActivity: ActionProduct.setObjProductActivity,
+  clearObjProductActivity: ActionProduct.clearObjProductActivity,
+  setListTrProductActivity: ActionProduct.setListTrProductActivity,
+
+  //Promotions Detail
+  setObjPromotions: ActionPromotions.setObjPromotions,
+  clearObjPromotions: ActionPromotions.clearObjPromotions,
+  setListTrPromotions: ActionPromotions.setListTrPromotions,
+};
+
+export default connect(null, mapActions)(ProductAll);
 
 const styles = StyleSheet.create({
   container: {
@@ -184,19 +584,26 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   textContainerBlocks1: {
-    alignItems: "center",
-    alignSelf: "center",
+    alignItems: "flex-start",
     backgroundColor: "#00d184",
-    padding: 5,
-    // marginTop: 10,
+    marginTop: 0,
+    width: width,
   },
   textContainerBlock2: {
-    alignItems: "center",
-    alignSelf: "center",
+    alignItems: "flex-start",
     backgroundColor: "#ffffff",
     marginTop: 25,
     padding: 5,
     marginBottom: 25,
+    width: width,
+  },
+  textContainerBlock3: {
+    alignItems: "flex-start",
+    backgroundColor: "#f0f0f0",
+    marginTop: 25,
+    padding: 5,
+    marginBottom: 25,
+    width: width,
   },
   imageProduct: {
     resizeMode: "cover",
@@ -241,3 +648,65 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
 });
+
+const pdStyle = StyleSheet.create({
+  image: {
+    borderRadius: 4,
+    marginTop: -20,
+  },
+  textContainerBlock1: {
+    padding: 5,
+    flexWrap: "wrap",
+  },
+  imageProduct: {
+    resizeMode: "cover",
+    width: 180,
+    height: 150,
+    borderTopRightRadius: 4,
+    borderTopLeftRadius: 4,
+  },
+  productText: {
+    width: 180,
+    height: 80,
+  },
+  productDescription: {
+    width: 180,
+    height: 80,
+    padding: 10,
+    backgroundColor: "white",
+    borderBottomEndRadius: 3,
+    borderBottomLeftRadius: 3,
+    shadowColor: theme.COLORS.BLACK,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    elevation: 2,
+  },
+  item: {
+    backgroundColor: "#4D243D",
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+    margin: 5,
+    height: width / 3, // approximate a square
+  },
+  itemInvisible: {
+    backgroundColor: "transparent",
+  },
+  itemText: {
+    color: "#fff",
+  },
+});
+
+const PRODUCT_LIST = [
+  {
+    title: "Discount",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
+    ],
+  },
+];

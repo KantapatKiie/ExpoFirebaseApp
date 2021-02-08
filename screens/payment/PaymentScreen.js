@@ -45,7 +45,7 @@ function PaymentScreen(props) {
         showsVerticalScrollIndicator={false}
       >
         {/* Title */}
-        <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
+        <TouchableOpacity onPress={() => props.navigation.navigate("Flash Sale")}>
         <Block
           row
           style={{

@@ -6,7 +6,7 @@ import {
   FlatList,
   StyleSheet,
   Dimensions,
-  ScrollView,
+  SectionList,
   Modal,
   TouchableOpacity,
 } from "react-native";
@@ -25,11 +25,13 @@ import { Button } from "react-native-elements";
 import commaNumber from "comma-number";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
-import ModalLoading from "../../components/ModalLoading";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+// import ModalLoading from "../../components/ModalLoading";
 
 const { height, width } = Dimensions.get("screen");
 const token = getToken();
-const rootImage = "http://10.0.1.37:8080";
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://newpclinic.com/wd";
 
 function OrderScreen(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -46,9 +48,18 @@ function OrderScreen(props) {
     listTrCartScreen: state.actionCart.listTrCartScreen,
   }));
 
+  const {  objUseCoupon,objUseDelivery,objUseAddressDelivery } = useSelector((state) => ({
+    objUseCoupon: state.actionOrder.objUseCoupon,
+    objUseDelivery: state.actionOrder.objUseDelivery,
+    objUseAddressDelivery: state.actionOrder.objUseAddressDelivery,
+  }));
+
   useEffect(() => {
+    AsyncStorage["ListTrCartScreen"] = listTrCartScreen;
     // props.clearObjOrderScreen();
   }, []);
+
+  console.log(AsyncStorage["ListTrCartScreen"])
 
   //#region modalConfirm
   const [modalVisible, setModalVisible] = useState(false);
@@ -110,7 +121,7 @@ function OrderScreen(props) {
     </Modal>
   );
   //#endregion
-  
+
   // Order List
   const renderOrderLists = ({ item }) => {
     return (
@@ -136,7 +147,7 @@ function OrderScreen(props) {
             </Block>
           </Block>
         </Block>
-        {/* Count */}
+        {/* Price */}
         <Block row style={{ margin: 15, alignSelf: "center" }}>
           <Block style={{ width: "55%" }}>
             <Text style={styles.fontPriceProductFullPrice}>
@@ -154,96 +165,115 @@ function OrderScreen(props) {
   };
   return (
     <>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Title */}
-        <TouchableOpacity onPress={() => props.navigation.navigate("Cart")}>
-          <Block row style={styles.container}>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-              }}
-            >
-              {"<  "}คำสั่งซื้อ
-            </Text>
-          </Block>
-        </TouchableOpacity>
+      <SafeAreaView style={{ flex: 1 }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={CART_ORDERS_LIST}
+          renderSectionHeader={() => (
+            <>
+              {/* Title */}
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate("Cart")}
+              >
+                <Block row style={styles.container}>
+                  <Text
+                    style={{
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      fontSize: 18,
+                    }}
+                  >
+                    {"<  "}คำสั่งซื้อ
+                  </Text>
+                </Block>
+              </TouchableOpacity>
 
-        {/* Product List */}
-        <SafeAreaView>
-          <FlatList
-            data={listTrCartScreen}
-            style={styles.containers}
-            renderItem={renderOrderLists}
-            numColumns={1}
-            keyExtractor={(item) => item.cart_id.toString()}
-          />
-        </SafeAreaView>
+              {/* Product List */}
+              <FlatList
+                data={listTrCartScreen < 1 ? AsyncStorage["ListTrCartScreen"] : listTrCartScreen}
+                style={styles.containers}
+                renderItem={renderOrderLists}
+                numColumns={1}
+                keyExtractor={(item) => item.cart_id.toString()}
+              />
 
-        {/* List Other */}
-        {infoItem.map((item) => (
-          <Block style={styles.blockHeaderInfo} key={item.key}>
-            <TouchableOpacity
-              onPress={() => props.navigation.navigate(item.page)}
-            >
-              <Block row middle space="between" style={{ paddingTop: 7 }}>
-                <Text
-                  style={{
-                    textAlign: "left",
-                    color: "black",
-                    fontSize: 17,
-                    fontFamily: "kanitRegular",
-                  }}
-                >
-                  {item.text}
-                </Text>
-                <Icon
-                  name="angle-right"
-                  family="font-awesome"
-                  style={{ paddingRight: 5 }}
+              {/* List Other */}
+              <Text>{objUseDelivery.id}</Text>
+              {infoItem.map((item) => (
+                <Block style={styles.blockHeaderInfo} key={item.key}>
+                  <TouchableOpacity
+                    onPress={() => props.navigation.navigate(item.page)}
+                  >
+                    <Block row middle space="between" style={{ paddingTop: 7 }}>
+                      <Text
+                        style={{
+                          textAlign: "left",
+                          color: "black",
+                          fontSize: 17,
+                          fontFamily: "kanitRegular",
+                        }}
+                      >
+                        {item.text}
+                      </Text>
+                      <Icon
+                        name="angle-right"
+                        family="font-awesome"
+                        style={{ paddingRight: 5 }}
+                      />
+                    </Block>
+                  </TouchableOpacity>
+                </Block>
+              ))}
+
+              {/* Button */}
+              <Block
+                row
+                style={{
+                  paddingTop: 40,
+                  paddingBottom: 40,
+                  alignSelf: "center",
+                }}
+              >
+                <Button
+                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                  title={"ซื้อสินค้าเพิ่มเติม"}
+                  type="solid"
+                  containerStyle={styles.blockButton1}
+                  buttonStyle={styles.buttonStyle1}
+                  onPress={() => props.navigation.navigate("Flash Sale")}
+                />
+                <Button
+                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                  title={"ดำเนินการต่อ"}
+                  type="solid"
+                  containerStyle={styles.blockButton2}
+                  buttonStyle={styles.buttonStyle2}
+                  onPress={() => props.navigation.navigate("Order Status")}
                 />
               </Block>
-            </TouchableOpacity>
-          </Block>
-        ))}
+            </>
+          )}
+          renderSectionFooter={() => <>{<WangdekInfo />}</>}
+          renderItem={() => {
+            return null;
+          }}
+        />
+      </SafeAreaView>
 
-        {/* Button */}
-        <Block
-          row
-          style={{ paddingTop: 40, paddingBottom: 40, alignSelf: "center" }}
-        >
-          <Button
-            titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-            title={"ซื้อสินค้าเพิ่มเติม"}
-            type="solid"
-            containerStyle={styles.blockButton1}
-            buttonStyle={styles.buttonStyle1}
-            onPress={() => props.navigation.navigate("Home")}
-          />
-          <Button
-            titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-            title={"ดำเนินการต่อ"}
-            type="solid"
-            containerStyle={styles.blockButton2}
-            buttonStyle={styles.buttonStyle2}
-            onPress={() => props.navigation.navigate("Order Status")}
-          />
-        </Block>
-
-        <WangdekInfo />
-      </ScrollView>
       {modal}
     </>
   );
 }
 
-
 const mapActions = {
   setobjOrderScreen: ActionOrder.setobjOrderScreen,
   clearobjOrderScreen: ActionOrder.clearobjOrderScreen,
   setListTrOrder: ActionOrder.setListTrOrder,
-  
+  //option ActionOrder
+  setObjUseCoupon: ActionOrder.setObjUseCoupon,
+  setObjUseDelivery: ActionOrder.setObjUseDelivery,
+  setObjUseAddressDelivery: ActionOrder.setObjUseAddressDelivery,
+
   setObjCartScreen: ActionCart.setObjCartScreen,
   clearObjCartScreen: ActionCart.clearObjCartScreen,
   setListTrCartScreen: ActionCart.setListTrCartScreen,
@@ -394,5 +424,18 @@ const infoItem = [
     key: "3",
     text: "ที่อยู่ในการจัดส่ง",
     page: "Use Address Delivery",
+  },
+];
+
+const CART_ORDERS_LIST = [
+  {
+    title: "Mock",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
+    ],
   },
 ];

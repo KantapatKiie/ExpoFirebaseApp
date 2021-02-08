@@ -31,16 +31,23 @@ import { getToken } from "../../store/mock/token";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
-const rootImage = "http://10.0.1.37:8080";
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://newpclinic.com/wd";
 
-const defaultSocialsMedia =[
+const defaultSocialsMedia = [
   {
     id: 1,
     name: "facebook",
     url: "https://www.facebook.com/xxx",
-    image: "/storage/24/fb-share.png"
+    image: "/storage/24/fb-share.png",
   },
-]
+  {
+    id: 2,
+    name: "line",
+    url: "#",
+    image: "/storage/25/line-share.png"
+  }
+];
 
 function ProductDetail(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -58,7 +65,7 @@ function ProductDetail(props) {
 
   useEffect(() => {
     loadDataSocialsMedia();
-  }, [dataSocials]);
+  }, []);
 
   // ReadMore
   const renderTruncatedFooter = (handlePress) => {
@@ -176,7 +183,7 @@ function ProductDetail(props) {
       });
   };
   const shareLinkSocials = (item) => {
-     Share.share(
+    Share.share(
       {
         title: "Share message website",
         message: "Message",
@@ -424,18 +431,23 @@ function ProductDetail(props) {
               แชร์ :
             </Text>
 
-            {dataSocials.map((item) => (
-              <TouchableOpacity onPress={() => shareLinkSocials(item)} key={item.id}>
-                <Image
-                  source={{ uri: rootImage + item.image }}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    marginLeft: 12,
-                  }}
-                />
-              </TouchableOpacity>
-            ))}
+            {dataSocials !== null
+              ? dataSocials.map((item) => (
+                  <TouchableOpacity
+                    onPress={() => shareLinkSocials(item)}
+                    key={item.id}
+                  >
+                    <Image
+                      source={{ uri: rootImage + item.image }}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        marginLeft: 12,
+                      }}
+                    />
+                  </TouchableOpacity>
+                ))
+              : null}
           </Block>
 
           {/* Button */}

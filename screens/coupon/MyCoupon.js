@@ -79,6 +79,7 @@ function MyCoupon(props) {
           </Block>
         </Block>
         {/* Coupon */}
+        <Block style={{marginBottom: 30}}>
         {menu1 ? (
           <Block style={{ backgroundColor: "white" }}>
             <Text
@@ -134,6 +135,7 @@ function MyCoupon(props) {
             </Block>
           </Block>
         )}
+        </Block>
         <WangdekInfo />
       </ScrollView>
     </>

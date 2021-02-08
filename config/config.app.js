@@ -2,8 +2,9 @@ const { REACT_NATIVE_APP_URL_API, REACT_NATIVE_APP_DELAY_SEARCH } = process.env;
 
 export const DELAY_SEARCH = REACT_NATIVE_APP_DELAY_SEARCH;
 
-// const { REACT_NATIVE_APP_AUTH_API } = "http://wangdek.am2bmarketing.co.th/api/v1"
-const REACT_NATIVE_APP_API = "http://10.0.1.37:8080/api/v1";
+// const { REACT_NATIVE_APP_AUTH_API } = "http://wangdek.am2bmarketing.co.th/api/v1" 
+// const REACT_NATIVE_APP_API = "http://10.0.1.37:8080/api/v1";  //Local Server
+const REACT_NATIVE_APP_API = "http://newpclinic.com/wd/api/v1";
 
 export const API_URL = {
   //AUTHENTICATE
@@ -29,7 +30,12 @@ export const API_URL = {
   POPULARITY_PRODUCT_LISTVIEW_API : REACT_NATIVE_APP_API + "/products/popularity",
   CATEGORY_PRODUCT_LISTVIEW_API : REACT_NATIVE_APP_API + "/products/category",
   CATEGORY_PRODUCT_SEARCH_API : REACT_NATIVE_APP_API + "/products/category/",
+  BRANDS_PRODUCT_LISTVIEW_API : REACT_NATIVE_APP_API + "/brands/",
   PRODUCT_SEARCH_HD_API : REACT_NATIVE_APP_API + "/products/",
+
+  //PROMOTION
+  PROMOTIONS_LISTVIEW_HD_API : REACT_NATIVE_APP_API + "/promotions",
+  PROMOTIONS_SEARCH_HD_API : REACT_NATIVE_APP_API + "/promotions/",
 
   // CART_API
   ADD_CART_ORDER_LISTVIEW_API: REACT_NATIVE_APP_API + "/cart",
@@ -44,4 +50,6 @@ export const API_URL = {
   CHECK_ORDER_PAYMENT_API: REACT_NATIVE_APP_API + "/payments/check/",
   PAYMENTS_TRANSFER_API: REACT_NATIVE_APP_API + "/payments",
 
+  //LOGISTICS
+  LOGISTICS_LIST_HD_API: REACT_NATIVE_APP_API + "/logistics",
 };

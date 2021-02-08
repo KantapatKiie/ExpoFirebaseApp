@@ -27,7 +27,8 @@ import ModalLoading from "../../components/ModalLoading";
 
 const { width } = Dimensions.get("screen");
 let token = getToken();
-const rootImage = "http://10.0.1.37:8080";
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://newpclinic.com/wd";
 
 const defaultListProductType = [
   {
@@ -54,12 +55,12 @@ function ProductType(props) {
     objProductType: state.actionProductType.objProductType,
     listTrProductType: state.actionProductType.listTrProductType,
   }));
-  
+
   const [loading, setLoading] = useState(null);
   const [stateObj, setStateObj] = useState(defaultListProductType);
 
   useEffect(() => {
-      loadDataProductListType();
+    loadDataProductListType();
   }, [listTrProductType]);
 
   const loadDataProductListType = async () => {
@@ -80,7 +81,7 @@ function ProductType(props) {
             page: 1,
           },
         })
-        .then(async (response) => {
+        .then(function (response) {
           setLoading(false);
           setStateObj(response.data.data.product_lists);
         })
@@ -152,9 +153,7 @@ function ProductType(props) {
 
   return (
     <>
-      <ScrollView
-        style={{ backgroundColor: "white" }}
-      >
+      <ScrollView style={{ backgroundColor: "white" }}>
         {/* Title */}
         <TouchableOpacity onPress={() => props.navigation.navigate("Sign In")}>
           <Block
@@ -255,8 +254,6 @@ const mapActions = {
 };
 
 export default connect(null, mapActions)(ProductType);
-
-// export default connect(null, ActionProduct.actions)(ProductType);
 
 const styles = StyleSheet.create({
   container: {

@@ -3,28 +3,33 @@ import { connect, useSelector } from "react-redux";
 import {
   FlatList,
   Image,
+  View,
+  SectionList,
+  SafeAreaView,
   ImageBackground,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   Dimensions,
   ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import * as ActionFavoriteView from "../actions/action-favorite-view/ActionFavoriteView";
 import { Block, Text, theme } from "galio-framework";
 import { formatTr } from "../i18n/I18nProvider";
 import WangdekInfo from "../components/WangdekInfo";
-import { SafeAreaView } from "react-native";
 import { API_URL } from "../config/config.app";
 import commaNumber from "comma-number";
 import { getToken } from "../store/mock/token";
 import ModalLoading from "../components/ModalLoading";
 
-const token = getToken();
 const { width } = Dimensions.get("screen");
-const rootImage = "http://10.0.1.37:8080";
+const token = getToken();
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://newpclinic.com/wd";
 
 const defaultListFavorite = [
   {
@@ -41,10 +46,18 @@ const defaultListFavorite = [
 ];
 
 function FavoriteView(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  var LOAD_MORE = formatTr("LOAD_MORE").toString();
+  const [loading, setLoading] = useState(null);
+  
   const { objFavoriteView } = useSelector((state) => ({
     objFavoriteView: state.actionFavoriteView.objFavoriteView,
   }));
-  const locale = useSelector(({ i18n }) => i18n.lang);
 
   useEffect(() => {
     setNumList(2);
@@ -56,7 +69,6 @@ function FavoriteView(props) {
   //List Favorite View
   const [numColumns] = useState(2);
   const [numList, setNumList] = useState(2);
-  const [loading, setLoading] = useState(null);
   const loadListFavorite = async () => {
     setStateObj("");
     setLoading(false);
@@ -99,7 +111,6 @@ function FavoriteView(props) {
         const newConcatState = stateObj.concat(
           response.data.data.product_lists
         );
-        console.log(newConcatState);
         setStateObj(newConcatState);
         setLoading(true);
       })
@@ -135,7 +146,7 @@ function FavoriteView(props) {
           },
         })
         .then(function (response) {
-          console.log(response.data);
+          // console.log(response.data);
         })
         .catch(function (error) {
           console.log(error);
@@ -196,7 +207,7 @@ function FavoriteView(props) {
               }}
             >
               ราคา : {"฿"}
-              {commaNumber(item.price)}
+              {commaNumber(parseFloat(item.price).toFixed(2))}
             </Text>
           </Block>
         </TouchableOpacity>
@@ -206,58 +217,66 @@ function FavoriteView(props) {
 
   return (
     <>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={{ backgroundColor: "white" }}
-      >
-        {/* Title */}
-        <TouchableOpacity onPress={() => props.navigation.navigate("Sign In")}>
-          <Block
-            row
-            style={{
-              paddingTop: 20,
-              paddingLeft: 20,
-              paddingBottom: 20,
-              backgroundColor: "white",
-              borderBottomWidth: 1,
-              borderBottomColor: "#e0e0e0",
-            }}
-          >
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-              }}
-            >
-              {"<  "}รายการโปรด
-            </Text>
-          </Block>
-        </TouchableOpacity>
-        {/* ListItem */}
-        <SafeAreaView>
-          <FlatList
-            data={stateObj}
-            style={styles.containers}
-            renderItem={renderProduct}
-            numColumns={numColumns}
-            keyExtractor={(item) => item.id.toString()}
-          />
-          <TouchableOpacity
-            onPress={loadMoreListProduct}
-            style={{ marginBottom: 30 }}
-          >
-            <Text
-              style={styles.loadMoreText}
-              size={14}
-              color={theme.COLORS.PRIMARY}
-            >
-              {formatTr("LOAD_MORE") + " >"}
-            </Text>
-          </TouchableOpacity>
-        </SafeAreaView>
-        <WangdekInfo />
-      </ScrollView>
+      <SafeAreaView style={{ flex: 1 }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={FAVORITE_LIST}
+          renderSectionHeader={() => (
+            <>
+              {/* Title */}
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate("Sign In")}
+              >
+                <Block
+                  row
+                  style={{
+                    paddingTop: 20,
+                    paddingLeft: 20,
+                    paddingBottom: 20,
+                    backgroundColor: "white",
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#e0e0e0",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      fontSize: 18,
+                    }}
+                  >
+                    {"<  "}รายการโปรด
+                  </Text>
+                </Block>
+              </TouchableOpacity>
+              {/* ListItem */}
+              <FlatList
+                data={stateObj}
+                style={styles.containers}
+                renderItem={renderProduct}
+                numColumns={numColumns}
+                keyExtractor={(item) => item.id.toString()}
+              />
+              <TouchableOpacity
+                onPress={loadMoreListProduct}
+                style={{ marginBottom: 30 }}
+              >
+                <Text
+                  style={styles.loadMoreText}
+                  size={14}
+                  color={theme.COLORS.PRIMARY}
+                >
+                  {LOAD_MORE + " >"}
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
+          renderSectionFooter={() => <>{<WangdekInfo />}</>}
+          renderItem={() => {
+            return null;
+          }}
+        />
+      </SafeAreaView>
       <ModalLoading loading={!loading} />
     </>
   );
@@ -277,7 +296,6 @@ const styles = StyleSheet.create({
   },
   textContainerBlock1: {
     padding: 9,
-    flexWrap: "wrap",
   },
   imageProduct: {
     resizeMode: "cover",
@@ -322,3 +340,16 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
 });
+
+const FAVORITE_LIST = [
+  {
+    title: "Mock",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
+    ],
+  },
+];

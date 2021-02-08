@@ -12,6 +12,7 @@ import {
   ImageBackground,
   Modal,
   ScrollView,
+  RefreshControl,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -33,11 +34,13 @@ import { getToken } from "../store/mock/token";
 import CountDownEvent from "../components/CountDownEvent";
 import commaNumber from "comma-number";
 import ModalLoading from "../components/ModalLoading";
+import { ToastAndroid } from "react-native";
 // import { useScrollToTop } from "@react-navigation/native";
 
 const { width } = Dimensions.get("screen");
 let token = getToken();
-const rootImage = "http://10.0.1.37:8080";
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://newpclinic.com/wd";
 
 const defalutCouponList = [
   {
@@ -94,6 +97,22 @@ function Home(props) {
     moment.locale("en-au");
   }
   const [loading, setLoading] = useState(null);
+  const [refreshingPage, setRefreshingPage] = useState(false);
+  const onRefreshPageNow = React.useCallback(() => {
+    const wait = (timeout) => {
+      return new Promise((resolve) => setTimeout(resolve, timeout));
+    };
+    setRefreshingPage(true);
+    wait(1000).then(() => {
+      loadDataFlashsale();
+      loadDataCoupon();
+      loadDataBestsaler();
+      loadDataPopularsaler();
+      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      setRefreshingPage(false);
+    });
+  }, []);
+
   const { objHomeHD } = useSelector((state) => ({
     objHomeHD: state.actionHomeHD.objHomeHD,
   }));
@@ -110,7 +129,7 @@ function Home(props) {
     loadDataCoupon();
     loadDataBestsaler();
     loadDataPopularsaler();
-  }, [countDownTime, couponList, listBestsale, listPopularSale]);
+  }, [countDownTime]);
 
   // Time Everthing
   let LeftTime = moment(new Date()).format("HH:mm");
@@ -136,8 +155,8 @@ function Home(props) {
       })
       .then(async (response) => {
         let objNew = Object.assign({}, objHomeHD);
-        let dateEnds = moment(response.data.data.end_at, "YYYY-MM-DD");
-        let dateTimeNow = moment(new Date(), "YYYY-MM-DD");
+        let dateEnds = moment(response.data.data.end_at, "YYYY-MM-DD HH:mm");
+        let dateTimeNow = moment(new Date(), "YYYY-MM-DD HH:mm");
         objNew.timeEnds = await dateEnds.diff(dateTimeNow, "times");
 
         setCountDownTime(objNew.timeEnds);
@@ -161,7 +180,7 @@ function Home(props) {
           "Content-Type": "application/json",
         },
       })
-      .then(async (response) => {
+      .then((response) => {
         setCouponList(response.data.data);
         props.setListCouponHD(response.data.data);
       })
@@ -199,18 +218,19 @@ function Home(props) {
           Accept: "application/json",
           Authorization: "Bearer " + (await token),
           "Content-Type": "application/json",
-          "X-localization": locale,
+          // "X-localization": locale,
         },
         params: {
           page: 1,
         },
       })
-      .then(async (response) => {
-        var lstBestSale = [];
+      .then(function (response) {
+        var lstBestSale = response.data.data.product_lists;
+        let newlstBestsale = [];
         for (let i = 0; i < 4; i++) {
-          lstBestSale.push(response.data.data.product_lists[i]);
+          newlstBestsale.push(lstBestSale[i]);
         }
-        setListBestsale(lstBestSale);
+        setListBestsale(newlstBestsale);
       })
       .catch(function (error) {
         console.log(error);
@@ -321,10 +341,11 @@ function Home(props) {
           page: 1,
         },
       })
-      .then(async (response) => {
-        var lstPopular = [];
+      .then(function (response) {
+        let lstPopular = response.data.data.product_lists;
+        let newlstPopular = [];
         for (let i = 0; i < 4; i++) {
-          lstPopular.push(response.data.data.product_lists[i]);
+          newlstPopular.push(lstPopular[i]);
         }
         setListPopularSale(lstPopular);
       })
@@ -599,6 +620,12 @@ function Home(props) {
             <SectionList
               stickySectionHeadersEnabled={false}
               sections={COUPON_LIST}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshingPage}
+                  onRefresh={onRefreshPageNow}
+                />
+              }
               renderSectionHeader={() => (
                 <>
                   {/* Festival */}
@@ -641,17 +668,19 @@ function Home(props) {
                 <>
                   {/* Best seller product */}
                   <Block flex style={styles.textContainerBlock1}>
-                    <Text
-                      style={{
-                        fontSize: 27,
-                        color: "white",
-                        marginTop: 20,
-                        fontFamily: "kanitRegular",
-                        textAlign: "center",
-                      }}
-                    >
-                      {GOOD_PRODUCT}
-                    </Text>
+                    <Block style={{ alignSelf: "center" }}>
+                      <Text
+                        style={{
+                          fontSize: 27,
+                          color: "white",
+                          marginTop: 20,
+                          fontFamily: "kanitRegular",
+                          textAlign: "center",
+                        }}
+                      >
+                        {GOOD_PRODUCT}
+                      </Text>
+                    </Block>
                     <FlatList
                       data={listBestsale}
                       style={styles.containers}
@@ -682,15 +711,17 @@ function Home(props) {
 
                   {/* Popular product */}
                   <Block flex style={styles.textContainerBlock2}>
-                    <Text
-                      style={{
-                        fontSize: 25,
-                        fontFamily: "kanitRegular",
-                        textAlign: "center",
-                      }}
-                    >
-                      {POPULAR_PRODUCT}
-                    </Text>
+                    <Block style={{ alignSelf: "center" }}>
+                      <Text
+                        style={{
+                          fontSize: 25,
+                          fontFamily: "kanitRegular",
+                          textAlign: "center",
+                        }}
+                      >
+                        {POPULAR_PRODUCT}
+                      </Text>
+                    </Block>
                     <FlatList
                       data={listPopularSale}
                       style={styles.containers}

@@ -3,11 +3,12 @@ import {
   Image,
   StyleSheet,
   Dimensions,
-  ScrollView,
+  SectionList,
   TouchableOpacity,
   SafeAreaView,
   FlatList,
   ToastAndroid,
+  RefreshControl,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -28,7 +29,8 @@ import ModalLoading from "../../components/ModalLoading";
 
 const { height, width } = Dimensions.get("screen");
 const token = getToken();
-const rootImage = "http://10.0.1.37:8080";
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://newpclinic.com/wd";
 
 const defaultCartListOrders = [
   {
@@ -55,6 +57,18 @@ function CartScreen(props) {
     moment.locale("en-au");
   }
   const [loading, setLoading] = useState(null);
+  const [refreshingPage, setRefreshingPage] = useState(false);
+  const onRefreshPageNow = React.useCallback(() => {
+    const wait = (timeout) => {
+      return new Promise((resolve) => setTimeout(resolve, timeout));
+    };
+    setRefreshingPage(true);
+    wait(1000).then(() => {
+      loadCartLists();
+      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      setRefreshingPage(false);
+    });
+  }, [listCarts]);
   // const { objCartScreen } = useSelector((state) => ({
   //   objCartScreen: state.actionCart.objCartScreen,
   // }));
@@ -188,82 +202,103 @@ function CartScreen(props) {
 
   const addCartListProducts = async () => {
     setLoading(true);
-      await axios({
-        method: "POST",
-        url: API_URL.SAVE_CART_ORDER_LISTVIEW_API,
-        headers: {
-          Accept: "*/*",
-          Authorization: "Bearer " + (await token),
-          "Content-Type": "application/json",
-          "X-localization": locale,
-        },
-        data: listCarts,
+    await axios({
+      method: "POST",
+      url: API_URL.SAVE_CART_ORDER_LISTVIEW_API,
+      headers: {
+        Accept: "*/*",
+        Authorization: "Bearer " + (await token),
+        "Content-Type": "application/json",
+        "X-localization": locale,
+      },
+      data: listCarts,
+    })
+      .then(function (response) {
+        props.setListTrCartScreen(listCarts);
+        setLoading(false);
+        props.navigation.navigate("Order Screen");
       })
-        .then(function (response) {
-          props.setListTrCartScreen(listCarts);
-          setLoading(false);
-          props.navigation.navigate("Order Screen");
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+      .catch(function (error) {
+        console.log(error);
+      });
     setLoading(false);
   };
 
   return (
     <>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Title */}
-        <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
-          <Block row style={styles.container}>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-              }}
-            >
-              {"<  "}ตะกร้าสินค้า
-            </Text>
-          </Block>
-        </TouchableOpacity>
+      <SafeAreaView style={{ flex: 1 }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={CART_SCREEN_LIST}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshingPage}
+              onRefresh={onRefreshPageNow}
+            />
+          }
+          renderSectionHeader={() => (
+            <>
+              {/* Title */}
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate("Flash Sale")}
+              >
+                <Block row style={styles.container}>
+                  <Text
+                    style={{
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      fontSize: 18,
+                    }}
+                  >
+                    {"<  "}ตะกร้าสินค้า
+                  </Text>
+                </Block>
+              </TouchableOpacity>
 
-        {/* Product List */}
-        <SafeAreaView>
-          <FlatList
-            data={listCarts}
-            style={styles.containers}
-            renderItem={renderCartLists}
-            numColumns={1}
-            keyExtractor={(item) => item.cart_id.toString()}
-          />
-        </SafeAreaView>
+              {/* Product List */}
+              <FlatList
+                data={listCarts}
+                style={styles.containers}
+                renderItem={renderCartLists}
+                numColumns={1}
+                keyExtractor={(item) => item.cart_id.toString()}
+              />
 
-        {/* Button */}
-        <Block
-          row
-          style={{ paddingTop: 40, paddingBottom: 40, alignSelf: "center" }}
-        >
-          <Button
-            titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-            title={"ซื้อสินค้าเพิ่มเติม"}
-            type="solid"
-            containerStyle={styles.blockButton1}
-            buttonStyle={styles.buttonStyle1}
-            onPress={() => props.navigation.navigate("Home")}
-          />
-          <Button
-            titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-            title={"ดำเนินการต่อ"}
-            type="solid"
-            containerStyle={styles.blockButton2}
-            buttonStyle={styles.buttonStyle2}
-            onPress={addCartListProducts}
-          />
-        </Block>
+              {/* Button */}
+              <Block
+                row
+                style={{
+                  paddingTop: 40,
+                  paddingBottom: 40,
+                  alignSelf: "center",
+                }}
+              >
+                <Button
+                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                  title={"ซื้อสินค้าเพิ่มเติม"}
+                  type="solid"
+                  containerStyle={styles.blockButton1}
+                  buttonStyle={styles.buttonStyle1}
+                  onPress={() => props.navigation.navigate("Flash Sale")}
+                />
+                <Button
+                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                  title={"ดำเนินการต่อ"}
+                  type="solid"
+                  containerStyle={styles.blockButton2}
+                  buttonStyle={styles.buttonStyle2}
+                  onPress={addCartListProducts}
+                />
+              </Block>
+            </>
+          )}
+          renderSectionFooter={() => <>{<WangdekInfo />}</>}
+          renderItem={() => {
+            return null;
+          }}
+        />
+      </SafeAreaView>
 
-        <WangdekInfo />
-      </ScrollView>
       <ModalLoading loading={loading} />
     </>
   );
@@ -339,3 +374,16 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
 });
+
+const CART_SCREEN_LIST = [
+  {
+    title: "Mock",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
+    ],
+  },
+];

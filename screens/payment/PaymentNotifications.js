@@ -22,12 +22,12 @@ import WangdekInfo from "../../components/WangdekInfo";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import DropDownPicker from "react-native-dropdown-picker";
-import * as DocumentPicker from "expo-document-picker";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
 import ModalLoading from "../../components/ModalLoading";
-import * as ExpoFileSystem from 'expo-file-system'
-import RNImageConverter from 'react-native-image-converter';
+import * as DocumentPicker from "expo-document-picker";
+import * as ExpoFileSystem from "expo-file-system";
+// import RNImageConverter from 'react-native-image-converter';
 
 const { width } = Dimensions.get("screen");
 let token = getToken();
@@ -47,7 +47,7 @@ function PaymentNotifications(props) {
 
   useEffect(() => {
     setObjSearch({
-      order_no: "",
+      order_no: "ORD-2020120010",
       fullname: "",
       telephone: "",
       email: "",
@@ -180,76 +180,75 @@ function PaymentNotifications(props) {
       quality: 1,
     });
 
-    // const path = result.uri.replace("file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540kiieky%252Fexpofirebase/DocumentPicker/", "");
-    // var binary = path.getAsBinary();
-
-    // const fileContent = await ExpoFileSystem.readAsStringAsync(path);
-    // const content = JSON.stringify(fileContent);
-
-    // console.log(content)
-    RNImageConverter.getJPEG(result.uri, (newFile) => {
-      console.log(newFile);
-    });
+    const path =
+      Platform.OS === "android"
+        ? result.uri
+        : result.uri.replace("file://", "");
 
     if (!result.cancelled) {
-      setImagePicker(result.uri);
+      setImagePicker(path);
+      
+      // console.log(`data:image/gif;base64,${imagePicker}`)
     } else {
       ToastAndroid.show("Not Seleted Images", ToastAndroid.SHORT);
     }
   };
-  
 
   const onPaymentTransfer = async () => {
     setLoading(true);
-    await axios({
-      method: "GET",
-      url: API_URL.CHECK_ORDER_PAYMENT_API,
-      headers: {
-        Accept: "*/*",
-        Authorization: "Bearer " + (await token),
-        // "Content-Type": "application/json",
-        "Content-Type": "multipart/form-data",
-        "X-localization": locale,
-      },
-      data: {
-        order: objSearch.order_no,
-      },
-    })
-      .then(async (response) => {
-        if (response.data.success !== true) {
-          setLoading(false);
-          ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
-        } else {
-          await axios({
-            method: "POST",
-            url: API_URL.PAYMENTS_TRANSFER_API,
-            headers: {
-              Accept: "*/*",
-              Authorization: "Bearer " + (await token),
-              // "Content-Type": "application/json",
-              "Content-Type": "multipart/form-data",
-              "X-localization": locale,
-            },
-            data: {
-              orders_code : objSearch.order_no,
-              bank_accounts_id  : (objSearch.bank_code).toString(),
-              fullname  : objSearch.fullname,
-              contact  : objSearch.telephone,
-              email  : objSearch.email,
-              payment_date  : moment(objSearch.transfer_date).format("YYYY-MM-DD"),
-              payment_time  : objSearch.transfer_time,
-              amount  : objSearch.money_transfer,
-              image  : imagePicker,
-            },
-          }).then(function (response) {
-            setLoading(false);
-            ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
-          });
-        }
+    await axios
+      .get(API_URL.CHECK_ORDER_PAYMENT_API + objSearch.order_no, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(function (response) {
+        console.log(response.data)
+        // const dataUpload = new FormData();
+        // if (response.data.success !== true) {
+        //   setLoading(false);
+        //   ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        // } else {
+        //   if (imagePicker != null) {
+        //     const fileToUpload = imagePicker;
+        //     dataUpload = new FormData();
+        //     dataUpload.append("name", "Image Upload");
+        //     dataUpload.append("file_attachment", fileToUpload);
+        //     console.log(dataUpload);
+        //   }
+        //   await axios({
+        //     method: "POST",
+        //     url: API_URL.PAYMENTS_TRANSFER_API,
+        //     headers: {
+        //       Accept: "*/*",
+        //       Authorization: "Bearer " + (await token),
+        //       // "Content-Type": "application/json",
+        //       "Content-Type": "multipart/form-data",
+        //       "X-localization": locale,
+        //     },
+        //     data: {
+        //       orders_code: objSearch.order_no,
+        //       bank_accounts_id: objSearch.bank_code.toString(),
+        //       fullname: objSearch.fullname,
+        //       contact: objSearch.telephone,
+        //       email: objSearch.email,
+        //       payment_date: moment(objSearch.transfer_date).format(
+        //         "YYYY-MM-DD"
+        //       ),
+        //       payment_time: objSearch.transfer_time,
+        //       amount: objSearch.money_transfer,
+        //       image: dataUpload,
+        //     },
+        //   }).then(function (response) {
+        //     setLoading(false);
+        //     ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+        //   });
+        // }
       })
       .catch(function (error) {
         console.log(error);
-        setLoading(false);
       });
     setLoading(false);
   };
@@ -580,7 +579,7 @@ function PaymentNotifications(props) {
             titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
             title={formatTr("CANCEL").toString()}
             type="solid"
-            onPress={() => props.navigation.navigate("Home")}
+            onPress={() => props.navigation.navigate("Flash Sale")}
             containerStyle={styles.blockButton1}
             buttonStyle={styles.buttonStyle1}
           />

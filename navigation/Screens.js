@@ -1075,9 +1075,9 @@ function OnboardingStack(props) {
   // }
   //#endregion
 
-  useEffect(() => {
-    LogBox.ignoreLogs(["VirtualizedLists should never be nested!"]);
-  }, [props]);
+  // useEffect(() => {
+  //   LogBox.ignoreLogs(["VirtualizedLists should never be nested!"]);
+  // }, [props]);
   return (
     <>
       <Stack.Navigator>

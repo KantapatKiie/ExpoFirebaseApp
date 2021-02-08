@@ -4,7 +4,8 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  SectionList,
+  View,
   Dimensions,
   SafeAreaView,
   FlatList,
@@ -47,9 +48,10 @@ function HistoryOrder(props) {
   } else {
     moment.locale("en-au");
   }
+  var LOAD_MORE = formatTr("LOAD_MORE").toString();
 
   useEffect(() => {
-    loadGistoryOrderList();
+    loadHistoryOrderList();
     setNumList(2);
     setObjSerach("");
   }, []);
@@ -83,7 +85,7 @@ function HistoryOrder(props) {
         console.log(error);
       });
   };
-  const loadGistoryOrderList = async () => {
+  const loadHistoryOrderList = async () => {
     setStateObj("");
     setLoading(false);
     await axios
@@ -174,13 +176,17 @@ function HistoryOrder(props) {
           let newObjStatus = Object.assign({}, stateObj);
           newObjStatus.status_th = item.status_th;
           newObjStatus.status_en = item.status_en;
-          props.setStatusObjins(newObjStatus)
+          props.setStatusObjins(newObjStatus);
 
           props.setObjOrderStatus(response.data.data.orders);
           props.setListLogisticOrderStatus(response.data.data.orders.logistics);
-        
-          let listCarts= [];
-          for (let i = 0; i < response.data.data.orders.carts_list.length; i++) {
+
+          let listCarts = [];
+          for (
+            let i = 0;
+            i < response.data.data.orders.carts_list.length;
+            i++
+          ) {
             listCarts.push(response.data.data.orders.carts_list[i]);
           }
           setLoading(true);
@@ -190,7 +196,7 @@ function HistoryOrder(props) {
           console.log(error);
           setLoading(true);
         });
-        setLoading(true);
+      setLoading(true);
     };
     const handleCancelOrder = () => {
       ToastAndroid.show(item.code + " is cancel", ToastAndroid.SHORT);
@@ -345,66 +351,77 @@ function HistoryOrder(props) {
 
   return (
     <>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={{ backgroundColor: "white" }}
-      >
-        {/* Title */}
-        <TouchableOpacity onPress={() => props.navigation.navigate("Sign In")}>
-          <Block
-            row
-            style={{
-              paddingTop: 20,
-              paddingLeft: 20,
-              paddingBottom: 20,
-              backgroundColor: "white",
-            }}
-          >
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-              }}
-            >
-              {"<  "}ประวัติการสั่งซื้อ
-            </Text>
-          </Block>
-        </TouchableOpacity>
+      <Block flex center style={{ width: width }}>
+        <View style={{ backgroundColor: "white" }}>
+          <SafeAreaView style={{ flex: 1 }}>
+            <SectionList
+              stickySectionHeadersEnabled={false}
+              sections={HISTORY_LIST}
+              renderSectionHeader={() => (
+                <>
+                  {/* Title */}
+                  <TouchableOpacity
+                    onPress={() => props.navigation.navigate("Sign In")}
+                  >
+                    <Block
+                      row
+                      style={{
+                        paddingTop: 20,
+                        paddingLeft: 20,
+                        paddingBottom: 20,
+                        backgroundColor: "white",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 18,
+                        }}
+                      >
+                        {"<  "}ประวัติการสั่งซื้อ
+                      </Text>
+                    </Block>
+                  </TouchableOpacity>
 
-        {/* Filter */}
-        <Searchbar
-          placeholder="ค้นหาคำสั่งซื้อ"
-          value={objSearch.SEARCH_ORDER}
-          onChange={onChangeSearch}
-          style={styles.search}
-          inputStyle={{ fontSize: 16, fontFamily: "kanitRegular" }}
-        />
-        {/* List order */}
-        <SafeAreaView>
-          <FlatList
-            data={stateObj}
-            style={styles.containers}
-            renderItem={renderProduct}
-            keyExtractor={(item) => item.id.toString()}
-          />
-          {/* Load more */}
-          <TouchableOpacity
-            onPress={loadMoreHistoryOrderList}
-            style={{ marginBottom: 25, marginTop: 15 }}
-          >
-            <Text
-              style={styles.loadMoreText}
-              size={14}
-              color={theme.COLORS.PRIMARY}
-            >
-              {formatTr("LOAD_MORE") + " >"}
-            </Text>
-          </TouchableOpacity>
-        </SafeAreaView>
-        
-        <WangdekInfo />
-      </ScrollView>
+                  {/* Filter */}
+                  <Searchbar
+                    placeholder="ค้นหาคำสั่งซื้อ"
+                    value={objSearch.SEARCH_ORDER}
+                    onChange={onChangeSearch}
+                    style={styles.search}
+                    inputStyle={{ fontSize: 16, fontFamily: "kanitRegular" }}
+                  />
+                  {/* List order */}
+                  <FlatList
+                    data={stateObj}
+                    style={styles.containers}
+                    renderItem={renderProduct}
+                    keyExtractor={(item) => item.id.toString()}
+                  />
+                  {/* Load more */}
+                  <TouchableOpacity
+                    onPress={loadMoreHistoryOrderList}
+                    style={{ marginBottom: 25, marginTop: 15 }}
+                  >
+                    <Text
+                      style={styles.loadMoreText}
+                      size={14}
+                      color={theme.COLORS.PRIMARY}
+                    >
+                      {LOAD_MORE + " >"}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+              renderSectionFooter={() => <>{<WangdekInfo />}</>}
+              renderItem={() => {
+                return null;
+              }}
+            />
+          </SafeAreaView>
+        </View>
+      </Block>
       <ModalLoading loading={!loading} />
     </>
   );
@@ -502,3 +519,16 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 });
+
+const HISTORY_LIST = [
+  {
+    title: "Mock",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
+    ],
+  },
+];

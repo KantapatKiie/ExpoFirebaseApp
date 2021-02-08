@@ -10,6 +10,11 @@ const actionTypes = {
   setListTrOrder: "SET_LIST_TR_ORDER_PRODUCTS_DETAIL",
   removeListTrOrder: "REMOVE_LIST_TR_ORDER_PRODUCTS_DETAIL",
   setEditable: "SET_EDITABLE_ORDER_PRODUCTS_DETAIL",
+
+  //use-option-orderScreen
+  setObjUseCouponins: "OBJ_COUPON_DELIVERY_PRODUCTS_DETAIL_HD",
+  setObjUseDeliveryins: "OBJ_USE_DELIVERY_PRODUCTS_DETAIL_HD",
+  setObjUseAdressDeliveryins: "OBJ_ADDRESS_DELIVERY_PRODUCTS_DETAIL_HD",
 };
 
 const initialState = {
@@ -27,6 +32,17 @@ const initialState = {
     SUB_DISTRICT_NAME: "",
     ZIP_CODE: "",
   },
+  objUseCoupon: {
+    id: 1,
+    coupon_name: "",
+  },
+  objUseDelivery: {
+    id: 0,
+    delivery_name: "",
+  },
+  objUseAddressDelivery: {
+    address_name: 1,
+  },
   // listTrOrder: [],
   // disabledInput: false,
   // editable: false,
@@ -40,6 +56,27 @@ export const reducer = persistReducer(
         return {
           ...state,
           objOrderScreen: action.payload.obj,
+        };
+      }
+
+      case actionTypes.setObjUseCouponins: {
+        return {
+          ...state,
+          objUseCoupon: action.payload.obj,
+        };
+      }
+
+      case actionTypes.setObjUseDeliveryins: {
+        return {
+          ...state,
+          objUseDelivery: action.payload.obj,
+        };
+      }
+
+      case actionTypes.setObjUseAdressDeliveryins: {
+        return {
+          ...state,
+          objUseAddressDelivery: action.payload.obj,
         };
       }
 
@@ -78,6 +115,19 @@ export const actions = {
     payload: { obj },
   }),
 
+  setObjUseCoupon: (obj) => ({
+    type: actionTypes.setObjUseCouponins,
+    payload: { obj },
+  }),
+  setObjUseDelivery: (obj) => ({
+    type: actionTypes.setObjUseDeliveryins,
+    payload: { obj },
+  }),
+  setObjUseAddressDelivery: (obj) => ({
+    type: actionTypes.setObjUseAdressDeliveryins,
+    payload: { obj },
+  }),
+  
   clearobjOrderScreen: () => ({
     type: actionTypes.clearobjOrderScreen,
   }),

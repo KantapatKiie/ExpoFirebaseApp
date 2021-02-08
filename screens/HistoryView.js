@@ -5,27 +5,47 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  SafeAreaView,
+  SectionList,
   Dimensions,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import * as ActionHistoryView from "../actions/action-history-view/ActionHistoryView";
 import { Block, Text, theme } from "galio-framework";
 import { formatTr } from "../i18n/I18nProvider";
 import WangdekInfo from "../components/WangdekInfo";
-import products from "../constants/products";
+import { API_URL } from "../config/config.app";
+import commaNumber from "comma-number";
+import { getToken } from "../store/mock/token";
+import ModalLoading from "../components/ModalLoading";
 
+import products from "../constants/products";
 import products2 from "../constants/products2";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+const token = getToken();
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://newpclinic.com/wd";
 
 function HistoryView(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
   const { objHistoryView } = useSelector((state) => ({
     objHistoryView: state.actionHistoryView.objHistoryView,
   }));
+  var LOAD_MORE = formatTr("LOAD_MORE").toString();
+  const [loading, setLoading] = useState(null);
 
   useEffect(() => {
     setStateObj(products);
-    console.log(stateObj);
   }, []);
 
   const [stateObj, setStateObj] = useState([
@@ -39,13 +59,8 @@ function HistoryView(props) {
     },
   ]);
 
-  const onClickProducts = () => {
-    const newConcatState = stateObj.concat(products2);
-    setStateObj(newConcatState);
-  };
-
-  const [numColumns] = useState(2);
   const renderProduct = ({ item }) => {
+    const onSelectProductHistory = () => {};
     return (
       <Block flex style={styles.textContainerBlock1}>
         <Image
@@ -54,7 +69,10 @@ function HistoryView(props) {
           }}
           style={styles.imageProduct}
         />
-        <TouchableOpacity onPress={onClickProducts} style={styles.productText}>
+        <TouchableOpacity
+          onPress={onSelectProductHistory}
+          style={styles.productText}
+        >
           <Block flex space="between" style={styles.productDescription}>
             <Text
               style={{
@@ -72,7 +90,7 @@ function HistoryView(props) {
                 fontSize: 14,
               }}
             >
-              ราคา : ฿{item.price}
+              ราคา : ฿{commaNumber(parseFloat(item.price).toFixed(2))}
             </Text>
           </Block>
         </TouchableOpacity>
@@ -80,57 +98,74 @@ function HistoryView(props) {
     );
   };
 
+  const loadMoreProductHistoryView = () => {
+    const newConcatState = stateObj.concat(products2);
+    setStateObj(newConcatState);
+  };
+
   return (
     <>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={{ backgroundColor: "white" }}
-      >
-        {/* Title */}
-        <TouchableOpacity onPress={() => props.navigation.navigate("Sign In")}>
-          <Block
-            row
-            style={{
-              paddingTop: 20,
-              paddingLeft: 20,
-              paddingBottom: 20,
-              backgroundColor: "white",
-              borderBottomWidth: 1,
-              borderBottomColor: "#e0e0e0",
-            }}
-          >
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-              }}
-            >
-              {"<  "}ประวัติการเข้าชม
-            </Text>
-          </Block>
-        </TouchableOpacity>
-        {/* ListItem */}
-        <FlatList
-          data={stateObj}
-          style={styles.containers}
-          renderItem={renderProduct}
-          numColumns={numColumns}
+      <SafeAreaView style={{ flex: 1 }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={HISTORY_VIEW_LIST}
+          renderSectionHeader={() => (
+            <>
+              {/* Title */}
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate("Sign In")}
+              >
+                <Block
+                  row
+                  style={{
+                    paddingTop: 20,
+                    paddingLeft: 20,
+                    paddingBottom: 20,
+                    backgroundColor: "white",
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#e0e0e0",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      fontSize: 18,
+                    }}
+                  >
+                    {"<  "}ประวัติการเข้าชม
+                  </Text>
+                </Block>
+              </TouchableOpacity>
+              {/* ListItem */}
+              <FlatList
+                data={stateObj}
+                style={styles.containers}
+                renderItem={renderProduct}
+                numColumns={2}
+              />
+              <TouchableOpacity
+                onPress={loadMoreProductHistoryView}
+                style={{ marginBottom: 15 }}
+              >
+                <Text
+                  style={styles.loadMoreText}
+                  size={14}
+                  color={theme.COLORS.PRIMARY}
+                >
+                  {LOAD_MORE + " >"}
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
+          renderSectionFooter={() => <>{<WangdekInfo />}</>}
+          renderItem={() => {
+            return null;
+          }}
         />
-        <TouchableOpacity
-          onPress={onClickProducts}
-          style={{ marginBottom: 15 }}
-        >
-          <Text
-            style={styles.loadMoreText}
-            size={14}
-            color={theme.COLORS.PRIMARY}
-          >
-            {formatTr("LOAD_MORE") + " >"}
-          </Text>
-        </TouchableOpacity>
-        <WangdekInfo />
-      </ScrollView>
+      </SafeAreaView>
+
+      <ModalLoading loading={loading} />
     </>
   );
 }
@@ -195,3 +230,16 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
 });
+
+const HISTORY_VIEW_LIST = [
+  {
+    title: "Mock",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
+    ],
+  },
+];

@@ -6,50 +6,110 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import * as ActionOrder from "../../../actions/action-order-status/ActionOrder";
 import WangdekInfo from "../../../components/WangdekInfo";
 import { Button } from "react-native-elements";
 import { RadioButton } from "react-native-paper";
+import { API_URL } from "../../../config/config.app";
+import { getToken } from "../../../store/mock/token";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+const token = getToken();
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://newpclinic.com/wd";
 
 function UseDelivery(props) {
-  const { objOrderScreen } = useSelector((state) => ({
-    objOrderScreen: state.actionOrder.objOrderScreen,
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  const { objUseDelivery } = useSelector((state) => ({
+    objUseDelivery: state.actionOrder.objUseDelivery,
   }));
 
   useEffect(() => {
-    // props.clearObjUseCoupon();
+    setListDelivery(DeliveryList);
+    loadDataDeliveryList();
   }, []);
 
-  const [checkedDelivery, setCheckedDelivery] = useState("kerry");
+  const [listDelivery, setListDelivery] = useState(DeliveryList);
+  const loadDataDeliveryList = async () => {
+    await axios
+      .get(API_URL.LOGISTICS_LIST_HD_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+          "X-localization": locale,
+        },
+      })
+      .then(function (response) {
+        setListDelivery(response.data.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const [checkedDelivery, setCheckedDelivery] = useState(1);
   const renderDeliveryList = () => {
     return (
       <>
-        {DeliveryList.map((item) => (
-          <Block row style={item.type === checkedDelivery ? styles.blockRadio : styles.blockRadioWhite} key={item.key}>
-            <Block style={{ marginLeft: 10, marginTop: 5 }}>
-              <RadioButton.Group
-                onValueChange={(value) => setCheckedDelivery(value)}
-                value={checkedDelivery}
+        {listDelivery != "undefined"
+          ? listDelivery.map((item) => (
+              <Block
+                row
+                style={
+                  item.id === checkedDelivery
+                    ? styles.blockRadio
+                    : styles.blockRadioWhite
+                }
+                key={item.id}
               >
-                <RadioButton color="#02d483" value={item.type} />
-              </RadioButton.Group>
-            </Block>
-            <Block style={{ marginLeft: 30, marginTop: 10 }}>
-              <Image source={item.image} style={{ width: 180, height: 50 }} />
-              <Block style={{ marginTop: 10 }}>
-                <Text style={styles.textTitleDelivery}>{item.title}</Text>
-                <Text style={styles.textDescDelivery}>{item.description1}</Text>
-                <Text style={styles.textDescDelivery}>{item.description2}</Text>
+                <Block style={{ marginLeft: 10, marginTop: 5 }}>
+                  <RadioButton.Group
+                    onValueChange={(value) => setCheckedDelivery(value)}
+                    value={checkedDelivery}
+                  >
+                    <RadioButton color="#02d483" value={item.id} />
+                  </RadioButton.Group>
+                </Block>
+                <Block style={{ marginLeft: 30, marginTop: 10 }}>
+                  <Image
+                    source={{ uri: rootImage + item.image }}
+                    style={{ width: 190, height: 50 }}
+                  />
+                  <Block style={{ marginTop: 10 }}>
+                    <Text style={styles.textTitleDelivery}>
+                      {item.name_en + " - " + item.name_th}
+                    </Text>
+                    <Text style={styles.textDescDelivery}>
+                      {"ระยะเวลาในการจัดส่ง : " + item.period}
+                    </Text>
+                    <Text style={styles.textDescDelivery}>
+                      {"อัตราค่าบริการ : " + item.base_price}
+                    </Text>
+                  </Block>
+                </Block>
               </Block>
-            </Block>
-          </Block>
-        ))}
+            ))
+          : null}
       </>
     );
+  };
+  const onSelectDelivery = () => {
+    let objDelivery = Object.assign({}, objUseDelivery);
+    objDelivery.id = checkedDelivery;
+    props.setObjUseDelivery(objDelivery);
+    props.navigation.navigate("Order Screen");
   };
 
   return (
@@ -72,7 +132,7 @@ function UseDelivery(props) {
           </Block>
         </TouchableOpacity>
 
-        {/* Head */}
+        {/* Detail */}
         <Block style={{ backgroundColor: "white" }}>
           <Text style={styles.fontTitleProduct}>เลือกช่องทางการจัดส่ง</Text>
           {renderDeliveryList()}
@@ -93,7 +153,7 @@ function UseDelivery(props) {
             title={"ตกลง"}
             type="solid"
             buttonStyle={styles.buttonStyle1}
-            onPress={() => props.navigation.navigate("Order Screen")}
+            onPress={onSelectDelivery}
           />
         </Block>
         <WangdekInfo />
@@ -161,30 +221,27 @@ const styles = StyleSheet.create({
 
 const DeliveryList = [
   {
-    key: "1",
-    title: "EMS - ไปรษณีย์ด่วนพิเศษ",
-    description1: " ระยะเวลาการส่ง : 3 - 5 วัน",
-    description2: "อัตราค่าบริการ : 50 บาท",
-    image: require("../../../assets/images/bank_ems/ep-EMS.jpg"),
-    checked: true,
-    type: "ems",
+    id: 1,
+    name_th: "เคอร์รี่",
+    name_en: "Kerry",
+    image: "/storage/5/download.png",
+    period: "3-5",
+    base_price: "23.00"
   },
   {
-    key: "2",
-    title: "เกี่ยวกับเรา",
-    description1: " ระยะเวลาการส่ง : 1 - 2 วัน",
-    description2: "อัตราค่าบริการ : 60 บาท",
-    image: require("../../../assets/images/bank_ems/ep-Kerry.jpg"),
-    checked: false,
-    type: "kerry",
+    id: 2,
+    name_th: "อีเอ็มเอส",
+    name_en: "EMS",
+    image: "/storage/6/download-%282%29.png",
+    period: "6-9",
+    base_price: "5.00"
   },
   {
-    key: "3",
-    title: "เกี่ยวกับเรา",
-    description1: " ระยะเวลาการส่ง : 1 - 2 วัน",
-    description2: "อัตราค่าบริการ : 70 บาท",
-    image: require("../../../assets/images/bank_ems/ep-Flash.jpg"),
-    checked: false,
-    type: "flash",
-  },
+    id: 3,
+    name_th: "แฟลช",
+    name_en: "Flash",
+    image: "/storage/7/download-%281%29.png",
+    period: "1-4",
+    base_price: "100.00"
+  }
 ];

@@ -10,7 +10,9 @@ import {
   SectionList,
   FlatList,
 } from "react-native";
+import axios from "axios";
 import moment from "moment";
+import "moment-duration-format";
 import "moment/locale/th";
 import "moment/locale/en-au";
 import { Block, Text, Input } from "galio-framework";
@@ -24,22 +26,28 @@ import { Calendar } from "react-native-big-calendar";
 import { formatTr } from "../../i18n/I18nProvider";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import { Button, CheckBox } from "react-native-elements";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+let token = getToken();
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://newpclinic.com/wd";
 
 function Events(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
   const { objEventsHD } = useSelector((state) => ({
     objEventsHD: state.actionEvents.objEventsHD,
   }));
-  const locale = useSelector(({ i18n }) => i18n.lang);
 
   useEffect(() => {
-    props.clearObjEventsHD();
-    if (locale === "th") {
-      moment.locale("th");
-    } else {
-      moment.locale("en-au");
-    }
+    // props.clearObjEventsHD();
+    getEventType();
   }, []);
 
   const [typeEvents, setTypeEvents] = useState([
@@ -48,7 +56,33 @@ function Events(props) {
       value: objEventsHD.TYPE_CODE,
     },
   ]);
-  const onChangeEventsType = () => {};
+  const getEventType = async () => {
+    await axios
+      .get(API_URL.BANK_LIST_HD_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(function (response) {
+        let newlstBin = response.data.data.map(function (item) {
+          item.label = locale == "th" ? item.bank_name_th : item.bank_name_en;
+          item.value = item.id;
+          return item;
+        });
+        setTypeEvents(newlstBin);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const onChangeEventsType = (item) => {
+    let newObj = Object.assign({}, objEventsHD);
+    newObj.TYPE_CODE = item.value;
+    newObj.TYPE_NAME = item.label;
+    props.setObjEventsHD(newObj);
+  };
 
   //#region Date & Time
   //DatePicker
@@ -159,15 +193,36 @@ function Events(props) {
     return (
       <Block style={styles.itemEventType}>
         <TouchableOpacity>
-            <Block row style={{width: 140, backgroundColor:"#bfbfbf", borderRadius:50, height:30}}>
-                <Block style={{width:25, height:10, backgroundColor:item.color,borderRadius:3,margin:10}}>
-                
-                    
-                </Block>
-                <Text style={{fontFamily:"kanitRegular", fontSize:15, color:"white",margin:2, marginRight:10}}>{item.title}</Text>
-
-
-            </Block>
+          <Block
+            row
+            style={{
+              width: 140,
+              backgroundColor: "#bfbfbf",
+              borderRadius: 50,
+              height: 30,
+            }}
+          >
+            <Block
+              style={{
+                width: 25,
+                height: 10,
+                backgroundColor: item.color,
+                borderRadius: 3,
+                margin: 10,
+              }}
+            ></Block>
+            <Text
+              style={{
+                fontFamily: "kanitRegular",
+                fontSize: 15,
+                color: "white",
+                margin: 2,
+                marginRight: 10,
+              }}
+            >
+              {item.title}
+            </Text>
+          </Block>
         </TouchableOpacity>
       </Block>
     );
@@ -177,21 +232,21 @@ function Events(props) {
   const events = [
     {
       title: "Meeting",
-      start: new Date(2021, 0, 30, 10, 0, 0),
-      end: new Date(2021, 0, 30, 12, 30, 0),
+      start: new Date(2021, 1, 9, 10, 0, 0),
+      end: new Date(2021, 1, 9, 12, 30, 0),
     },
     {
       title: "Coffe Time",
-      start: new Date(2021, 0, 29, 11, 30, 0),
-      end: new Date(2021, 0, 29, 12, 30, 0),
+      start: new Date(2021, 1, 8, 11, 30, 0),
+      end: new Date(2021, 1, 8, 12, 30, 0),
     },
     {
       title: "Tea Time",
-      start: new Date(2021, 0, 29, 11, 15, 0),
-      end: new Date(2021, 0, 29, 12, 30, 0),
+      start: new Date(2021, 1, 8, 11, 15, 0),
+      end: new Date(2021, 1, 8, 12, 30, 0),
     },
   ];
-  console.log(events);
+
   return (
     <>
       <ScrollView
@@ -296,8 +351,7 @@ function Events(props) {
             style={{ color: "black" }}
             mode="3days"
             showTime={true}
-            // eventCellStyle={{backgroundColor:events[0].color}}
-            style={{fontFamily:"kanitRegular"}}
+            style={{ fontFamily: "kanitRegular" }}
           />
         </Block>
 
@@ -341,7 +395,10 @@ function Events(props) {
                   borderRadius: 20,
                   color: "white",
                 }}
-                onChangeItem={onChangeEventsType}
+                defaultValue={
+                  objEventsHD.TYPE_NAME == "" ? null : objEventsHD.TYPE_CODE
+                }
+                onChangeItem={(item) => onChangeEventsType(item)}
               />
             </Block>
             <Block>
@@ -603,6 +660,58 @@ const styles = StyleSheet.create({
   },
 });
 
+//Style Modal
+const styles2 = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modal: {
+    backgroundColor: "#00000099",
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  modalContainer: {
+    backgroundColor: "#f9fafb",
+    width: "80%",
+    borderRadius: 13,
+  },
+  modalHeader: {},
+  title: {
+    fontWeight: "bold",
+    fontSize: 20,
+    padding: 15,
+    color: "#000",
+  },
+  divider: {
+    width: "100%",
+    height: 1,
+    backgroundColor: "lightgray",
+  },
+  modalBody: {
+    backgroundColor: "#fff",
+    paddingVertical: 25,
+    paddingHorizontal: 10,
+  },
+  modalFooter: {},
+  actions: {
+    borderRadius: 5,
+    marginHorizontal: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  actionText: {
+    color: "#fff",
+  },
+  bloxStyle: {
+    marginTop: 10,
+  },
+});
+
 //Header Calendar
 const linerStyle = StyleSheet.create({
   container: {
@@ -632,29 +741,28 @@ const EVENTS_TYPE = [
       {
         key: "1",
         title: "งานวันเกิด",
-        color: "pink"
+        color: "pink",
       },
       {
         key: "2",
         title: "Worrkshop",
-        color: "orange"
+        color: "orange",
       },
       {
         key: "3",
         title: "Worrkshop",
-        color: "green"
+        color: "green",
       },
       {
         key: "4",
         title: "Worrkshop",
-        color: "red"
+        color: "red",
       },
       {
         key: "5",
         title: "Worrkshop",
-        color: "yellow"
+        color: "yellow",
       },
-
     ],
   },
 ];
