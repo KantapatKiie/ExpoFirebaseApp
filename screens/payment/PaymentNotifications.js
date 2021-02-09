@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
   ToastAndroid,
+  Image,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -26,8 +27,7 @@ import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
 import ModalLoading from "../../components/ModalLoading";
 import * as DocumentPicker from "expo-document-picker";
-import * as ExpoFileSystem from "expo-file-system";
-// import RNImageConverter from 'react-native-image-converter';
+import { Feather } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("screen");
 let token = getToken();
@@ -132,7 +132,7 @@ function PaymentNotifications(props) {
       })
       .then(function (response) {
         let newlstBin = response.data.data.map(function (item) {
-          item.label = locale == "th" ? item.bank_name_th : item.bank_name_en;
+          item.label = item.bank_name_en + " - " + item.bank_name_th;
           item.value = item.id;
           return item;
         });
@@ -205,8 +205,7 @@ function PaymentNotifications(props) {
         },
       })
       .then(function (response) {
-        console.log(response.data)
-        // const dataUpload = new FormData();
+        const dataUpload = new FormData();
         // if (response.data.success !== true) {
         //   setLoading(false);
         //   ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
@@ -248,7 +247,9 @@ function PaymentNotifications(props) {
         // }
       })
       .catch(function (error) {
-        console.log(error);
+        // console.log(error.response.data.data)
+        setLoading(false);
+        ToastAndroid.show(error.response.data.data, ToastAndroid.SHORT);
       });
     setLoading(false);
   };
@@ -419,8 +420,13 @@ function PaymentNotifications(props) {
               objSearch.bank_name == "" ? null : objSearch.bank_code
             }
             onChangeItem={(item) => onChangeBank(item)}
+            // customTickIcon={() =>(
+            //   <>
+            //   </>
+            // )}
           />
         </Block>
+        
         {/* Date */}
         <Block style={styles.container2}>
           <Block row>

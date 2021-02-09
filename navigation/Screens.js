@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Image, StyleSheet, LogBox } from "react-native";
+import React from "react";
+import { Image, StyleSheet } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Header } from "../components";

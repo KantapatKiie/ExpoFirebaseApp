@@ -35,12 +35,10 @@ import CountDownEvent from "../components/CountDownEvent";
 import commaNumber from "comma-number";
 import ModalLoading from "../components/ModalLoading";
 import { ToastAndroid } from "react-native";
-// import { useScrollToTop } from "@react-navigation/native";
 
 const { width } = Dimensions.get("screen");
-let token = getToken();
-//const rootImage = "http://10.0.1.37:8080";
 const rootImage = "http://newpclinic.com/wd";
+let token = getToken();
 
 const defalutCouponList = [
   {
@@ -96,6 +94,8 @@ function Home(props) {
   } else {
     moment.locale("en-au");
   }
+
+  //Refresh Control
   const [loading, setLoading] = useState(null);
   const [refreshingPage, setRefreshingPage] = useState(false);
   const onRefreshPageNow = React.useCallback(() => {
@@ -105,9 +105,8 @@ function Home(props) {
     setRefreshingPage(true);
     wait(1000).then(() => {
       loadDataFlashsale();
-      loadDataCoupon();
-      loadDataBestsaler();
-      loadDataPopularsaler();
+      loadDataProductLists();
+      // loadDataCoupon();
       ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
       setRefreshingPage(false);
     });
@@ -125,17 +124,23 @@ function Home(props) {
 
   useEffect(() => {
     setModalVisible(false); // Popup Coupon
-    loadDataFlashsale();
-    loadDataCoupon();
-    loadDataBestsaler();
-    loadDataPopularsaler();
-  }, [countDownTime]);
+    // loadDataFlashsale();
+    // loadDataProductLists();
+    // loadDataCoupon();
+  }, []);
 
-  // Time Everthing
+  //#region Time & Translate
   let LeftTime = moment(new Date()).format("HH:mm");
   let TimeActDay = moment(new Date()).format("DD");
   let TimeActMonth = moment(new Date()).format("MMM");
   let TimeActivity = moment(new Date()).format("DD MMM YYYY   |   HH:mm ");
+
+  var VIEW_ALL = formatTr("VIEW_ALL").toString(); //View all
+  var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
+  var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
+  var NEWS_RELEASE = formatTr("NEWS_RELEASE").toString();
+  var READ_MORE = formatTr("READ_MORE").toString();
+  //#endregion
 
   // Flashsale onLoad
   const [countDownTime, setCountDownTime] = useState(
@@ -146,7 +151,7 @@ function Home(props) {
       .get(API_URL.FALSH_SALE_VIEW_API, {
         headers: {
           Accept: "application/json",
-          Authorization: "Bearer " + (await token),
+          // Authorization: "Bearer " + (await token),
           "Content-Type": "application/json",
         },
         params: {
@@ -167,6 +172,11 @@ function Home(props) {
         console.log(error);
       });
     setCountDownTime(objHomeHD.timeEnds);
+  };
+  // Flashsale Detail
+  const onClickFalshsaleDetail = () => {
+    props.setListCouponHD(couponList);
+    props.navigation.navigate("Flashsale Product");
   };
 
   // Coupon
@@ -202,40 +212,129 @@ function Home(props) {
       </View>
     );
   };
-
-  // Flashsale Detail
-  const onClickFalshsaleDetail = () => {
-    props.setListCouponHD(couponList);
-    props.navigation.navigate("Flashsale Product");
+  //#region PopupCoupon
+  const [modalVisible, setModalVisible] = useState(false);
+  const ModalNotification = () => {
+    const renderModalCouponList = ({ item }) => {
+      return (
+        <Block row style={{ marginBottom: 15 }}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={{ width: 130, height: 55 }}
+          />
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#00e099",
+              width: 80,
+              height: 24,
+              borderRadius: 20,
+              alignSelf: "center",
+              marginLeft: 15,
+            }}
+          >
+            <Text style={styles.fontCoupon}>COLLECT</Text>
+          </TouchableOpacity>
+        </Block>
+      );
+    };
+    return (
+      <>
+        <Modal
+          animationType="none"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(false);
+          }}
+        >
+          <Block style={styles.centeredView}>
+            <Block style={styles.modalView}>
+              <TouchableOpacity
+                onPress={() => {
+                  setModalVisible(false);
+                }}
+                style={{ alignSelf: "flex-end" }}
+              >
+                <Icons name="clear" size={20} color="black" />
+              </TouchableOpacity>
+              <Text style={styles.modalText}>You have received coupons</Text>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <SafeAreaView style={{ flex: 1 }}>
+                  <FlatList
+                    data={couponList}
+                    style={styles.containers}
+                    renderItem={renderModalCouponList}
+                    numColumns={1}
+                    keyExtractor={(item) => item.id.toString()}
+                  />
+                </SafeAreaView>
+              </ScrollView>
+              <TouchableOpacity
+                style={{ ...styles.openButton, backgroundColor: "#4a5aed" }}
+                onPress={() => {
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>OK</Text>
+              </TouchableOpacity>
+            </Block>
+          </Block>
+        </Modal>
+      </>
+    );
   };
+  //#endregion
 
-  // Best Selling
+  // Best selling
   const [listBestsale, setListBestsale] = useState(defalutBestsaleProduct);
-  const loadDataBestsaler = async () => {
-    await axios
-      .get(API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API, {
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer " + (await token),
-          "Content-Type": "application/json",
-          // "X-localization": locale,
-        },
-        params: {
-          page: 1,
-        },
-      })
-      .then(function (response) {
-        var lstBestSale = response.data.data.product_lists;
+  const [listPopularSale, setListPopularSale] = useState(defalutPopularProduct);
+  async function loadDataProductLists() {
+    await axios({
+      method: "GET",
+      url: API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API,
+      timeout: 2500,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      params: {
+        page: 1,
+      },
+    })
+      .then(function (resBestsale) {
+        // console.log(resBestsale.data.data)
+        var lstBestSale = resBestsale.data.data.product_lists;
         let newlstBestsale = [];
         for (let i = 0; i < 4; i++) {
-          newlstBestsale.push(lstBestSale[i]);
+          if (lstBestSale[i] !== undefined) newlstBestsale.push(lstBestSale[i]);
         }
-        setListBestsale(newlstBestsale);
+        //Popularity List
+        axios({
+          method: "GET",
+          url: API_URL.POPULARITY_PRODUCT_LISTVIEW_API,
+          timeout: 2500,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: 1,
+          },
+        }).then(function (resPopuplar) {
+          // console.log(resPopuplar.data.data)
+          let lstPopular = resPopuplar.data.data.product_lists;
+          let newlstPopular = [];
+          for (let i = 0; i < 4; i++) {
+            if (lstPopular[i] !== undefined) newlstPopular.push(lstPopular[i]);
+          }
+          setListBestsale(newlstBestsale);
+          setListPopularSale(lstPopular);
+        });
       })
       .catch(function (error) {
         console.log(error);
       });
-  };
+  }
   const renderBestsaler = ({ item }) => {
     const selectProductBestsale = async (item) => {
       setLoading(true);
@@ -243,7 +342,7 @@ function Home(props) {
         .get(API_URL.PRODUCT_SEARCH_HD_API + item.id, {
           headers: {
             Accept: "application/json",
-            Authorization: "Bearer " + (await token),
+            // Authorization: "Bearer " + (await token),
             "Content-Type": "application/json",
           },
         })
@@ -318,40 +417,12 @@ function Home(props) {
       </Block>
     );
   };
-  const loadMoreBestsaler = () => {
+  const viewAllBestsaler = () => {
     let newObj = Object.assign({}, objProductType);
     newObj.API_TYPE = API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API;
     newObj.HOME_TYPE = true;
     props.setObjProductType(newObj);
     props.navigation.navigate("Product Type");
-  };
-
-  // Popular selling
-  const [listPopularSale, setListPopularSale] = useState(defalutPopularProduct);
-  const loadDataPopularsaler = async () => {
-    await axios
-      .get(API_URL.POPULARITY_PRODUCT_LISTVIEW_API, {
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer " + (await token),
-          "Content-Type": "application/json",
-          "X-localization": locale,
-        },
-        params: {
-          page: 1,
-        },
-      })
-      .then(function (response) {
-        let lstPopular = response.data.data.product_lists;
-        let newlstPopular = [];
-        for (let i = 0; i < 4; i++) {
-          newlstPopular.push(lstPopular[i]);
-        }
-        setListPopularSale(lstPopular);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
   };
   const renderPopularsaler = ({ item }) => {
     const selectProductPopulatrity = async (item) => {
@@ -360,8 +431,9 @@ function Home(props) {
         .get(API_URL.PRODUCT_SEARCH_HD_API + item.id, {
           headers: {
             Accept: "application/json",
-            Authorization: "Bearer " + (await token),
+            // Authorization: "Bearer " + (await token),
             "Content-Type": "application/json",
+            // "X-localization": locale,
           },
         })
         .then(function (response) {
@@ -434,7 +506,7 @@ function Home(props) {
       </Block>
     );
   };
-  const loadMorePopularity = () => {
+  const viewAllPopularity = () => {
     let newObj = Object.assign({}, objProductType);
     newObj.API_TYPE = API_URL.POPULARITY_PRODUCT_LISTVIEW_API;
     newObj.HOME_TYPE = true;
@@ -442,7 +514,7 @@ function Home(props) {
     props.navigation.navigate("Product Type");
   };
 
-  // FlatList Information
+  // Information List
   const [informationList, setInformationList] = useState(defalutCouponList);
   const ListItemInformation = ({ item }) => {
     return (
@@ -530,307 +602,219 @@ function Home(props) {
     );
   };
 
-  //#region PopupCoupon
-  const [modalVisible, setModalVisible] = useState(false);
-  const ModalNotification = () => {
-    const renderModalCouponList = ({ item }) => {
-      return (
-        <Block row style={{ marginBottom: 15 }}>
-          <Image
-            source={{ uri: rootImage + item.image }}
-            style={{ width: 130, height: 55 }}
-          />
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#00e099",
-              width: 80,
-              height: 24,
-              borderRadius: 20,
-              alignSelf: "center",
-              marginLeft: 15,
-            }}
-          >
-            <Text style={styles.fontCoupon}>COLLECT</Text>
-          </TouchableOpacity>
-        </Block>
-      );
-    };
-    return (
-      <>
-        <Modal
-          animationType="none"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(false);
-          }}
-        >
-          <Block style={styles.centeredView}>
-            <Block style={styles.modalView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setModalVisible(false);
-                }}
-                style={{ alignSelf: "flex-end" }}
-              >
-                <Icons name="clear" size={20} color="black" />
-              </TouchableOpacity>
-              <Text style={styles.modalText}>You have received coupons</Text>
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <SafeAreaView style={{ flex: 1 }}>
-                  <FlatList
-                    data={couponList}
-                    style={styles.containers}
-                    renderItem={renderModalCouponList}
-                    numColumns={1}
-                    keyExtractor={(item) => item.id.toString()}
-                  />
-                </SafeAreaView>
-              </ScrollView>
-              <TouchableOpacity
-                style={{ ...styles.openButton, backgroundColor: "#4a5aed" }}
-                onPress={() => {
-                  setModalVisible(!modalVisible);
-                }}
-              >
-                <Text style={styles.textStyle}>OK</Text>
-              </TouchableOpacity>
-            </Block>
-          </Block>
-        </Modal>
-      </>
-    );
-  };
-  //#endregion
-
-  //#region Translate
-  var VIEW_ALL = formatTr("VIEW_ALL").toString(); //View all
-  var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
-  var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
-  var NEWS_RELEASE = formatTr("NEWS_RELEASE").toString();
-  var READ_MORE = formatTr("READ_MORE").toString();
-  //#endregion
-
   return (
     <>
-      <Block flex center style={styles.home}>
-        <View style={styles2.container}>
-          <StatusBar style="auto" />
-          <SafeAreaView style={{ flex: 1 }}>
-            <SectionList
-              stickySectionHeadersEnabled={false}
-              sections={COUPON_LIST}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshingPage}
-                  onRefresh={onRefreshPageNow}
-                />
-              }
-              renderSectionHeader={() => (
-                <>
-                  {/* Festival */}
-                  <Block style={styles2.blockHeader}>
-                    <Text
-                      style={{
-                        textAlign: "center",
-                        color: "white",
-                        fontFamily: "kanitLight",
-                        fontSize: 15,
-                      }}
-                    >
-                      WANGDEKFEST ลดล้างสต็อกครึ่งปี : เริ่ม{LeftTime}
-                    </Text>
-                  </Block>
-
-                  {/* Count Down */}
-                  <TouchableHighlight
-                    style={{ width: width }}
-                    onPress={onClickFalshsaleDetail}
-                  >
-                    <CountDownEvent times={countDownTime} />
-                  </TouchableHighlight>
-
-                  {/* Coupon */}
-                  <Block style={styles2.containerHeader}>
-                    <FlatList
-                      horizontal
-                      data={couponList}
-                      renderItem={({ item }) =>
-                        item.code !== "" ? <ListItemCoupon item={item} /> : null
-                      }
-                      showsHorizontalScrollIndicator={false}
-                      keyExtractor={(item) => item.id.toString()}
-                    />
-                  </Block>
-                </>
-              )}
-              renderSectionFooter={() => (
-                <>
-                  {/* Best seller product */}
-                  <Block flex style={styles.textContainerBlock1}>
-                    <Block style={{ alignSelf: "center" }}>
-                      <Text
-                        style={{
-                          fontSize: 27,
-                          color: "white",
-                          marginTop: 20,
-                          fontFamily: "kanitRegular",
-                          textAlign: "center",
-                        }}
-                      >
-                        {GOOD_PRODUCT}
-                      </Text>
-                    </Block>
-                    <FlatList
-                      data={listBestsale}
-                      style={styles.containers}
-                      renderItem={renderBestsaler}
-                      numColumns={2}
-                      keyExtractor={(item) => item.id.toString()}
-                      listKey={(item) => item.id.toString()}
-                    />
-                    <TouchableOpacity
-                      onPress={loadMoreBestsaler}
-                      style={{ marginBottom: 40, marginTop: 15 }}
-                    >
-                      <Text
-                        style={{
-                          alignSelf: "center",
-                          marginTop: 10,
-                          color: "white",
-                          fontFamily: "kanitRegular",
-                          borderBottomWidth: 5,
-                          borderBottomColor: "white",
-                          borderRadius: 2,
-                        }}
-                      >
-                        {VIEW_ALL + " >"}
-                      </Text>
-                    </TouchableOpacity>
-                  </Block>
-
-                  {/* Popular product */}
-                  <Block flex style={styles.textContainerBlock2}>
-                    <Block style={{ alignSelf: "center" }}>
-                      <Text
-                        style={{
-                          fontSize: 25,
-                          fontFamily: "kanitRegular",
-                          textAlign: "center",
-                        }}
-                      >
-                        {POPULAR_PRODUCT}
-                      </Text>
-                    </Block>
-                    <FlatList
-                      data={listPopularSale}
-                      style={styles.containers}
-                      renderItem={renderPopularsaler}
-                      numColumns={2}
-                      keyExtractor={(item) => item.id.toString()}
-                      listKey={(item) => item.id.toString()}
-                    />
-                    <TouchableOpacity
-                      onPress={loadMorePopularity}
-                      style={{ marginBottom: 25, marginTop: 15 }}
-                    >
-                      <Text
-                        style={{
-                          alignSelf: "center",
-                          marginTop: 10,
-                          color: "black",
-                          fontFamily: "kanitRegular",
-                          borderBottomWidth: 5,
-                          borderBottomColor: "#0fa8db",
-                          borderRadius: 2,
-                        }}
-                      >
-                        {VIEW_ALL + " >"}
-                      </Text>
-                    </TouchableOpacity>
-                  </Block>
-
-                  {/* Public relations */}
-                  <Block>
-                    <Block
-                      flex
-                      style={{ backgroundColor: "#f7f7f7", marginBottom: 25 }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 25,
-                          color: "black",
-                          paddingTop: 25,
-                          alignSelf: "center",
-                          fontFamily: "kanitRegular",
-                        }}
-                      >
-                        {NEWS_RELEASE}
-                      </Text>
-                      <SafeAreaView style={{ flex: 1, marginTop: 25 }}>
-                        <SectionList
-                          stickySectionHeadersEnabled={false}
-                          sections={INFORMATION}
-                          renderSectionHeader={({ section }) => (
-                            <>
-                              <Block style={styles2.containerHeader2}>
-                                {section.horizontal ? (
-                                  <FlatList
-                                    horizontal
-                                    data={section.data}
-                                    renderItem={({ item }) => (
-                                      <ListItemInformation item={item} />
-                                    )}
-                                    showsHorizontalScrollIndicator={false}
-                                  />
-                                ) : null}
-                              </Block>
-                            </>
-                          )}
-                          // renderSectionFooter={() => <></>}
-                          renderItem={({ item, section }) => {
-                            if (section.horizontal) {
-                              return null;
-                            }
-                            return <ListItemInformation item={item} />;
-                          }}
-                        />
-                      </SafeAreaView>
-                    </Block>
-                    <TouchableOpacity
-                      onPress={() => props.navigation.navigate("News Relation")}
-                      style={{ marginBottom: 30, marginTop: 15 }}
-                    >
-                      <Text
-                        style={{
-                          alignSelf: "center",
-                          color: "black",
-                          fontFamily: "kanitRegular",
-                          borderBottomWidth: 5,
-                          borderBottomColor: "#00bcd1",
-                          borderRadius: 2,
-                        }}
-                        size={14}
-                        color={theme.COLORS.PRIMARY}
-                      >
-                        {VIEW_ALL + " >"}
-                      </Text>
-                    </TouchableOpacity>
-                  </Block>
-
-                  <WangdekInfo />
-                </>
-              )}
-              renderItem={({ item, section }) => {
-                if (section !== null) {
-                  return null;
-                }
-                return <ListItem item={item} />;
-              }}
+      <StatusBar style="dark" />
+      <SafeAreaView style={{ flex: 1 }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={HOME_LIST}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshingPage}
+              onRefresh={onRefreshPageNow}
             />
-          </SafeAreaView>
-        </View>
-      </Block>
+          }
+          renderSectionHeader={() => (
+            <>
+              {/* Festival */}
+              <Block style={styles2.blockHeader}>
+                <Text
+                  style={{
+                    textAlign: "center",
+                    color: "white",
+                    fontFamily: "kanitLight",
+                    fontSize: 15,
+                  }}
+                >
+                  WANGDEKFEST ลดล้างสต็อกครึ่งปี : เริ่ม{LeftTime}
+                </Text>
+              </Block>
+
+              {/* Count Down */}
+              <TouchableHighlight
+                style={{ width: width }}
+                onPress={onClickFalshsaleDetail}
+              >
+                <CountDownEvent times={countDownTime} />
+              </TouchableHighlight>
+
+              {/* Coupon */}
+              <Block style={styles2.containerHeader}>
+                <FlatList
+                  horizontal
+                  data={couponList}
+                  renderItem={({ item }) =>
+                    item.code !== "" ? <ListItemCoupon item={item} /> : null
+                  }
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item) => item.id.toString()}
+                />
+              </Block>
+            </>
+          )}
+          renderSectionFooter={() => (
+            <>
+              {/* Best seller product */}
+              <Block flex style={styles.textContainerBlock1}>
+                <Block style={{ alignSelf: "center" }}>
+                  <Text
+                    style={{
+                      fontSize: 27,
+                      color: "white",
+                      marginTop: 20,
+                      fontFamily: "kanitRegular",
+                      textAlign: "center",
+                    }}
+                  >
+                    {GOOD_PRODUCT}
+                  </Text>
+                </Block>
+                <FlatList
+                  data={listBestsale}
+                  style={styles.containers}
+                  renderItem={renderBestsaler}
+                  numColumns={2}
+                  keyExtractor={(item) => item.id.toString()}
+                  listKey={(item) => item.id.toString()}
+                />
+                <TouchableOpacity
+                  onPress={viewAllBestsaler}
+                  style={{ marginBottom: 40, marginTop: 15 }}
+                >
+                  <Text
+                    style={{
+                      alignSelf: "center",
+                      marginTop: 10,
+                      color: "white",
+                      fontFamily: "kanitRegular",
+                      borderBottomWidth: 5,
+                      borderBottomColor: "white",
+                      borderRadius: 2,
+                    }}
+                  >
+                    {VIEW_ALL + " >"}
+                  </Text>
+                </TouchableOpacity>
+              </Block>
+
+              {/* Popular product */}
+              <Block flex style={styles.textContainerBlock2}>
+                <Block style={{ alignSelf: "center" }}>
+                  <Text
+                    style={{
+                      fontSize: 25,
+                      fontFamily: "kanitRegular",
+                      textAlign: "center",
+                    }}
+                  >
+                    {POPULAR_PRODUCT}
+                  </Text>
+                </Block>
+                <FlatList
+                  data={listPopularSale}
+                  style={styles.containers}
+                  renderItem={renderPopularsaler}
+                  numColumns={2}
+                  keyExtractor={(item) => item.id.toString()}
+                  listKey={(item) => item.id.toString()}
+                />
+                <TouchableOpacity
+                  onPress={viewAllPopularity}
+                  style={{ marginBottom: 25, marginTop: 15 }}
+                >
+                  <Text
+                    style={{
+                      alignSelf: "center",
+                      marginTop: 10,
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      borderBottomWidth: 5,
+                      borderBottomColor: "#0fa8db",
+                      borderRadius: 2,
+                    }}
+                  >
+                    {VIEW_ALL + " >"}
+                  </Text>
+                </TouchableOpacity>
+              </Block>
+
+              {/* Public relations */}
+              <Block>
+                <Block
+                  flex
+                  style={{ backgroundColor: "#f7f7f7", marginBottom: 25 }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 25,
+                      color: "black",
+                      paddingTop: 25,
+                      alignSelf: "center",
+                      fontFamily: "kanitRegular",
+                    }}
+                  >
+                    {NEWS_RELEASE}
+                  </Text>
+                  <SafeAreaView style={{ flex: 1, marginTop: 25 }}>
+                    <SectionList
+                      stickySectionHeadersEnabled={false}
+                      sections={INFORMATION}
+                      renderSectionHeader={({ section }) => (
+                        <>
+                          <Block style={styles2.containerHeader2}>
+                            {section.horizontal ? (
+                              <FlatList
+                                horizontal
+                                data={section.data}
+                                renderItem={({ item }) => (
+                                  <ListItemInformation item={item} />
+                                )}
+                                showsHorizontalScrollIndicator={false}
+                              />
+                            ) : null}
+                          </Block>
+                        </>
+                      )}
+                      // renderSectionFooter={() => <></>}
+                      renderItem={({ item, section }) => {
+                        if (section.horizontal) {
+                          return null;
+                        }
+                        return <ListItemInformation item={item} />;
+                      }}
+                    />
+                  </SafeAreaView>
+                </Block>
+                <TouchableOpacity
+                  onPress={() => props.navigation.navigate("News Relation")}
+                  style={{ marginBottom: 30, marginTop: 15 }}
+                >
+                  <Text
+                    style={{
+                      alignSelf: "center",
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      borderBottomWidth: 5,
+                      borderBottomColor: "#00bcd1",
+                      borderRadius: 2,
+                    }}
+                    size={14}
+                    color={theme.COLORS.PRIMARY}
+                  >
+                    {VIEW_ALL + " >"}
+                  </Text>
+                </TouchableOpacity>
+              </Block>
+
+              <WangdekInfo />
+            </>
+          )}
+          renderItem={() => {
+            return null;
+          }}
+        />
+      </SafeAreaView>
       <ModalNotification />
       <ModalLoading loading={loading} />
     </>
@@ -859,18 +843,14 @@ const mapActions = {
 
 export default withNavigation(connect(null, mapActions)(Home));
 
-const COUPON_LIST = [
+const HOME_LIST = [
   {
-    title: "Discount",
+    title: "Mock",
     horizontal: true,
     data: [
       {
         key: "1",
-        uri: require("../assets/images/coupon/coupon-1.png"),
-      },
-      {
-        key: "2",
-        uri: require("../assets/images/coupon/coupon-2.png"),
+        uri: "../assets/images/coupon/coupon-1.png",
       },
     ],
   },
@@ -899,7 +879,6 @@ const INFORMATION = [
         colorEtc: "#c93a84",
         uri: "https://picsum.photos/id/10/200",
       },
-
       {
         key: "3",
         title: "Activity 3",
@@ -927,7 +906,6 @@ const INFORMATION = [
         colorEtc: "#1080c9",
         uri: "https://picsum.photos/id/1008/200",
       },
-
       {
         key: "6",
         title: "Activity 6",
@@ -937,7 +915,6 @@ const INFORMATION = [
         colorEtc: "#961b7d",
         uri: "https://picsum.photos/id/1008/200",
       },
-
       {
         key: "7",
         title: "Activity 7",

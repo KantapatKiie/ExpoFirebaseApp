@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { withNavigation } from "@react-navigation/compat";
 import {
   TouchableOpacity,
@@ -7,8 +7,6 @@ import {
   Modal,
   TouchableHighlight,
   View,
-  SafeAreaView,
-  SectionList,
   Image,
   FlatList,
 } from "react-native";
@@ -17,7 +15,6 @@ import moment from "moment";
 import "moment-duration-format";
 import "moment/locale/th";
 import "moment/locale/en-au";
-import { StatusBar } from "expo-status-bar";
 import { Block, NavBar, Text, theme } from "galio-framework";
 import materialTheme from "../constants/Theme";
 import Icons from "react-native-vector-icons/MaterialIcons";
@@ -26,29 +23,11 @@ import { getToken } from "../store/mock/token";
 import { connect, useSelector } from "react-redux";
 import { actions as ActionProductType } from "../actions/action-product-type/ActionProductType";
 import ModalLoading from "../components/ModalLoading";
-// import { Feather } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native";
 
 const { width } = Dimensions.get("window");
 let token = getToken();
-//const rootImage = "http://10.0.1.37:8080";
 const rootImage = "http://newpclinic.com/wd";
-
-const defaultListProductType = [
-  {
-    id: 1,
-    name_th: "เครื่องประดับ",
-    name_en: "Accessories",
-    image: "/storage/16/icon-01.png",
-  },
-];
-const defaultListProductBrands = [
-  {
-    id: 1,
-    name_th: "Barbie",
-    name_en: "Barbie",
-    image: "/storage/29/brand-01.png",
-  },
-];
 
 function Header(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -62,11 +41,30 @@ function Header(props) {
     objProductType: state.actionProductType.objProductType,
   }));
 
-  useEffect(() => {
-    loadDataProductType();
-    loadDataProductBrands();
-    loadDataCountCarts();
-  }, [null]);
+  //Count Cart
+  const [countCart, setCountCart] = useState(0);
+  async function loadCountCart() {
+    await axios({
+      method: "GET",
+      url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
+      timeout: 2500,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (response.data.data.result != undefined) {
+          setCountCart(response.data.data.result);
+        } else {
+          setCountCart(null);
+        }
+      })
+      .catch(function (error) {
+        setCountCart(null);
+        console.log(error);
+      });
+  }
 
   const ModalNotification = ({ style, navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
@@ -183,30 +181,6 @@ function Header(props) {
       </>
     );
   };
-  //Basket Button & Count Cart
-  const [countCarts, setCountCarts] = useState(0);
-  const loadDataCountCarts = async () => {
-    await axios
-      .get(API_URL.COUNT_CART_ORDER_LISTVIEW_API, {
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer " + (await token),
-          "Content-Type": "application/json",
-          "X-localization": locale,
-        },
-      })
-      .then((response) => {
-        if (response.data.data.result !== "undefined") {
-          setCountCarts(response.data.data.result);
-        } else {
-          setCountCarts(null);
-        }
-      })
-      .catch(function (error) {
-        setCountCarts(null);
-        console.log(error);
-      });
-  };
   const BasketButton = ({ style, navigation }) => {
     return (
       <>
@@ -214,17 +188,17 @@ function Header(props) {
           style={[styles.button, style]}
           onPress={() => navigation.navigate("Cart")}
         >
-          {/* <Icons name="shopping_cart" color={"black"} size={20} /> */}
           <Image
             source={require("../assets/icons/cart.png")}
             style={{ width: 20, height: 20 }}
           />
-          {countCarts > 0 ? <Block middle style={styles.notify} /> : null}
+          {countCart > 0 ? <Block middle style={styles.notify} /> : null}
         </TouchableOpacity>
       </>
     );
   };
 
+  //render Navbar
   const renderLogo = () => {
     return (
       <Block flex center>
@@ -1342,28 +1316,51 @@ function Header(props) {
     }
   };
 
-  //renderFucntion Tabs
-  //Type Bar
-  const [listProductType, setListProductType] = useState(
-    defaultListProductType
-  );
-  //////Bug ไม่ต้องใช้ token//////
-  const loadDataProductType = async () => {
-    await axios
-      .get(API_URL.CATEGORY_PRODUCT_LISTVIEW_API, {
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer " + (await token),
-          "Content-Type": "application/json",
-        },
-      })
-      .then(function (response) {
-         setListProductType(response.data.data);
+  //Flatlist Bar
+  const [listProductType, setListProductType] = useState(null);
+  const [listProductBrands, setListProductBrands] = useState(null);
+  async function loadDataType() {
+    console.log(API_URL.CATEGORY_PRODUCT_LISTVIEW_API)
+    await fetch(API_URL.CATEGORY_PRODUCT_LISTVIEW_API, {
+      method: "GET",
+      mode: "cors",
+      cache: "no-cache",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        let newlstType = response.data;
+        setListProductType(newlstType);
       })
       .catch(function (error) {
         console.log(error);
       });
-  };
+  }
+  async function loadDateBrands() {
+    console.log(API_URL.BRANDS_PRODUCT_LISTVIEW_API)
+    await fetch(API_URL.BRANDS_PRODUCT_LISTVIEW_API, {
+      method: "GET",
+      mode: "cors",
+      cache: "no-cache",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        console.log(response.data)
+        let newlstBrands = response.data;
+        setListProductBrands(newlstBrands);
+      })
+      .catch(function (error) {
+        console.log(error, 'Brands Type');
+      });
+  }
   const ListTypeProduct = ({ item }) => {
     const categoryProductType = async (item) => {
       setLoading(true);
@@ -1371,7 +1368,6 @@ function Header(props) {
         .get(API_URL.CATEGORY_PRODUCT_SEARCH_API + item.id, {
           headers: {
             Accept: "application/json",
-            Authorization: "Bearer " + (await token),
             "Content-Type": "application/json",
           },
           params: {
@@ -1397,70 +1393,19 @@ function Header(props) {
         <TouchableOpacity onPress={() => categoryProductType(item)}>
           <Image
             source={{ uri: rootImage + item.image }}
-            style={{ width: 79, height: 68 }}
+            style={{ width: 74, height: 64 }}
           />
         </TouchableOpacity>
       </Block>
     );
   };
-  const renderTabType = () => {
-    return (
-      <Block style={styles2.container1}>
-        <SafeAreaView style={{ flex: 1 }}>
-          <SectionList
-            contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 0 }}
-            stickySectionHeadersEnabled={false}
-            sections={sectionProductType}
-            scrollEnabled={false}
-            renderSectionHeader={() => (
-              <FlatList
-                horizontal
-                data={listProductType}
-                renderItem={({ item }) => <ListTypeProduct item={item} />}
-                showsHorizontalScrollIndicator={false}
-                showsVerticalScrollIndicator={false}
-                listKey={(item) => item.id.toString()}
-                keyExtractor={(item) => item.id.toString()}
-              />
-            )}
-            renderItem={() => {
-              return null;
-            }}
-          />
-        </SafeAreaView>
-      </Block>
-    );
-  };
-  //Brands Bar
-  const [listProductBrands, setListProductBrands] = useState(
-    defaultListProductBrands
-  );
-  //////Bug ไม่ต้องใช้ token//////
-  const loadDataProductBrands = async () => {
-    await axios
-      .get(API_URL.BRANDS_PRODUCT_LISTVIEW_API, {
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer " + (await token),
-          "Content-Type": "application/json",
-        },
-      })
-      .then(function (response) {
-        setListProductBrands(response.data.data);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  };
   const ListProductBrands = ({ item }) => {
     const categoryProductBrands = async (item) => {
-      console.log(item.id)
       setLoading(true);
       await axios
         .get(API_URL.BRANDS_PRODUCT_LISTVIEW_API + item.id + "/products", {
           headers: {
             Accept: "application/json",
-            Authorization: "Bearer " + (await token),
             "Content-Type": "application/json",
           },
           params: {
@@ -1468,7 +1413,6 @@ function Header(props) {
           },
         })
         .then(function (response) {
-          console.log(response.data.data)
           let newObj = Object.assign({}, objProductType);
           newObj.TABS_TYPE = true;
           props.setObjProductType(newObj);
@@ -1496,74 +1440,56 @@ function Header(props) {
       </Block>
     );
   };
-  const renderTabBrands = () => {
-    return (
-      <Block style={styles2.container2}>
-        <SafeAreaView style={{ flex: 1 }}>
-          <SectionList
-            contentContainerStyle={{ paddingHorizontal: 0 }}
-            stickySectionHeadersEnabled={false}
-            sections={sectionProductBrand}
-            scrollEnabled={false}
-            renderSectionHeader={() => (
-              <FlatList
-                horizontal
-                data={listProductBrands}
-                renderItem={({ item }) => <ListProductBrands item={item} />}
-                showsHorizontalScrollIndicator={false}
-                showsVerticalScrollIndicator={false}
-                listKey={(item) => item.id.toString()}
-                keyExtractor={(item) => item.id.toString()}
-              />
-            )}
-            renderItem={() => {
-              return null;
-            }}
-          />
-        </SafeAreaView>
-      </Block>
-    );
-  };
-  // const { search, tabs } = props;
-  const renderHeader = () => {
-    return (
-      <Block center>
-        {renderTabType()}
-        {renderTabBrands()}
-      </Block>
-    );
-  };
 
-  const { back, title, transparent } = props;
-  const noShadow = ["Search", "Categories", "Profile"].includes(title);
-  const headerStyles = [
-    !noShadow ? styles.shadow : null,
-    transparent ? { backgroundColor: "rgba(0,0,0,0)" } : null,
-  ];
+  useLayoutEffect(() => {
+    // loadDataType();
+    // loadDateBrands();
+    // loadCountCart();
+  }, []);
 
   return (
     <>
-      <Block style={headerStyles}>
+      <SafeAreaView>
         <NavBar
-          back={back}
           title={renderLogo()}
           style={styles.navbar}
-          transparent={transparent}
-          rightStyle={{ alignItems: "center" }}
-          leftStyle={{ alignItems: "center", flexDirection: "row" }}
-          titleStyle={[styles.title]}
+          rightStyle={styles.navbarLeftRight}
+          leftStyle={styles.navbarLeftRight}
           left={renderLeft()}
           right={renderRight()}
         />
-        {renderHeader()}
-      </Block>
+        {/* List Bars */}
+        <Block>
+          <Block style={styles2.container1}>
+            <FlatList
+              horizontal={true}
+              data={listProductType}
+              renderItem={({ item }) => <ListTypeProduct item={item} />}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+              keyExtractor={(item) => item.id.toString()}
+              listKey={(item) => item.id}
+            />
+          </Block>
+          <Block style={styles2.container2}>
+            <FlatList
+              horizontal
+              data={listProductBrands}
+              renderItem={({ item }) => <ListProductBrands item={item} />}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+              keyExtractor={(item) => item.id.toString()}
+              listKey={(item) => item.id}
+            />
+          </Block>
+        </Block>
+      </SafeAreaView>
       <ModalLoading loading={loading} />
     </>
   );
 }
 
 const mapActions = {
-  //Product Type
   setObjProductType: ActionProductType.setObjProductType,
   clearObjProductType: ActionProductType.clearObjProductType,
   setListTrProductType: ActionProductType.setListTrProductType,
@@ -1576,12 +1502,6 @@ const styles = StyleSheet.create({
   button: {
     padding: 12,
     position: "relative",
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: "bold",
-    alignItems: "center",
-    color: "black",
   },
   navbar: {
     paddingVertical: 0,
@@ -1645,6 +1565,10 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     fontSize: 13,
   },
+  navbarLeftRight: {
+    alignItems: "center",
+    flexDirection: "row",
+  },
   // Modal CSS
   centeredView: {
     flex: 2,
@@ -1685,13 +1609,15 @@ const styles = StyleSheet.create({
 const styles2 = StyleSheet.create({
   container1: {
     backgroundColor: "#f5f5f5",
-    height: 82,
+    height: 80,
     padding: 0,
   },
   container2: {
     backgroundColor: "white",
-    height: 45,
+    height: 42,
     padding: 0,
+    shadowColor: "#e0e0e0",
+    elevation: 0.5
   },
   sectionHeader: {
     fontWeight: "800",
@@ -1723,89 +1649,33 @@ const styles2 = StyleSheet.create({
   },
 });
 
-const sectionProductType = [
-  {
-    horizontal: true,
-    data: [
-      {
-        key: "1",
-        icon: require("../assets/iconMain/icon-01.png"),
-      },
-      {
-        key: "2",
-        icon: require("../assets/iconMain/icon-02.png"),
-      },
-      {
-        key: "3",
-        icon: require("../assets/iconMain/icon-03.png"),
-      },
-      {
-        key: "4",
-        icon: require("../assets/iconMain/icon-04.png"),
-      },
-      {
-        key: "5",
-        icon: require("../assets/iconMain/icon-05.png"),
-      },
-      {
-        key: "6",
-        icon: require("../assets/iconMain/icon-06.png"),
-      },
-      {
-        key: "7",
-        icon: require("../assets/iconMain/icon-07.png"),
-      },
-      {
-        key: "8",
-        icon: require("../assets/iconMain/icon-08.png"),
-      },
-    ],
-  },
-];
-const sectionProductBrand = [
-  {
-    horizontal: true,
-    data: [
-      {
-        key: "1",
-        icon: require("../assets/iconBrand/brand-01.png"),
-      },
-      {
-        key: "2",
-        icon: require("../assets/iconBrand/brand-02.png"),
-      },
-      {
-        key: "3",
-        icon: require("../assets/iconBrand/brand-03.png"),
-      },
-      {
-        key: "4",
-        icon: require("../assets/iconBrand/brand-04.png"),
-      },
-      {
-        key: "5",
-        icon: require("../assets/iconBrand/brand-05.png"),
-      },
-      {
-        key: "6",
-        icon: require("../assets/iconBrand/brand-06.png"),
-      },
-      {
-        key: "7",
-        icon: require("../assets/iconBrand/brand-07.png"),
-      },
-      {
-        key: "8",
-        icon: require("../assets/iconBrand/brand-08.png"),
-      },
-      {
-        key: "9",
-        icon: require("../assets/iconBrand/brand-09.png"),
-      },
-      {
-        key: "10",
-        icon: require("../assets/iconBrand/brand-10.png"),
-      },
-    ],
-  },
-];
+
+
+// await axios({
+    //   method: "GET",
+    //   url: API_URL.CATEGORY_PRODUCT_LISTVIEW_API,
+    //   timeout: 2000,
+    //   headers: {
+    //     Accept: "application/json",
+    //     "Content-Type": "application/json",
+    //   },
+    // })
+    //   .then(function (response) {
+    //     let newlstType = response.data.data;
+    //     setListProductType(newlstType);
+    //     axios({
+    //       method: "GET",
+    //       url: API_URL.BRANDS_PRODUCT_LISTVIEW_API,
+    //       timeout: 2500,
+    //       headers: {
+    //         Accept: "application/json",
+    //         "Content-Type": "application/json",
+    //       },
+    //     }).then(function (response) {
+    //       let newlstBrands = response.data.data;
+    //       setListProductBrands(newlstBrands);
+    //     });
+    //   })
+    //   .catch(function (error) {
+    //     console.log(error.response);
+    //   });

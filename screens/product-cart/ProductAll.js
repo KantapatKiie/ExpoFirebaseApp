@@ -53,12 +53,15 @@ const defalutPopularProduct = [
 ];
 const defalutPromotionsProduct = [
   {
-    id: 2,
-    name_th: "กระเป๋า เอ",
-    name_en: "Bag A",
-    image: "/storage/2/download-%281%29.jfif",
-    price: "1000.00",
-    total_quantity: "4",
+    id: 4,
+    product_id: 4,
+    product_name_th: "เสื้อผ้า 002",
+    product_name_en: "Clothing 002",
+    product_image: "/storage/4/images.jfif",
+    product_price: 100,
+    product_discount: "-50.00%",
+    promotion_conditions_id: 3,
+    promotions_id: 1,
   },
 ];
 
@@ -76,18 +79,20 @@ function ProductAll(props) {
 
   useEffect(() => {
     loadDataBestsaler();
-    loadDataPopularsaler();
-    // loadDataPromotions();
-  }, []);
+  }, [listBestsale, listPopularSale, listPromotions]);
 
   // Best selling
   const [listBestsale, setListBestsale] = useState(defalutBestsaleProduct);
-  const loadDataBestsaler = async () => {
+  const [listPopularSale, setListPopularSale] = useState(defalutPopularProduct);
+  const [listPromotions, setListPromotions] = useState(
+    defalutPromotionsProduct
+  );
+  async function loadDataBestsaler() {
     await axios
       .get(API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API, {
         headers: {
           Accept: "application/json",
-          Authorization: "Bearer " + (await token),
+          // Authorization: "Bearer " + (await token),
           "Content-Type": "application/json",
           // "X-localization": locale,
         },
@@ -95,18 +100,66 @@ function ProductAll(props) {
           page: 1,
         },
       })
-      .then(function (response) {
-        var lstBestSale = response.data.data.product_lists;
+      .then(async (response) => {
+        var lstBestSale = await response.data.data.product_lists;
         let newlstBestsale = [];
         for (let i = 0; i < 4; i++) {
-          newlstBestsale.push(lstBestSale[i]);
+          if (lstBestSale[i] !== undefined)
+            await newlstBestsale.push(lstBestSale[i]);
         }
-        setListBestsale(newlstBestsale);
+        await setListBestsale(newlstBestsale);
+
+        //Popularity List
+        await axios
+          .get(API_URL.POPULARITY_PRODUCT_LISTVIEW_API, {
+            headers: {
+              Accept: "application/json",
+              // Authorization: "Bearer " + (await token),
+              "Content-Type": "application/json",
+              // "X-localization": locale,
+            },
+            params: {
+              page: 1,
+            },
+          })
+          .then(async (response) => {
+            let lstPopular = await response.data.data.product_lists;
+            let newlstPopular = [];
+            for (let i = 0; i < 4; i++) {
+              if (lstPopular[i] !== undefined)
+                await newlstPopular.push(lstPopular[i]);
+            }
+            await setListPopularSale(lstPopular);
+
+            //Promotion List
+            await axios
+              .get(API_URL.PROMOTIONS_LISTVIEW_HD_API, {
+                headers: {
+                  Accept: "application/json",
+                  Authorization: "Bearer " + (await token),
+                  "Content-Type": "application/json",
+                  "X-localization": locale,
+                },
+                params: {
+                  page: 1,
+                },
+              })
+              .then(async (response) => {
+                let lstPromotions = await response.data.data
+                  .promotions_detail_lists;
+                let newlstPromotions = [];
+                for (let i = 0; i < 4; i++) {
+                  if ((await lstPromotions[i]) !== undefined)
+                    await newlstPromotions.push(lstPromotions[i]);
+                }
+                await setListPromotions(newlstPromotions);
+              });
+          });
       })
       .catch(function (error) {
         console.log(error);
       });
-  };
+  }
   const renderBestsaler = ({ item }) => {
     const selectProductBestsale = async (item) => {
       setLoading(true);
@@ -189,34 +242,6 @@ function ProductAll(props) {
       </Block>
     );
   };
-
-  // Popular selling
-  const [listPopularSale, setListPopularSale] = useState(defalutPopularProduct);
-  const loadDataPopularsaler = async () => {
-    await axios
-      .get(API_URL.POPULARITY_PRODUCT_LISTVIEW_API, {
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer " + (await token),
-          "Content-Type": "application/json",
-          "X-localization": locale,
-        },
-        params: {
-          page: 1,
-        },
-      })
-      .then(function (response) {
-        let lstPopular = response.data.data.product_lists;
-        let newlstPopular = [];
-        for (let i = 0; i < 4; i++) {
-          newlstPopular.push(lstPopular[i]);
-        }
-        setListPopularSale(lstPopular);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  };
   const renderPopularsaler = ({ item }) => {
     const selectProductPopulatrity = async (item) => {
       setLoading(true);
@@ -298,36 +323,6 @@ function ProductAll(props) {
       </Block>
     );
   };
-
-  // Popular selling
-  const [listPromotions, setListPromotions] = useState(
-    defalutPromotionsProduct
-  );
-  const loadDataPromotions = async () => {
-    await axios
-      .get(API_URL.PROMOTIONS_LISTVIEW_HD_API, {
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer " + (await token),
-          "Content-Type": "application/json",
-          "X-localization": locale,
-        },
-        params: {
-          page: 1,
-        },
-      })
-      .then(function (response) {
-        let lstPromotions = response.data.data.promotions_detail_lists;
-        let newlstPromotions = [];
-        for (let i = 0; i < 4; i++) {
-          newlstPromotions.push(lstPromotions[i]);
-        }
-        setListPromotions(newlstPromotions);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  };
   const renderPromotions = ({ item }) => {
     const selectProductPromotions = async (item) => {
       setLoading(true);
@@ -378,7 +373,7 @@ function ProductAll(props) {
       <Block row style={{ marginTop: 10, marginLeft: 7 }} key={item.id}>
         <TouchableOpacity onPress={() => selectProductPromotions(item)}>
           <Image
-            source={{ uri: rootImage + item.image }}
+            source={{ uri: rootImage + item.product_image }}
             style={pdStyle.imageProduct}
           />
           <Block flex style={pdStyle.productDescription}>
@@ -389,7 +384,7 @@ function ProductAll(props) {
                 fontSize: 15,
               }}
             >
-              {locale == "th" ? item.name_th : item.name_en}
+              {locale == "th" ? item.product_name_th : item.product_name_en}
             </Text>
             <Text
               style={{
@@ -402,7 +397,7 @@ function ProductAll(props) {
               }}
             >
               ราคา : {"฿"}
-              {commaNumber(parseFloat(item.price).toFixed(2))}
+              {commaNumber(parseFloat(item.product_price).toFixed(2))}
             </Text>
           </Block>
         </TouchableOpacity>

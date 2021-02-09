@@ -6,7 +6,7 @@ import {
   ImageBackground,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  SectionList,
   Dimensions,
   SafeAreaView,
 } from "react-native";
@@ -42,6 +42,7 @@ const defaultListProductType = [
 ];
 
 function ProductType(props) {
+  var LOAD_MORE = formatTr("LOAD_MORE").toString();
   const locale = useSelector(({ i18n }) => i18n.lang);
   if (locale === "th") {
     moment.locale("th");
@@ -153,89 +154,101 @@ function ProductType(props) {
 
   return (
     <>
-      <ScrollView style={{ backgroundColor: "white" }}>
-        {/* Title */}
-        <TouchableOpacity onPress={() => props.navigation.navigate("Sign In")}>
-          <Block
-            row
-            style={{
-              paddingTop: 20,
-              paddingLeft: 20,
-              backgroundColor: "white",
-            }}
-          >
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 25,
-              }}
-            >
-              ของใช้และของเล่นเด็ก
-            </Text>
-          </Block>
-        </TouchableOpacity>
+      <SafeAreaView style={{ flex: 1 }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={PRODUCT_TYPE_LIST}
+          renderSectionHeader={() => (
+            <>
+              {/* Title */}
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate("Sign In")}
+              >
+                <Block
+                  row
+                  style={{
+                    paddingTop: 20,
+                    paddingLeft: 20,
+                    backgroundColor: "white",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      fontSize: 25,
+                    }}
+                  >
+                    ของใช้และของเล่นเด็ก
+                  </Text>
+                </Block>
+              </TouchableOpacity>
 
-        {/* Filter */}
-        <Block row style={{ marginLeft: 10 }}>
-          <Image
-            style={{ width: 35, height: 35, marginTop: 8 }}
-            source={require("../../assets/iconSignIn/filter-1.png")}
-          />
-          <Block row style={styles.search}>
-            <Text
-              style={{
-                color: "#7d7d7d",
-                fontFamily: "kanitRegular",
-                fontSize: 15,
-                marginTop: 5,
-                marginLeft: 10,
-              }}
-            >
-              {"ตัวกรอง"}
-            </Text>
-            <TouchableOpacity
-              style={{
-                marginLeft: "67%",
-              }}
-            >
-              <Image
-                style={{
-                  width: 34,
-                  height: 34,
-                }}
-                source={require("../../assets/iconSignIn/filter-2.png")}
+              {/* Filter */}
+              <Block row style={{ marginLeft: 10 }}>
+                <Image
+                  style={{ width: 35, height: 35, marginTop: 8 }}
+                  source={require("../../assets/iconSignIn/filter-1.png")}
+                />
+                <Block row style={styles.search}>
+                  <Text
+                    style={{
+                      color: "#7d7d7d",
+                      fontFamily: "kanitRegular",
+                      fontSize: 15,
+                      marginTop: 5,
+                      marginLeft: 10,
+                    }}
+                  >
+                    {"ตัวกรอง"}
+                  </Text>
+                  <TouchableOpacity
+                    style={{
+                      marginLeft: "67%",
+                    }}
+                  >
+                    <Image
+                      style={{
+                        width: 34,
+                        height: 34,
+                      }}
+                      source={require("../../assets/iconSignIn/filter-2.png")}
+                    />
+                  </TouchableOpacity>
+                </Block>
+              </Block>
+
+              {/* ListItem */}
+              <FlatList
+                data={stateObj}
+                style={styles.containers}
+                renderItem={renderProduct}
+                numColumns={2}
+                keyExtractor={(item) => item.id.toString()}
               />
-            </TouchableOpacity>
-          </Block>
-        </Block>
 
-        {/* ListItem */}
-        <SafeAreaView style={{ flex: 1 }}>
-          <FlatList
-            data={stateObj}
-            style={styles.containers}
-            renderItem={renderProduct}
-            numColumns={2}
-            keyExtractor={(item) => item.id.toString()}
-          />
-        </SafeAreaView>
+              {/* Load More */}
+              <TouchableOpacity
+                onPress={onLoadMoreProduct}
+                style={{ marginBottom: 15 }}
+              >
+                <Text
+                  style={styles.loadMoreText}
+                  size={14}
+                  color={theme.COLORS.PRIMARY}
+                >
+                  {LOAD_MORE + " >"}
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
+          renderSectionFooter={() => <>{<WangdekInfo />}</>}
+          renderItem={() => {
+            return null;
+          }}
+        />
+      </SafeAreaView>
 
-        {/* Load More */}
-        <TouchableOpacity
-          onPress={onLoadMoreProduct}
-          style={{ marginBottom: 15 }}
-        >
-          <Text
-            style={styles.loadMoreText}
-            size={14}
-            color={theme.COLORS.PRIMARY}
-          >
-            {formatTr("LOAD_MORE") + " >"}
-          </Text>
-        </TouchableOpacity>
-        <WangdekInfo />
-      </ScrollView>
       <ModalLoading loading={loading} />
     </>
   );
@@ -323,3 +336,16 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 });
+
+const PRODUCT_TYPE_LIST = [
+  {
+    title: "Mock",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
+    ],
+  },
+];

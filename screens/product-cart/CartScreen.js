@@ -91,15 +91,16 @@ function CartScreen(props) {
       },
     })
       .then(function (response) {
+        console.log(response.data)
         setListCarts(response.data.data);
         setLoading(false);
         // props.setListTrCartScreen(response.data.data)
-        // console.log(listTrCartScreen)
       })
       .catch(function (error) {
         setLoading(true);
-        console.log(false);
+        console.log(error);
       });
+    setLoading(false);
   };
   const renderCartLists = ({ item }) => {
     const onChangeNumericInputValue = (value) => {
@@ -199,7 +200,6 @@ function CartScreen(props) {
       </Block>
     );
   };
-
   const addCartListProducts = async () => {
     setLoading(true);
     await axios({

@@ -1,6 +1,15 @@
 import { persistReducer } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
+// import {
+//   put,
+//   all,
+//   takeLatest,
+//   call,
+//   select,
+//   takeEvery,
+// } from "redux-saga/effects";
+// import { GetBestsaler } from "./ActionHomeCallApi";
 
 const actionTypes = {
   setObjHomeHD: "OBJ_HOME_MASTER_VIEW_PAGE_HD",
@@ -10,6 +19,9 @@ const actionTypes = {
   pushListTrSearchHD: "PUSH_SET_LIST_TR_HOME_MASTER_VIEW_PAGE",
   setEditable: "SET_EDITABLE_HOME_MASTER_VIEW_PAGE",
   setListCouponHD: "SET_LIST_COUPON_HOME_MASTER_VIEW_PAGE",
+
+  //LoadData
+  loadDataHomePageSaga: "LOAD_DATA_HOMEPAGE_HD_SAGA",
 };
 
 const initialState = {
@@ -20,9 +32,7 @@ const initialState = {
     timeEnds: 0,
   },
   listTrSearchHD: [],
-  listCouponHD: []
-  // disabledInput: false,
-  // editable: false,
+  listCouponHD: [],
 };
 
 export const reducer = persistReducer(
@@ -74,7 +84,6 @@ export const actions = {
     type: actionTypes.setObjHomeHD,
     payload: { obj },
   }),
-
   clearObjHomeHD: () => ({ type: actionTypes.clearObjHomeHD }),
   setDisabledInput: (bool) => ({
     type: actionTypes.setDisabledInput,
@@ -97,4 +106,35 @@ export const actions = {
     type: actionTypes.setListCouponHD,
     payload: { obj },
   }),
+
+  loadDataHomePageSaga: item => ({
+    type: actionTypes.loadDataHomePageSaga,
+    payload: { item }
+  }),
 };
+
+// export function* saga() {
+//   yield takeLatest(
+//     actionTypes.loadDataHomePageSaga,
+//     function* LoadDataHomePageSaga() {
+//       const homeHDD = (state) => state.homeHDD;
+//       const { objHomeHD } = yield select(homeHDD);
+
+//       const responseListBestsaler = yield call(GetBestsaler);
+//       console.log(responseListBestsaler)
+
+//       // // Clone Object
+//       // let newObj = { ...objHomeHD };
+
+//       // try {
+//       //   newObj.TEST1 = "newVehicle.MAKE_CODE";
+//       //   newObj.TEST2 = "newVehicle.MAKE_NAME";
+
+//       //   // set hd and Vehicle, cust
+//       //   yield put(actions.setRepairOrderHD(newObj));
+//       // } catch (error) {
+//       //   console.log(error);
+//       // }
+//     }
+//   );
+// }

@@ -54,7 +54,7 @@ function FavoriteView(props) {
   }
   var LOAD_MORE = formatTr("LOAD_MORE").toString();
   const [loading, setLoading] = useState(null);
-  
+
   const { objFavoriteView } = useSelector((state) => ({
     objFavoriteView: state.actionFavoriteView.objFavoriteView,
   }));

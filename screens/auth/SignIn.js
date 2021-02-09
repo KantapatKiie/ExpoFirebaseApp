@@ -17,7 +17,7 @@ import {
 import axios from "axios";
 import moment from "moment";
 import ModalLoading from "../../components/ModalLoading";
-import { getToken, setToken } from "../../store/mock/token";
+import { getToken, setToken, removeToken } from "../../store/mock/token";
 import { actions as ActionEditProfile } from "../../actions/action-actives/ActionEditProfile";
 import { Block } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
@@ -131,6 +131,7 @@ function SignIn(props) {
 
   // Login
   const LoginAccount = () => {
+    removeToken("");
     setLoading(true);
     let newLogin = Object.assign({}, objLoginMasterHD);
     const reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -166,14 +167,15 @@ function SignIn(props) {
                 newLogin.CREATE_BY = response.data.data.user.created_by;
                 newLogin.UPDATED_BY = response.data.data.user.updated_by;
                 newLogin.DELETED_AT = response.data.data.user.deleted_at;
-                await setToken(response.data.data.token);
+                let tokenGenerate = await response.data.data.token;
+                await setToken(tokenGenerate);
 
                 //get UserInfo
-                axios
+                await axios
                   .get(API_URL.USER_INFO_API, {
                     headers: {
                       Accept: "application/json",
-                      Authorization: "Bearer " + (await token),
+                      Authorization: "Bearer " + (await tokenGenerate),
                     },
                   })
                   .then(function (response) {
@@ -341,21 +343,23 @@ function SignIn(props) {
                   ToastAndroid.SHORT
                 );
               });
-          }, 800);
+          }, 1000);
         } else {
+          setLoading(false);
           setLoggedinStatus(false);
           setRequiredPass(false);
           setRequiredEmail(true);
           ToastAndroid.show("Email was Wrong", ToastAndroid.SHORT);
         }
       } else {
+        setLoading(false);
         setLoggedinStatus(false);
         setRequiredPass(true);
       }
-      setLoggedinStatus(false);
     } else {
       setRequiredEmail(true);
       setRequiredPass(true);
+      setLoading(false);
       ToastAndroid.show(
         "Please enter your email & password",
         ToastAndroid.SHORT
@@ -364,15 +368,15 @@ function SignIn(props) {
     setLoading(false);
   };
   // Logout
-  const LogoutAccount = () => {
-    setLoggedinStatus(false);
+  const LogoutAccount = async () => {
     setStateObj({
       email: "",
       password: "",
     });
-    // setUserData("");
-    setToken("");
-    ToastAndroid.show("Logout Account", ToastAndroid.SHORT);
+    setLoggedinStatus(false);
+    removeToken("");
+
+    ToastAndroid.show("Logout successfully", ToastAndroid.SHORT);
   };
   // Facbook login
   const [userData, setUserData] = useState(null);
@@ -477,7 +481,7 @@ function SignIn(props) {
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {isLoggedin ? ( //Not Login
+        {!isLoggedin ? ( //Not Login
           <>
             {/* Title */}
             <Block
