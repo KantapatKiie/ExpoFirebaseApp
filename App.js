@@ -9,6 +9,10 @@ import { Provider } from "react-redux";
 import { rootReducer } from "./store/rootDuck";
 import * as Font from "expo-font";
 import AppLoading from "expo-app-loading";
+import axios from "axios";
+import curlirize from 'axios-curlirize';
+
+// curlirize(axios);
 
 //SET STATE (store)
 const store = createStore(rootReducer);

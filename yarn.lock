@@ -2275,6 +2275,11 @@ available-typed-arrays@^1.0.2:
   dependencies:
     array-filter "^1.0.0"
 
+axios-curlirize@^1.3.7:
+  version "1.3.7"
+  resolved "https://registry.yarnpkg.com/axios-curlirize/-/axios-curlirize-1.3.7.tgz#0153c51a5af0e92370169daea33f234d588baad1"
+  integrity sha512-csSsuMyZj1dv1fL0zRPnDAHWrmlISMvK+wx9WJI/igRVDT4VMgbf2AVenaHghFLfI1nQijXUevYEguYV6u5hjA==
+
 axios@^0.21.1:
   version "0.21.1"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.1.tgz#22563481962f4d6bde9a76d516ef0e5d3c09b2b8"
@@ -3558,11 +3563,6 @@ expo-sqlite@~8.5.0:
   dependencies:
     "@expo/websql" "^1.0.1"
     lodash "^4.17.15"
-
-expo-status-bar@~1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/expo-status-bar/-/expo-status-bar-1.0.3.tgz#62b4d6145680abd43ba6ecfa465f835e88bf6263"
-  integrity sha512-/Orgla1nkIrfswNHbuAOTbPVq0g3+GrhoQVk7MRafY2dwrFLgXhaPExS+eN2hpmzqPv2LG5cqAZDCQUAjmZYBQ==
 
 expo-updates@~0.4.1:
   version "0.4.1"
@@ -6396,14 +6396,6 @@ react-native-modal-dropdown@~0.7.0:
     deprecated-react-native-listview "0.0.5"
     prop-types "^15.6.0"
 
-react-native-numeric-input@^1.8.3:
-  version "1.8.3"
-  resolved "https://registry.yarnpkg.com/react-native-numeric-input/-/react-native-numeric-input-1.8.3.tgz#e869aa1b60d0c38b92e84e44bb28944f48b4ccd3"
-  integrity sha512-8MeAgbM4+doAkwjPg7iEA604z4d7krJz9r0755YThldCdIvwWZh5VbtRDHxbkMVQ2Ix5xRujFSn7uQWMtln8RA==
-  dependencies:
-    prop-types "^15.6.1"
-    react-native-pixel-perfect "^1.0.1"
-
 react-native-paper@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/react-native-paper/-/react-native-paper-4.5.0.tgz#5f1f1e658dbd7a322a299e08ce76e22be44c01d5"
@@ -6413,7 +6405,7 @@ react-native-paper@^4.5.0:
     color "^3.1.2"
     react-native-iphone-x-helper "^1.3.1"
 
-react-native-pixel-perfect@^1.0.1:
+react-native-pixel-perfect@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/react-native-pixel-perfect/-/react-native-pixel-perfect-1.0.2.tgz#8e6dc97e377caa4bd07f9e584ba438d53c0e25e8"
   integrity sha512-0IvYCNkxuQbQC9q4tI+C3i6o38nbx916p7gBRBWuPxDhKBCuTkVV3VukcfW6vtjRlwQm6kwQcF9OtI+yUBt+YA==
@@ -6791,6 +6783,14 @@ rimraf@~2.2.6:
   version "2.2.8"
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.2.8.tgz#e439be2aaee327321952730f99a8929e4fc50582"
   integrity sha1-5Dm+Kq7jJzIZUnMPmaiSnk/FBYI=
+
+rn-numeric-input@^1.9.4:
+  version "1.9.4"
+  resolved "https://registry.yarnpkg.com/rn-numeric-input/-/rn-numeric-input-1.9.4.tgz#e3bf4a0b6aa136d33f4237a78a733a463cd287c2"
+  integrity sha512-WlMm4kAXbt5QM9Dm2rfAlap5S8XqfivdycxXVBq3DP+cJDVwwKDM6vM+bJUePmDel7JbJ275npOTN39iQ1scmg==
+  dependencies:
+    prop-types "^15.6.1"
+    react-native-pixel-perfect "^1.0.2"
 
 rsvp@^4.8.4:
   version "4.8.5"

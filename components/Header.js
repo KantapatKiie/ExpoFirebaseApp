@@ -24,6 +24,9 @@ import { connect, useSelector } from "react-redux";
 import { actions as ActionProductType } from "../actions/action-product-type/ActionProductType";
 import ModalLoading from "../components/ModalLoading";
 import { SafeAreaView } from "react-native";
+// import curlirize from 'axios-curlirize';
+
+// curlirize(axios);
 
 const { width } = Dimensions.get("window");
 let token = getToken();
@@ -44,26 +47,29 @@ function Header(props) {
   //Count Cart
   const [countCart, setCountCart] = useState(0);
   async function loadCountCart() {
-    await axios({
-      method: "GET",
-      url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
-      timeout: 2500,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => {
-        if (response.data.data.result != undefined) {
-          setCountCart(response.data.data.result);
-        } else {
-          setCountCart(null);
-        }
+    if ((await token) !== null && (await token) !== undefined) {
+      await axios({
+        method: "GET",
+        url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
+        timeout: 2500,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + (await token),
+        },
       })
-      .catch(function (error) {
-        setCountCart(null);
-        console.log(error);
-      });
+        .then((response) => {
+          if (response.data.data.result != undefined) {
+            setCountCart(response.data.data.result);
+          } else {
+            setCountCart(null);
+          }
+        })
+        .catch(function (error) {
+          setCountCart(null);
+          console.log(error);
+        });
+    }
   }
 
   const ModalNotification = ({ style, navigation }) => {
@@ -1320,45 +1326,33 @@ function Header(props) {
   const [listProductType, setListProductType] = useState(null);
   const [listProductBrands, setListProductBrands] = useState(null);
   async function loadDataType() {
-    console.log(API_URL.CATEGORY_PRODUCT_LISTVIEW_API)
-    await fetch(API_URL.CATEGORY_PRODUCT_LISTVIEW_API, {
+    await axios({
       method: "GET",
-      mode: "cors",
-      cache: "no-cache",
+      url: API_URL.CATEGORY_PRODUCT_LISTVIEW_API,
+      timeout: 2000,
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
     })
-      .then((response) => response.json())
-      .then((response) => {
-        let newlstType = response.data;
+      .then(function (response) {
+        let newlstType = response.data.data;
         setListProductType(newlstType);
+        axios({
+          method: "GET",
+          url: API_URL.BRANDS_PRODUCT_LISTVIEW_API,
+          timeout: 2500,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }).then(function (response) {
+          let newlstBrands = response.data.data;
+          setListProductBrands(newlstBrands);
+        });
       })
       .catch(function (error) {
-        console.log(error);
-      });
-  }
-  async function loadDateBrands() {
-    console.log(API_URL.BRANDS_PRODUCT_LISTVIEW_API)
-    await fetch(API_URL.BRANDS_PRODUCT_LISTVIEW_API, {
-      method: "GET",
-      mode: "cors",
-      cache: "no-cache",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        console.log(response.data)
-        let newlstBrands = response.data;
-        setListProductBrands(newlstBrands);
-      })
-      .catch(function (error) {
-        console.log(error, 'Brands Type');
+        console.log(error.response);
       });
   }
   const ListTypeProduct = ({ item }) => {
@@ -1442,8 +1436,7 @@ function Header(props) {
   };
 
   useLayoutEffect(() => {
-    // loadDataType();
-    // loadDateBrands();
+    loadDataType();
     // loadCountCart();
   }, []);
 
@@ -1617,7 +1610,7 @@ const styles2 = StyleSheet.create({
     height: 42,
     padding: 0,
     shadowColor: "#e0e0e0",
-    elevation: 0.5
+    elevation: 0.5,
   },
   sectionHeader: {
     fontWeight: "800",
@@ -1649,33 +1642,31 @@ const styles2 = StyleSheet.create({
   },
 });
 
-
-
 // await axios({
-    //   method: "GET",
-    //   url: API_URL.CATEGORY_PRODUCT_LISTVIEW_API,
-    //   timeout: 2000,
-    //   headers: {
-    //     Accept: "application/json",
-    //     "Content-Type": "application/json",
-    //   },
-    // })
-    //   .then(function (response) {
-    //     let newlstType = response.data.data;
-    //     setListProductType(newlstType);
-    //     axios({
-    //       method: "GET",
-    //       url: API_URL.BRANDS_PRODUCT_LISTVIEW_API,
-    //       timeout: 2500,
-    //       headers: {
-    //         Accept: "application/json",
-    //         "Content-Type": "application/json",
-    //       },
-    //     }).then(function (response) {
-    //       let newlstBrands = response.data.data;
-    //       setListProductBrands(newlstBrands);
-    //     });
-    //   })
-    //   .catch(function (error) {
-    //     console.log(error.response);
-    //   });
+//   method: "GET",
+//   url: API_URL.CATEGORY_PRODUCT_LISTVIEW_API,
+//   timeout: 2000,
+//   headers: {
+//     Accept: "application/json",
+//     "Content-Type": "application/json",
+//   },
+// })
+//   .then(function (response) {
+//     let newlstType = response.data.data;
+//     setListProductType(newlstType);
+//     axios({
+//       method: "GET",
+//       url: API_URL.BRANDS_PRODUCT_LISTVIEW_API,
+//       timeout: 2500,
+//       headers: {
+//         Accept: "application/json",
+//         "Content-Type": "application/json",
+//       },
+//     }).then(function (response) {
+//       let newlstBrands = response.data.data;
+//       setListProductBrands(newlstBrands);
+//     });
+//   })
+//   .catch(function (error) {
+//     console.log(error.response);
+//   });

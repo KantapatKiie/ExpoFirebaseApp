@@ -187,8 +187,6 @@ function PaymentNotifications(props) {
 
     if (!result.cancelled) {
       setImagePicker(path);
-      
-      // console.log(`data:image/gif;base64,${imagePicker}`)
     } else {
       ToastAndroid.show("Not Seleted Images", ToastAndroid.SHORT);
     }

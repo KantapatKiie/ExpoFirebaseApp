@@ -20,7 +20,7 @@ import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import * as ActionCart from "../../actions/action-cart/ActionCart";
 import WangdekInfo from "../../components/WangdekInfo";
-import NumericInput from "react-native-numeric-input";
+import NumericInput from 'rn-numeric-input'
 import { Button } from "react-native-elements";
 import commaNumber from "comma-number";
 import { API_URL } from "../../config/config.app";
@@ -68,7 +68,7 @@ function CartScreen(props) {
       ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
       setRefreshingPage(false);
     });
-  }, [listCarts]);
+  }, []);
   // const { objCartScreen } = useSelector((state) => ({
   //   objCartScreen: state.actionCart.objCartScreen,
   // }));
@@ -78,7 +78,7 @@ function CartScreen(props) {
   }, []);
 
   const [listCarts, setListCarts] = useState(defaultCartListOrders);
-  const loadCartLists = async () => {
+  async function loadCartLists() {
     setLoading(true);
     await axios({
       method: "GET",
@@ -87,12 +87,12 @@ function CartScreen(props) {
         Accept: "*/*",
         Authorization: "Bearer " + (await token),
         "Content-Type": "application/json",
-        "X-localization": locale,
+        // "X-localization": locale,
       },
     })
-      .then(function (response) {
-        console.log(response.data)
-        setListCarts(response.data.data);
+      .then(async (response) => {
+        let newlst = await response.data.data;
+        setListCarts(newlst);
         setLoading(false);
         // props.setListTrCartScreen(response.data.data)
       })
@@ -101,7 +101,7 @@ function CartScreen(props) {
         console.log(error);
       });
     setLoading(false);
-  };
+  }
   const renderCartLists = ({ item }) => {
     const onChangeNumericInputValue = (value) => {
       let oldlst = listCarts.filter((key) => key.product_id != item.product_id);
@@ -152,10 +152,12 @@ function CartScreen(props) {
             {/* quantity */}
             <Block row>
               <Text style={styles.detailText}>จำนวน : </Text>
+              
               <NumericInput
                 initValue={item.quantity}
                 // value={numericInputValue}
                 onChange={onChangeNumericInputValue}
+                onLimitReached={(isMax,msg) => console.log(isMax,msg)}
                 totalWidth={110}
                 totalHeight={35}
                 iconSize={18}
@@ -262,6 +264,7 @@ function CartScreen(props) {
                 renderItem={renderCartLists}
                 numColumns={1}
                 keyExtractor={(item) => item.cart_id.toString()}
+                listKey={(item) => item.cart_id}
               />
 
               {/* Button */}
@@ -298,7 +301,6 @@ function CartScreen(props) {
           }}
         />
       </SafeAreaView>
-
       <ModalLoading loading={loading} />
     </>
   );

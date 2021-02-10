@@ -21,7 +21,7 @@ import { actions as ActionProduct } from "../../actions/action-product/ActionPro
 import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
 import WangdekInfo from "../../components/WangdekInfo";
 import ReadMore from "react-native-read-more-text";
-import NumericInput from "react-native-numeric-input";
+import NumericInput from 'rn-numeric-input'
 import { LinearGradient } from "expo-linear-gradient";
 import { ProgressBar, Colors } from "react-native-paper";
 import CountDown from "react-native-countdown-component";
@@ -394,6 +394,7 @@ function ProductDetail(props) {
               initValue={parseInt(objProductActivity.quantity)}
               value={parseInt(objProductActivity.quantity)}
               onChange={(value) => onChangeValue(value)}
+              onLimitReached={(isMax,msg) => console.log(isMax,msg)}
               totalWidth={125}
               totalHeight={32}
               iconSize={18}

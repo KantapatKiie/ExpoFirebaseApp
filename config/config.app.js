@@ -1,8 +1,8 @@
 // const { REACT_NATIVE_APP_URL_API, REACT_NATIVE_APP_DELAY_SEARCH } = process.env;
 // export const DELAY_SEARCH = REACT_NATIVE_APP_DELAY_SEARCH;
 
-// const { REACT_NATIVE_APP_AUTH_API } = "http://wangdek.am2bmarketing.co.th/api/v1" 
-// const REACT_NATIVE_APP_API = "http://10.0.1.37:8080/api/v1";
+// const { REACT_NATIVE_APP_AUTH_API } = "http://wangdek.am2bmarketing.co.th/api/v1"
+// const REACT_NATIVE_APP_API = "http://10.0.1.61:8080/api/v1";
 const REACT_NATIVE_APP_API = "http://newpclinic.com/wd/api/v1";
 
 export const API_URL = {
@@ -12,6 +12,7 @@ export const API_URL = {
   USER_INFO_API: REACT_NATIVE_APP_API + "/user",
   EDIT_USER_PROFILE_API: REACT_NATIVE_APP_API + "/user",
   CHANGE_PASSWORD_API: REACT_NATIVE_APP_API + "/user/change_pass",
+  IMAGE_PROFILE_UPLOAD_API: REACT_NATIVE_APP_API + "/user/image_profile",
   PROVINCE_API: REACT_NATIVE_APP_API + "/provinces",
   DISTRICT_API: REACT_NATIVE_APP_API + "/districts",
   SUB_DISTRICT_API: REACT_NATIVE_APP_API + "/sub_districts",
@@ -20,21 +21,24 @@ export const API_URL = {
   FALSH_SALE_VIEW_API: REACT_NATIVE_APP_API + "/flashsales",
   COUPON_LIST_TR_API: REACT_NATIVE_APP_API + "/coupon/list",
   FAVORITE_VIEW_LIST_API: REACT_NATIVE_APP_API + "/user/favorite",
-  HISTORY_ORDER_LIST_API: REACT_NATIVE_APP_API + "/user/history/{search_orderid}",
+  HISTORY_ORDER_LIST_API:
+    REACT_NATIVE_APP_API + "/user/history/{search_orderid}",
   HISTORY_ORDER_LIST_SEARCH_API: REACT_NATIVE_APP_API + "/user/history/",
   HISTORY_ORDER_DETAIL_LIST_API: REACT_NATIVE_APP_API + "/user/history_detail/",
 
   //API_PRODUCT
-  BEST_SELLING_PRODUCT_LISTVIEW_API : REACT_NATIVE_APP_API + "/products/best_selling",
-  POPULARITY_PRODUCT_LISTVIEW_API : REACT_NATIVE_APP_API + "/products/popularity",
-  CATEGORY_PRODUCT_LISTVIEW_API : REACT_NATIVE_APP_API + "/products/category",
-  CATEGORY_PRODUCT_SEARCH_API : REACT_NATIVE_APP_API + "/products/category/",
-  BRANDS_PRODUCT_LISTVIEW_API : REACT_NATIVE_APP_API + "/brands/",
-  PRODUCT_SEARCH_HD_API : REACT_NATIVE_APP_API + "/products/",
+  BEST_SELLING_PRODUCT_LISTVIEW_API:
+    REACT_NATIVE_APP_API + "/products/best_selling",
+  POPULARITY_PRODUCT_LISTVIEW_API:
+    REACT_NATIVE_APP_API + "/products/popularity",
+  CATEGORY_PRODUCT_LISTVIEW_API: REACT_NATIVE_APP_API + "/products/category",
+  CATEGORY_PRODUCT_SEARCH_API: REACT_NATIVE_APP_API + "/products/category/",
+  BRANDS_PRODUCT_LISTVIEW_API: REACT_NATIVE_APP_API + "/brands/",
+  PRODUCT_SEARCH_HD_API: REACT_NATIVE_APP_API + "/products/",
 
   //PROMOTION
-  PROMOTIONS_LISTVIEW_HD_API : REACT_NATIVE_APP_API + "/promotions",
-  PROMOTIONS_SEARCH_HD_API : REACT_NATIVE_APP_API + "/promotions/",
+  PROMOTIONS_LISTVIEW_HD_API: REACT_NATIVE_APP_API + "/promotions",
+  PROMOTIONS_SEARCH_HD_API: REACT_NATIVE_APP_API + "/promotions/",
 
   // CART_API
   ADD_CART_ORDER_LISTVIEW_API: REACT_NATIVE_APP_API + "/cart",
@@ -51,4 +55,8 @@ export const API_URL = {
 
   //LOGISTICS
   LOGISTICS_LIST_HD_API: REACT_NATIVE_APP_API + "/logistics",
+
+  //ORDER
+  CREATE_ORDER_HD_API: REACT_NATIVE_APP_API + "/orders",
+  CANCEL_ORDER_HD_API: REACT_NATIVE_APP_API + "/orders/",
 };

@@ -3,7 +3,7 @@ import { connect, useSelector } from "react-redux";
 import {
   FlatList,
   Image,
-  View,
+  RefreshControl,
   SectionList,
   SafeAreaView,
   ImageBackground,
@@ -54,6 +54,19 @@ function FavoriteView(props) {
   }
   var LOAD_MORE = formatTr("LOAD_MORE").toString();
   const [loading, setLoading] = useState(null);
+  const [refreshingPage, setRefreshingPage] = useState(false);
+  const onRefreshPageNow = React.useCallback(() => {
+    const wait = (timeout) => {
+      return new Promise((resolve) => setTimeout(resolve, timeout));
+    };
+    setRefreshingPage(true);
+    wait(1000).then(() => {
+      setNumList(2);
+      loadListFavorite();
+      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      setRefreshingPage(false);
+    });
+  }, []);
 
   const { objFavoriteView } = useSelector((state) => ({
     objFavoriteView: state.actionFavoriteView.objFavoriteView,
@@ -221,6 +234,12 @@ function FavoriteView(props) {
         <SectionList
           stickySectionHeadersEnabled={false}
           sections={FAVORITE_LIST}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshingPage}
+              onRefresh={onRefreshPageNow}
+            />
+          }
           renderSectionHeader={() => (
             <>
               {/* Title */}

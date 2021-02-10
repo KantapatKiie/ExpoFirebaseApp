@@ -13,7 +13,6 @@ import {
 import moment from "moment";
 import "moment-duration-format";
 import { Block, Text, theme } from "galio-framework";
-import { StatusBar } from "expo-status-bar";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
 
@@ -158,7 +157,6 @@ function NewsRelation(props) {
       {/* Information List */}
       <Block flex center style={styles.home}>
         <View style={styles2.container}>
-          <StatusBar style="auto" />
           <SafeAreaView style={{ flex: 1 }}>
             <SectionList
               stickySectionHeadersEnabled={false}

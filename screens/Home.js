@@ -19,7 +19,6 @@ import moment from "moment";
 import "moment-duration-format";
 import "moment/locale/th";
 import "moment/locale/en-au";
-import { StatusBar } from "expo-status-bar";
 import { withNavigation } from "@react-navigation/compat";
 import { connect, useSelector } from "react-redux";
 import { Block, Text, theme } from "galio-framework";
@@ -125,8 +124,8 @@ function Home(props) {
   useEffect(() => {
     setModalVisible(false); // Popup Coupon
     // loadDataFlashsale();
-    // loadDataProductLists();
     // loadDataCoupon();
+    // loadDataProductLists();
   }, []);
 
   //#region Time & Translate
@@ -160,8 +159,8 @@ function Home(props) {
       })
       .then(async (response) => {
         let objNew = Object.assign({}, objHomeHD);
-        let dateEnds = moment(response.data.data.end_at, "YYYY-MM-DD HH:mm");
-        let dateTimeNow = moment(new Date(), "YYYY-MM-DD HH:mm");
+        let dateEnds = moment(await response.data.data.end_at, "YYYY-MM-DD HH");
+        let dateTimeNow = moment(new Date(), "YYYY-MM-DD HH");
         objNew.timeEnds = await dateEnds.diff(dateTimeNow, "times");
 
         setCountDownTime(objNew.timeEnds);
@@ -182,21 +181,23 @@ function Home(props) {
   // Coupon
   const [couponList, setCouponList] = useState(defalutCouponList);
   const loadDataCoupon = async () => {
-    await axios
-      .get(API_URL.COUPON_LIST_TR_API, {
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer " + (await token),
-          "Content-Type": "application/json",
-        },
-      })
-      .then((response) => {
-        setCouponList(response.data.data);
-        props.setListCouponHD(response.data.data);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    if ((await token) !== null && (await token) !== undefined) {
+      await axios
+        .get(API_URL.COUPON_LIST_TR_API, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          setCouponList(response.data.data);
+          props.setListCouponHD(response.data.data);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   };
   const ListItemCoupon = ({ item }) => {
     return (
@@ -604,7 +605,6 @@ function Home(props) {
 
   return (
     <>
-      <StatusBar style="dark" />
       <SafeAreaView style={{ flex: 1 }}>
         <SectionList
           stickySectionHeadersEnabled={false}

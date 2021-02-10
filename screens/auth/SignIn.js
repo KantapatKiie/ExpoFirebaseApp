@@ -23,11 +23,13 @@ import { Block } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import * as Facebook from "expo-facebook";
 import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 import WangdekInfo from "../../components/WangdekInfo";
 import { API_URL } from "../../config/config.app";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
+const rootImage = "http://newpclinic.com/wd";
 
 if (
   Platform.OS === "android" &&
@@ -39,6 +41,7 @@ if (
 const defalutLoginMasterHD = {
   EMAIL: "",
   PASSWORD: "",
+  IMAGE: "",
   TOKEN: "",
   ID: 0,
   GUEST: 0,
@@ -128,10 +131,66 @@ function SignIn(props) {
   const [loading, setLoading] = useState(false);
   const [requiredEmail, setRequiredEmail] = useState(false);
   const [requiredPass, setRequiredPass] = useState(false);
+  const [imagePicker, setImagePicker] = useState(null);
+  const [loadImageUser, setLoadImageUser] = useState(null);
+  // Image Picker Profile
+  const pickImageUpload = async () => {
+    // let result = await ImagePicker.launchImageLibraryAsync({
+    //   mediaTypes: ImagePicker.MediaTypeOptions.All,
+    //   allowsEditing: true,
+    //   aspect: [4, 3],
+    //   quality: 1,
+    // });
+    let result = await DocumentPicker.getDocumentAsync({
+      type: "*/*",
+      allowsEditing: false,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
+    const path =
+      Platform.OS === "android"
+        ? result.uri.replace(
+            "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540kiieky%252Fexpofirebase/DocumentPicker/",
+            ""
+          )
+        : result.uri.replace("file://", "");
+
+    const formData = new FormData();
+    formData.append("avatar", {
+      uri: path,
+      name: "avatar",
+      type: "image/jpeg",
+    });
+
+    if (!result.cancelled) {
+      setLoadImageUser(null);
+      setImagePicker(result.uri);
+      await axios({
+        method: "POST",
+        url: API_URL.IMAGE_PROFILE_UPLOAD_API,
+        headers: {
+          Authorization: "Bearer " + (await token),
+          Accept: "application/json",
+          "Content-Type": "multipart/form-data boundary=",
+        },
+        body: {
+          avatar: formData,
+        },
+      })
+        .then(function (response) {
+          console.log(response.data);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    } else {
+      ToastAndroid.show("Not Seleted Images", ToastAndroid.SHORT);
+    }
+  };
   // Login
   const LoginAccount = () => {
-    removeToken("");
+    removeToken();
     setLoading(true);
     let newLogin = Object.assign({}, objLoginMasterHD);
     const reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -152,34 +211,31 @@ function SignIn(props) {
               },
             })
               .then(async (response) => {
-                newLogin.EMAIL = stateObj.email;
-                newLogin.PASSWORD = stateObj.email;
-                newLogin.TOKEN = response.data.data.token;
-                newLogin.ID = response.data.data.user.id;
-                newLogin.GUEST = response.data.data.user.guest;
-                newLogin.FIRST_NAME = response.data.data.user.first_name;
-                newLogin.LAST_NAME = response.data.data.user.last_name;
-                newLogin.ACTIVE = response.data.data.user.active;
-                newLogin.EMAIL_VERIFIED_AT =
-                  response.data.data.user.email_verified_at;
-                newLogin.CREATE_AT = response.data.data.user.created_at;
-                newLogin.UPDATED_AT = response.data.data.user.updated_at;
-                newLogin.CREATE_BY = response.data.data.user.created_by;
-                newLogin.UPDATED_BY = response.data.data.user.updated_by;
-                newLogin.DELETED_AT = response.data.data.user.deleted_at;
+                newLogin.EMAIL = response.data.data.user[0].email;
+                newLogin.PASSWORD = stateObj.password;
+                newLogin.ID = response.data.data.user[0].id;
+                newLogin.FIRST_NAME = response.data.data.user[0].first_name;
+                newLogin.LAST_NAME = response.data.data.user[0].last_name;
+                newLogin.IMAGE = await response.data.data.user[0].image;
+
+                setLoadImageUser(newLogin.IMAGE);
+
                 let tokenGenerate = await response.data.data.token;
+                newLogin.TOKEN = tokenGenerate;
                 await setToken(tokenGenerate);
+                console.log(tokenGenerate);
 
                 //get UserInfo
                 await axios
                   .get(API_URL.USER_INFO_API, {
                     headers: {
                       Accept: "application/json",
-                      Authorization: "Bearer " + (await tokenGenerate),
+                      Authorization: "Bearer " + tokenGenerate,
                     },
                   })
-                  .then(function (response) {
-                    newLogin.TELEPHONE = response.data.data.profile.telephone;
+                  .then(async (response) => {
+                    newLogin.TELEPHONE = await response.data.data.profile
+                      .telephone;
                     newLogin.ADDRESS = response.data.data.profile.address;
                     newLogin.PROVINCE_ID =
                       response.data.data.profile.province_id;
@@ -331,6 +387,7 @@ function SignIn(props) {
                           });
                       });
                   });
+                ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
               })
               .catch(function (error) {
                 setLoggedinStatus(false);
@@ -416,22 +473,6 @@ function SignIn(props) {
     }
   };
 
-  // Image Picker Profile
-  const [imagePicker, setImagePicker] = useState(null);
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-    if (!result.cancelled) {
-      setImagePicker(result.uri);
-    } else {
-      ToastAndroid.show("Not Seleted Images", ToastAndroid.SHORT);
-    }
-  };
-
   //Change Page
   const onChangePageEditProfile = () => {
     let newObjList = Object.assign({}, objLoginMasterHD);
@@ -477,6 +518,9 @@ function SignIn(props) {
     props.setObjEditProfile(newObjList);
     props.navigation.navigate("Edit Profile");
   };
+
+  console.log(imagePicker);
+  console.log(loadImageUser);
 
   return (
     <>
@@ -744,19 +788,25 @@ function SignIn(props) {
               <Block>
                 <ImageBackground
                   source={
-                    imagePicker !== null
+                    loadImageUser !== null
+                      ? { uri: rootImage + loadImageUser }
+                      : imagePicker !== null
                       ? { uri: imagePicker }
                       : require("../../assets/iconSignIn/profilepic.png")
                   }
                   style={{
                     width: 100,
                     height: 100,
+                    shadowColor: "black",
+                    borderWidth: 0.8,
+                    borderRadius: 50,
+                    borderColor: "#e0e0e0",
                   }}
                   imageStyle={{ borderRadius: 50 }}
                 >
                   <TouchableOpacity
                     style={{ paddingLeft: "5%" }}
-                    onPress={pickImage}
+                    onPress={pickImageUpload}
                   >
                     <Image
                       source={require("../../assets/iconSignIn/upload-pic.png")}
@@ -1165,26 +1215,5 @@ const styles = StyleSheet.create({
     color: "#4f4f4f",
     textAlign: "center",
     marginTop: 10,
-  },
-});
-
-const stylesFooter = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  blockHeader: {
-    padding: 8,
-    paddingLeft: 15,
-    backgroundColor: "#486ec7",
-    flexDirection: "column",
-  },
-  blockHeaderInfo: {
-    padding: 8,
-    paddingLeft: 15,
-    backgroundColor: "#f7f7f7",
-    flexDirection: "column",
   },
 });

@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   FlatList,
   ToastAndroid,
+  RefreshControl,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -49,14 +50,29 @@ function HistoryOrder(props) {
     moment.locale("en-au");
   }
   var LOAD_MORE = formatTr("LOAD_MORE").toString();
-
-  useEffect(() => {
-    loadHistoryOrderList();
-    setNumList(2);
-    setObjSerach("");
+  const [loading, setLoading] = useState(null);
+  const [refreshingPage, setRefreshingPage] = useState(false);
+  const onRefreshPageNow = React.useCallback(() => {
+    const wait = (timeout) => {
+      return new Promise((resolve) => setTimeout(resolve, timeout));
+    };
+    setRefreshingPage(true);
+    wait(1000).then(() => {
+      setNumList(2);
+      loadHistoryOrderList();
+      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      setRefreshingPage(false);
+    });
   }, []);
 
-  const [loading, setLoading] = useState(null);
+  useEffect(() => {
+    setNumList(2);
+    loadHistoryOrderList();
+    setObjSerach({
+      SEARCH_ORDER: "",
+    });
+  }, []);
+
   const [numList, setNumList] = useState(1);
   const [stateObj, setStateObj] = useState(defaultListHistoryOrder);
   const [objSearch, setObjSerach] = useState({
@@ -85,9 +101,9 @@ function HistoryOrder(props) {
         console.log(error);
       });
   };
-  const loadHistoryOrderList = async () => {
-    setStateObj("");
+  async function loadHistoryOrderList() {
     setLoading(false);
+    console.log("Load Load");
     await axios
       .get(API_URL.HISTORY_ORDER_LIST_API, {
         headers: {
@@ -100,6 +116,7 @@ function HistoryOrder(props) {
         },
       })
       .then(function (response) {
+        console.log(response.data.data);
         setStateObj(response.data.data.orders.lists);
         setLoading(true);
       })
@@ -108,7 +125,7 @@ function HistoryOrder(props) {
         setLoading(true);
       });
     setLoading(true);
-  };
+  }
   const loadMoreHistoryOrderList = async () => {
     setLoading(false);
     setNumList(numList + 1);
@@ -198,8 +215,22 @@ function HistoryOrder(props) {
         });
       setLoading(true);
     };
-    const handleCancelOrder = () => {
-      ToastAndroid.show(item.code + " is cancel", ToastAndroid.SHORT);
+    const handleCancelOrder = async () => {
+      await axios
+        .put(API_URL.CANCEL_ORDER_HD_API + item.code, {
+          headers: {
+            Accept: "*/*",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        })
+        .then(function (response) {
+          console.log(response.data);
+          ToastAndroid.show(item.code + " is cancel", ToastAndroid.SHORT);
+        })
+        .catch(function (error) {
+          console.log("error :", error);
+        });
     };
     return (
       <Block flex style={styles.blockHistoryOrder}>
@@ -357,6 +388,12 @@ function HistoryOrder(props) {
             <SectionList
               stickySectionHeadersEnabled={false}
               sections={HISTORY_LIST}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshingPage}
+                  onRefresh={onRefreshPageNow}
+                />
+              }
               renderSectionHeader={() => (
                 <>
                   {/* Title */}
