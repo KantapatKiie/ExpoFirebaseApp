@@ -7,6 +7,10 @@ import {
   TextInput,
 } from "react-native";
 import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import * as ActionOrder from "../../../actions/action-order-status/ActionOrder";
@@ -14,39 +18,125 @@ import WangdekInfo from "../../../components/WangdekInfo";
 import { Button } from "react-native-elements";
 import { RadioButton } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
+import { API_URL } from "../../../config/config.app";
+import { getToken } from "../../../store/mock/token";
 
 const { height, width } = Dimensions.get("screen");
+const token = getToken();
 
 function UseAddressDelivery(props) {
-  const { objOrderScreen } = useSelector((state) => ({
-    objOrderScreen: state.actionOrder.objOrderScreen,
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  const [checkedDelivery, setCheckedDelivery] = useState("address");
+  const { objUseAddressDelivery } = useSelector((state) => ({
+    objUseAddressDelivery: state.actionOrder.objUseAddressDelivery,
   }));
 
   useEffect(() => {
+    onLoadUserDelivery();
     getProvinces();
   }, []);
 
   const [province, setProvince] = useState([
     {
-      label: objOrderScreen.PROVINCE_NAME,
-      value: objOrderScreen.PROVINCE_CODE,
+      label: objUseAddressDelivery.PROVINCE_NAME_ORDER,
+      value: objUseAddressDelivery.PROVINCE_CODE_ORDER,
     },
   ]);
   const [district, setDistrict] = useState([
     {
-      label: objOrderScreen.DISTRICT_NAME,
-      value: objOrderScreen.DISTRICT_CODE,
+      label: objUseAddressDelivery.DISTRICT_NAME_ORDER,
+      value: objUseAddressDelivery.DISTRICT_CODE_ORDER,
     },
   ]);
   const [subDistrict, setSubDistrict] = useState([
     {
-      label: objOrderScreen.SUB_DISTRICT_NAME,
-      value: objOrderScreen.SUB_DISTRICT_CODE,
+      label: objUseAddressDelivery.SUB_DISTRICT_NAME_ORDER,
+      value: objUseAddressDelivery.SUB_DISTRICT_CODE_ORDER,
     },
   ]);
+  async function onLoadUserDelivery() {
+    let newObj = Object.assign({}, objUseAddressDelivery);
+    await axios
+      .get(API_URL.USER_INFO_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+        },
+      })
+      .then(async (response) => {
+        newObj.FIRST_NAME = await response.data.data.first_name;
+        newObj.LAST_NAME = response.data.data.last_name;
+        newObj.EMAIL = response.data.data.email;
+        newObj.ADDRESS_NAME_ORDER =
+          response.data.data.address_deliveries[0].address;
+
+        newObj.province_id_deliveries =
+          response.data.data.address_deliveries[0].province_id;
+        newObj.district_id_deliveries =
+          response.data.data.address_deliveries[0].district_id;
+        newObj.sub_district_id_deliveries =
+          response.data.data.address_deliveries[0].sub_district_id;
+        newObj.PHONE_NUMBER_ORDER =
+          response.data.data.address_deliveries[0].telephone;
+        newObj.ZIP_CODE_ORDER =
+          response.data.data.address_deliveries[0].postcode;
+
+        //District
+        await axios
+          .get(API_URL.DISTRICT_API, {
+            params: {
+              province_id: newObj.province_id_deliveries,
+            },
+          })
+          .then(async (response) => {
+            let newlstDistrict = await response.data.data.find(
+              (item) => item.id == parseInt(newObj.district_id_deliveries)
+            );
+            newObj.DISTRICT_CODE_ORDER = newlstDistrict.id;
+            newObj.DISTRICT_NAME_ORDER = newlstDistrict.name_th;
+
+            //Sub-District
+            await axios
+              .get(API_URL.SUB_DISTRICT_API, {
+                params: {
+                  district_id: newObj.district_id_deliveries,
+                },
+              })
+              .then(async (response) => {
+                let newlstSubDistrict = await response.data.data.find(
+                  (item) =>
+                    item.id == parseInt(newObj.sub_district_id_deliveries)
+                );
+                newObj.SUB_DISTRICT_CODE_ORDER = newlstSubDistrict.id;
+                newObj.SUB_DISTRICT_NAME_ORDER = newlstSubDistrict.name_th;
+                newObj.ZIP_CODE_ORDER = newlstSubDistrict.zip_code;
+
+                //Province
+                await axios.get(API_URL.PROVINCE_API).then(function (response) {
+                  let newlstProvince = response.data.data.find(
+                    (item) => item.id == parseInt(newObj.province_id_deliveries)
+                  );
+                  newObj.PROVINCE_CODE_ORDER = newlstProvince.id;
+                  newObj.PROVINCE_NAME_ORDER = newlstProvince.name_th;
+
+                  props.setObjUseAddressDelivery(newObj);
+                  console.log(newObj);
+                });
+              });
+          });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
   const getProvinces = async () => {
     await axios
-      .get("http://wangdek.am2bmarketing.co.th/api/v1/provinces")
+      .get(API_URL.PROVINCE_API)
       .then(function (response) {
         let newlstBin = response.data.data.map(function (item) {
           item.label = item.name_th;
@@ -62,18 +152,18 @@ function UseAddressDelivery(props) {
       });
   };
   const onChangeAdress = (value) => {
-    let newObj = Object.assign({}, objOrderScreen);
-    newObj.ADDRESS_NAME = value;
-    props.setobjOrderScreen(newObj);
+    let newObj = Object.assign({}, objUseAddressDelivery);
+    newObj.ADDRESS_NAME_ORDER = value;
+    props.setObjUseAddressDelivery(newObj);
   };
   const onChangeProvince = (item) => {
-    let newObj = Object.assign({}, objOrderScreen);
-    newObj.PROVINCE_CODE = item.value;
-    newObj.PROVINCE_NAME = item.label;
-    props.setobjOrderScreen(newObj);
+    let newObj = Object.assign({}, objUseAddressDelivery);
+    newObj.PROVINCE_CODE_ORDER = item.value;
+    newObj.PROVINCE_NAME_ORDER = item.label;
+    props.setObjUseAddressDelivery(newObj);
     if (item.value !== null) {
       axios
-        .get("http://wangdek.am2bmarketing.co.th/api/v1/districts", {
+        .get(API_URL.DISTRICT_API, {
           params: {
             province_id: item.id,
           },
@@ -92,13 +182,13 @@ function UseAddressDelivery(props) {
     }
   };
   const onChangeDistrict = (item) => {
-    let newObj = Object.assign({}, objOrderScreen);
-    newObj.DISTRICT_CODE = item.value;
-    newObj.DISTRICT_NAME = item.label;
-    props.setobjOrderScreen(newObj);
+    let newObj = Object.assign({}, objUseAddressDelivery);
+    newObj.DISTRICT_CODE_ORDER = item.value;
+    newObj.DISTRICT_NAME_ORDER = item.label;
+    props.setObjUseAddressDelivery(newObj);
     if (item !== null) {
       axios
-        .get("http://wangdek.am2bmarketing.co.th/api/v1/sub_districts", {
+        .get(API_URL.SUB_DISTRICT_API, {
           params: {
             district_id: item.id,
           },
@@ -117,209 +207,21 @@ function UseAddressDelivery(props) {
     }
   };
   const onChangeSubDistrict = (item) => {
-    let newObj = Object.assign({}, objOrderScreen);
-    newObj.SUB_DISTRICT_CODE = item.value;
-    newObj.SUB_DISTRICT_NAME = item.label;
-    newObj.ZIP_CODE = item.zip_code.toString();
-    props.setobjOrderScreen(newObj);
+    let newObj = Object.assign({}, objUseAddressDelivery);
+    newObj.SUB_DISTRICT_CODE_ORDER = item.value;
+    newObj.SUB_DISTRICT_NAME_ORDER = item.label;
+    newObj.ZIP_CODE_ORDER = item.zip_code.toString();
+    props.setObjUseAddressDelivery(newObj);
   };
   const onChangeFirstName = (value) => {
-    let newObj = Object.assign({}, objOrderScreen);
+    let newObj = Object.assign({}, objUseAddressDelivery);
     newObj.FIRST_NAME = value;
-    props.setobjOrderScreen(newObj);
+    props.setObjUseAddressDelivery(newObj);
   };
-  const onChangeLastName = (value) => {
-    let newObj = Object.assign({}, objOrderScreen);
-    newObj.LAST_NAME = value;
-    props.setobjOrderScreen(newObj);
-  };
-  const [checkedDelivery, setCheckedDelivery] = useState("address");
-  const renderDeliveryList = () => {
-    return (
-      <>
-        <RadioButton.Group
-          onValueChange={(value) => setCheckedDelivery(value)}
-          value={checkedDelivery}
-        >
-          {/* Address Original */}
-          <Block style={checkedDelivery ===  "address" ?styles.blockRadioAddress: styles.blockRadioAddressWhite}>
-            <Block row style={{ marginLeft: 10, marginTop: 5 }}>
-              <RadioButton color="red" value={"address"} />
-              <Text style={styles.fontTitleProducts}>ที่อยู่โปรไฟล์</Text>
-            </Block>
-            <Block style={{ marginTop: 15 }}>
-              <Text style={styles.textDescAddress}>ชื่อ :</Text>
-              <Text style={styles.textDescAddress}>เบอร์โทร :</Text>
-              <Text style={styles.textDescAddress}>ที่อยู่ :</Text>
-            </Block>
-          </Block>
-          {/* Address Fix */}
-          <Block style={checkedDelivery ===  "fix_address" ? styles.blockRadioAddressFix : styles.blockRadioAddressFixWhite}>
-            <Block row style={{ marginLeft: 10, marginTop: 5 }}>
-              <RadioButton color="red" value={"fix_address"} />
-              <Text style={styles.fontTitleProducts}>
-                แก้ไขที่อยู่ที่ต้องการจัดส่ง
-              </Text>
-            </Block>
-            <Block style={{ marginTop: 15 }}>
-              <Block style={{ marginBottom: 5 }}>
-                <Text style={styles.textDescAddress}>ชื่อ :</Text>
-                <Block style={styles.inputView}>
-                  <TextInput
-                    style={styles.inputText}
-                    placeholder={""}
-                    placeholderTextColor="#808080"
-                    value={objOrderScreen.FIRST_NAME}
-                    onChangeText={onChangeFirstName}
-                  />
-                </Block>
-              </Block>
-              <Block style={{ marginBottom: 5 }}>
-                <Text style={styles.textDescAddress}>เบอร์โทร :</Text>
-                <Block style={styles.inputView}>
-                  <TextInput
-                    style={styles.inputText}
-                    placeholder={""}
-                    placeholderTextColor="#808080"
-                    value={objOrderScreen.LAST_NAME}
-                    onChangeText={onChangeLastName}
-                    keyboardType="phone-pad"
-                  />
-                </Block>
-              </Block>
-              <Block style={{ marginBottom: 5 }}>
-                <Text style={styles.textDescAddress}>ที่อยู่ :</Text>
-                <Block style={styles.inputView}>
-                  <TextInput
-                    style={styles.inputText}
-                    placeholder={""}
-                    placeholderTextColor="#808080"
-                    value={objOrderScreen.ADDRESS_NAME}
-                    onChangeText={onChangeAdress}
-                  />
-                </Block>
-              </Block>
-              {/* Select Region */}
-              <Block style={{ marginBottom: 5 }}>
-                <Text style={styles.textDescAddress}>จังหวัด :</Text>
-                <DropDownPicker
-                  items={province}
-                  containerStyle={{
-                    height: 35,
-                    width: width - 58,
-                    alignSelf: "center",
-                  }}
-                  style={{ backgroundColor: "#f0f0f0" }}
-                  itemStyle={{
-                    justifyContent: "flex-start",
-                  }}
-                  dropDownStyle={{ backgroundColor: "#f0f0f0" }}
-                  placeholderStyle={{
-                    textAlign: "left",
-                    color: "gray",
-                    fontFamily: "kanitRegular",
-                  }}
-                  placeholder={"- โปรดเลือก -"}
-                  labelStyle={{
-                    textAlign: "left",
-                    color: "#000",
-                    fontFamily: "kanitRegular",
-                  }}
-                  arrowColor={"white"}
-                  arrowSize={18}
-                  arrowStyle={{
-                    backgroundColor: "#02d483",
-                    borderRadius: 20,
-                    color: "white",
-                  }}
-                  onChangeItem={onChangeProvince}
-                />
-              </Block>
-              <Block style={{ marginBottom: 5 }}>
-                <Text style={styles.textDescAddress}>เขต/อำเภอ :</Text>
-                <DropDownPicker
-                  items={district}
-                  containerStyle={{
-                    height: 35,
-                    width: width - 58,
-                    alignSelf: "center",
-                  }}
-                  style={{ backgroundColor: "#f0f0f0" }}
-                  itemStyle={{
-                    justifyContent: "flex-start",
-                  }}
-                  dropDownStyle={{ backgroundColor: "#f0f0f0" }}
-                  placeholderStyle={{
-                    textAlign: "left",
-                    color: "gray",
-                    fontFamily: "kanitRegular",
-                  }}
-                  placeholder={"- โปรดเลือก -"}
-                  labelStyle={{
-                    textAlign: "left",
-                    color: "#000",
-                    fontFamily: "kanitRegular",
-                  }}
-                  arrowColor={"white"}
-                  arrowSize={18}
-                  arrowStyle={{
-                    backgroundColor: "#02d483",
-                    borderRadius: 20,
-                    color: "white",
-                  }}
-                  onChangeItem={onChangeDistrict}
-                />
-              </Block>
-              <Block style={{ marginBottom: 5 }}>
-                <Text style={styles.textDescAddress}>แขวง/ตำบล :</Text>
-                <DropDownPicker
-                  items={subDistrict}
-                  containerStyle={{
-                    height: 35,
-                    width: width - 58,
-                    alignSelf: "center",
-                  }}
-                  style={{ backgroundColor: "#f0f0f0" }}
-                  itemStyle={{
-                    justifyContent: "flex-start",
-                  }}
-                  dropDownStyle={{ backgroundColor: "#f0f0f0" }}
-                  placeholderStyle={{
-                    textAlign: "left",
-                    color: "gray",
-                    fontFamily: "kanitRegular",
-                  }}
-                  placeholder={"- โปรดเลือก -"}
-                  labelStyle={{
-                    textAlign: "left",
-                    color: "#000",
-                    fontFamily: "kanitRegular",
-                  }}
-                  arrowColor={"white"}
-                  arrowSize={18}
-                  arrowStyle={{
-                    backgroundColor: "#02d483",
-                    borderRadius: 20,
-                    color: "white",
-                  }}
-                  onChangeItem={onChangeSubDistrict}
-                />
-              </Block>
-              <Block style={{ marginBottom: 5 }}>
-                <Text style={styles.textDescAddress}>รหัสไปรษณีย์ :</Text>
-                <Block style={styles.inputView}>
-                  <TextInput
-                    style={styles.inputText}
-                    value={objOrderScreen.ZIP_CODE}
-                    editable={false}
-                  />
-                </Block>
-              </Block>
-            </Block>
-          </Block>
-        </RadioButton.Group>
-      </>
-    );
+  const onChangePhoneNumber = (value) => {
+    let newObj = Object.assign({}, objUseAddressDelivery);
+    newObj.PHONE_NUMBER_ORDER = value;
+    props.setObjUseAddressDelivery(newObj);
   };
 
   return (
@@ -342,10 +244,231 @@ function UseAddressDelivery(props) {
           </Block>
         </TouchableOpacity>
 
-        {/* Head */}
+        {/* Datial */}
         <Block style={{ backgroundColor: "white" }}>
           <Text style={styles.fontTitleProduct}>เลือกที่อยู่ในการจัดส่ง</Text>
-          {renderDeliveryList()}
+          <RadioButton.Group
+            onValueChange={(value) => setCheckedDelivery(value)}
+            value={checkedDelivery}
+          >
+            {/* Address Original */}
+            <Block
+              style={
+                checkedDelivery === "address"
+                  ? styles.blockRadioAddress
+                  : styles.blockRadioAddressWhite
+              }
+            >
+              <Block row style={{ marginLeft: 10, marginTop: 5 }}>
+                <RadioButton color="red" value={"address"} />
+                <Text style={styles.fontTitleProducts}>ที่อยู่โปรไฟล์</Text>
+              </Block>
+              <Block style={{ marginTop: 15 }}>
+                <Text style={styles.textDescAddress}>
+                  ชื่อ :{" "}
+                  {objUseAddressDelivery.FIRST_NAME +
+                    " " +
+                    objUseAddressDelivery.LAST_NAME}
+                </Text>
+                <Text style={styles.textDescAddress}>
+                  เบอร์โทร : {objUseAddressDelivery.PHONE_NUMBER_ORDER}
+                </Text>
+                <Text style={styles.textDescAddress}>
+                  ที่อยู่ : {objUseAddressDelivery.ADDRESS_NAME_ORDER}
+                </Text>
+              </Block>
+            </Block>
+            {/* Address Fix */}
+            <Block
+              style={
+                checkedDelivery === "fix_address"
+                  ? styles.blockRadioAddressFix
+                  : styles.blockRadioAddressFixWhite
+              }
+            >
+              <Block row style={{ marginLeft: 10, marginTop: 5 }}>
+                <RadioButton color="red" value={"fix_address"} />
+                <Text style={styles.fontTitleProducts}>
+                  แก้ไขที่อยู่ที่ต้องการจัดส่ง
+                </Text>
+              </Block>
+              <Block style={{ marginTop: 15 }}>
+                <Block style={{ marginBottom: 5 }}>
+                  <Text style={styles.textDescAddress}>ชื่อ :</Text>
+                  <Block style={styles.inputView}>
+                    <TextInput
+                      style={styles.inputText}
+                      placeholder={""}
+                      placeholderTextColor="#808080"
+                      value={
+                        objUseAddressDelivery.FIRST_NAME +
+                        " " +
+                        objUseAddressDelivery.LAST_NAME
+                      }
+                      onChangeText={onChangeFirstName}
+                    />
+                  </Block>
+                </Block>
+                <Block style={{ marginBottom: 5 }}>
+                  <Text style={styles.textDescAddress}>เบอร์โทร :</Text>
+                  <Block style={styles.inputView}>
+                    <TextInput
+                      style={styles.inputText}
+                      placeholder={""}
+                      placeholderTextColor="#808080"
+                      value={objUseAddressDelivery.PHONE_NUMBER_ORDER}
+                      onChangeText={onChangePhoneNumber}
+                      keyboardType="phone-pad"
+                    />
+                  </Block>
+                </Block>
+                <Block style={{ marginBottom: 5 }}>
+                  <Text style={styles.textDescAddress}>ที่อยู่ :</Text>
+                  <Block style={styles.inputView}>
+                    <TextInput
+                      style={styles.inputText}
+                      value={objUseAddressDelivery.ADDRESS_NAME_ORDER}
+                      onChangeText={onChangeAdress}
+                    />
+                  </Block>
+                </Block>
+                {/* Select Region */}
+                <Block style={{ marginBottom: 5 }}>
+                  <Text style={styles.textDescAddress}>จังหวัด :</Text>
+                  <DropDownPicker
+                    items={province}
+                    containerStyle={{
+                      height: 35,
+                      width: width - 58,
+                      alignSelf: "center",
+                    }}
+                    style={{ backgroundColor: "#f0f0f0" }}
+                    itemStyle={{
+                      justifyContent: "flex-start",
+                    }}
+                    dropDownStyle={{ backgroundColor: "#f0f0f0" }}
+                    placeholderStyle={{
+                      textAlign: "left",
+                      color: "gray",
+                      fontFamily: "kanitRegular",
+                    }}
+                    placeholder={"- โปรดเลือก -"}
+                    labelStyle={{
+                      textAlign: "left",
+                      color: "#000",
+                      fontFamily: "kanitRegular",
+                    }}
+                    arrowColor={"white"}
+                    arrowSize={18}
+                    arrowStyle={{
+                      backgroundColor: "#02d483",
+                      borderRadius: 20,
+                      color: "white",
+                    }}
+                    // controller={(instance) => (controller = instance)}
+                    defaultValue={
+                      objUseAddressDelivery.PROVINCE_NAME_ORDER == ""
+                        ? null
+                        : objUseAddressDelivery.PROVINCE_CODE_ORDER
+                    }
+                    onChangeItem={(item) => onChangeProvince(item)}
+                  />
+                </Block>
+                <Block style={{ marginBottom: 5 }}>
+                  <Text style={styles.textDescAddress}>เขต/อำเภอ :</Text>
+                  <DropDownPicker
+                    items={district}
+                    containerStyle={{
+                      height: 35,
+                      width: width - 58,
+                      alignSelf: "center",
+                    }}
+                    style={{ backgroundColor: "#f0f0f0" }}
+                    itemStyle={{
+                      justifyContent: "flex-start",
+                    }}
+                    dropDownStyle={{ backgroundColor: "#f0f0f0" }}
+                    placeholderStyle={{
+                      textAlign: "left",
+                      color: "gray",
+                      fontFamily: "kanitRegular",
+                    }}
+                    placeholder={"- โปรดเลือก -"}
+                    labelStyle={{
+                      textAlign: "left",
+                      color: "#000",
+                      fontFamily: "kanitRegular",
+                    }}
+                    arrowColor={"white"}
+                    arrowSize={18}
+                    arrowStyle={{
+                      backgroundColor: "#02d483",
+                      borderRadius: 20,
+                      color: "white",
+                    }}
+                    // controller={(instance) => (controller = instance)}
+                    defaultValue={
+                      objUseAddressDelivery.DISTRICT_NAME_ORDER == ""
+                        ? null
+                        : objUseAddressDelivery.DISTRICT_CODE_ORDER
+                    }
+                    onChangeItem={(item) => onChangeDistrict(item)}
+                  />
+                </Block>
+                <Block style={{ marginBottom: 5 }}>
+                  <Text style={styles.textDescAddress}>แขวง/ตำบล :</Text>
+                  <DropDownPicker
+                    items={subDistrict}
+                    containerStyle={{
+                      height: 35,
+                      width: width - 58,
+                      alignSelf: "center",
+                    }}
+                    style={{ backgroundColor: "#f0f0f0" }}
+                    itemStyle={{
+                      justifyContent: "flex-start",
+                    }}
+                    dropDownStyle={{ backgroundColor: "#f0f0f0" }}
+                    placeholderStyle={{
+                      textAlign: "left",
+                      color: "gray",
+                      fontFamily: "kanitRegular",
+                    }}
+                    placeholder={"- โปรดเลือก -"}
+                    labelStyle={{
+                      textAlign: "left",
+                      color: "#000",
+                      fontFamily: "kanitRegular",
+                    }}
+                    arrowColor={"white"}
+                    arrowSize={18}
+                    arrowStyle={{
+                      backgroundColor: "#02d483",
+                      borderRadius: 20,
+                      color: "white",
+                    }}
+                    defaultValue={
+                      objUseAddressDelivery.SUB_DISTRICT_NAME_ORDER == ""
+                        ? null
+                        : objUseAddressDelivery.SUB_DISTRICT_CODE_ORDER
+                    }
+                    onChangeItem={(item) => onChangeSubDistrict(item)}
+                  />
+                </Block>
+
+                <Block style={{ marginBottom: 5 }}>
+                  <Text style={styles.textDescAddress}>รหัสไปรษณีย์ :</Text>
+                  <Block style={styles.inputView}>
+                    <TextInput
+                      style={styles.inputText}
+                      value={objUseAddressDelivery.ZIP_CODE_ORDER}
+                      editable={false}
+                    />
+                  </Block>
+                </Block>
+              </Block>
+            </Block>
+          </RadioButton.Group>
         </Block>
 
         {/* Button */}
@@ -424,7 +547,7 @@ const styles = StyleSheet.create({
     borderColor: "gray",
     marginBottom: 10,
   },
-  blockRadioAddressWhite:{
+  blockRadioAddressWhite: {
     width: "95%",
     backgroundColor: "white",
     height: 180,
@@ -476,57 +599,5 @@ const styles = StyleSheet.create({
     color: "black",
     fontSize: 14,
     fontFamily: "kanitRegular",
-  },
-});
-
-//Style Modal
-const styles2 = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modal: {
-    backgroundColor: "#00000099",
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  modalContainer: {
-    backgroundColor: "#f9fafb",
-    width: "80%",
-    borderRadius: 13,
-  },
-  modalHeader: {},
-  title: {
-    fontWeight: "bold",
-    fontSize: 20,
-    padding: 15,
-    color: "#000",
-  },
-  divider: {
-    width: "100%",
-    height: 1,
-    backgroundColor: "lightgray",
-  },
-  modalBody: {
-    backgroundColor: "#fff",
-    paddingVertical: 25,
-    paddingHorizontal: 10,
-  },
-  modalFooter: {},
-  actions: {
-    borderRadius: 5,
-    marginHorizontal: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  actionText: {
-    color: "#fff",
-  },
-  bloxStyle: {
-    marginTop: 10,
   },
 });

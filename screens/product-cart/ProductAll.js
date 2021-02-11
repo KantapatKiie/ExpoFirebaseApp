@@ -78,8 +78,10 @@ function ProductAll(props) {
   }));
 
   useEffect(() => {
-    loadDataBestsaler();
-  }, [listBestsale, listPopularSale, listPromotions]);
+    setTimeout(async () => {
+      loadDataBestsaler();
+    }, 500);
+  }, []);
 
   // Best selling
   const [listBestsale, setListBestsale] = useState(defalutBestsaleProduct);
@@ -92,9 +94,7 @@ function ProductAll(props) {
       .get(API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API, {
         headers: {
           Accept: "application/json",
-          // Authorization: "Bearer " + (await token),
           "Content-Type": "application/json",
-          // "X-localization": locale,
         },
         params: {
           page: 1,
@@ -114,9 +114,7 @@ function ProductAll(props) {
           .get(API_URL.POPULARITY_PRODUCT_LISTVIEW_API, {
             headers: {
               Accept: "application/json",
-              // Authorization: "Bearer " + (await token),
               "Content-Type": "application/json",
-              // "X-localization": locale,
             },
             params: {
               page: 1,

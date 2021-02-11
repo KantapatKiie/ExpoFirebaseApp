@@ -23,6 +23,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { Button } from "react-native-elements";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -31,7 +32,6 @@ function EditProfile(props) {
   // let controller;
   const { objEditProfileHD } = useSelector((state) => ({
     objEditProfileHD: state.actionEditProfile.objEditProfileHD,
-    // listTrEditProfileHD: state.actionEditProfile.listTrEditProfileHD,
   }));
 
   useEffect(() => {
@@ -338,8 +338,7 @@ function EditProfile(props) {
   // Edit Profile
   const confirmEditProfile = async () => {
     setLoading(false);
-    axios.defaults.headers.common["Authorization"] =
-        "Bearer " + (await token);
+    axios.defaults.headers.common["Authorization"] = "Bearer " + (await token);
     axios
       .put(API_URL.EDIT_USER_PROFILE_API, {
         headers: {
@@ -363,7 +362,9 @@ function EditProfile(props) {
         },
         address_deliveries: [
           {
-            address_deliveries_id: parseInt(objEditProfileHD.address_deliveries_id),
+            address_deliveries_id: parseInt(
+              objEditProfileHD.address_deliveries_id
+            ),
             address: objEditProfileHD.address_deliveries,
             province_id: parseInt(objEditProfileHD.province_id_deliveries),
             district_id: parseInt(objEditProfileHD.district_id_deliveries),

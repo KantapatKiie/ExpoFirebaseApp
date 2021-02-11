@@ -103,9 +103,13 @@ function Home(props) {
     };
     setRefreshingPage(true);
     wait(1000).then(() => {
-      loadDataFlashsale();
+      setTimeout(async () => {
+        await loadDataFlashsale();
+      }, 200);
+      setTimeout(async () => {
+        await loadDataCoupon();
+      }, 200);
       loadDataProductLists();
-      // loadDataCoupon();
       ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
       setRefreshingPage(false);
     });
@@ -123,10 +127,16 @@ function Home(props) {
 
   useEffect(() => {
     setModalVisible(false); // Popup Coupon
-    // loadDataFlashsale();
-    // loadDataCoupon();
-    // loadDataProductLists();
-  }, []);
+    // setTimeout(async () => {
+    //   loadDataFlashsale();
+    // }, 500);
+    // setTimeout(async () => {
+    //   loadDataCoupon();
+    // }, 500);
+    // setTimeout(async () => {
+    //   await loadDataProductLists();
+    // }, 500);
+  }, [countDownTime]);
 
   //#region Time & Translate
   let LeftTime = moment(new Date()).format("HH:mm");
@@ -150,7 +160,6 @@ function Home(props) {
       .get(API_URL.FALSH_SALE_VIEW_API, {
         headers: {
           Accept: "application/json",
-          // Authorization: "Bearer " + (await token),
           "Content-Type": "application/json",
         },
         params: {
@@ -290,6 +299,8 @@ function Home(props) {
   const [listBestsale, setListBestsale] = useState(defalutBestsaleProduct);
   const [listPopularSale, setListPopularSale] = useState(defalutPopularProduct);
   async function loadDataProductLists() {
+    console.log("Get products")
+    setTimeout(async () => {
     await axios({
       method: "GET",
       url: API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API,
@@ -302,39 +313,43 @@ function Home(props) {
         page: 1,
       },
     })
-      .then(function (resBestsale) {
-        // console.log(resBestsale.data.data)
-        var lstBestSale = resBestsale.data.data.product_lists;
+      .then(async (resBestsale) => {
+        var lstBestSale = await resBestsale.data.data.product_lists;
         let newlstBestsale = [];
         for (let i = 0; i < 4; i++) {
           if (lstBestSale[i] !== undefined) newlstBestsale.push(lstBestSale[i]);
         }
         //Popularity List
-        axios({
-          method: "GET",
-          url: API_URL.POPULARITY_PRODUCT_LISTVIEW_API,
-          timeout: 2500,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          params: {
-            page: 1,
-          },
-        }).then(function (resPopuplar) {
-          // console.log(resPopuplar.data.data)
-          let lstPopular = resPopuplar.data.data.product_lists;
-          let newlstPopular = [];
-          for (let i = 0; i < 4; i++) {
-            if (lstPopular[i] !== undefined) newlstPopular.push(lstPopular[i]);
+        setTimeout(async () => {
+          await axios({
+            method: "GET",
+            url: API_URL.POPULARITY_PRODUCT_LISTVIEW_API,
+            timeout: 2500,
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            params: {
+              page: 1,
+            },
+          }).then(async (resPopuplar) => {
+            let lstPopular = await resPopuplar.data.data.product_lists;
+            let newlstPopular = [];
+            for (let i = 0; i < 4; i++) {
+              if (lstPopular[i] !== undefined)
+                newlstPopular.push(lstPopular[i]);
+            }
+          if (newlstBestsale || lstPopular) {
+            setListBestsale(newlstBestsale);
+            setListPopularSale(lstPopular);
           }
-          setListBestsale(newlstBestsale);
-          setListPopularSale(lstPopular);
+        }, 500);
         });
       })
       .catch(function (error) {
         console.log(error);
       });
+    },500);
   }
   const renderBestsaler = ({ item }) => {
     const selectProductBestsale = async (item) => {

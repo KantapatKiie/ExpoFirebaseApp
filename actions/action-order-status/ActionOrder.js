@@ -33,7 +33,7 @@ const initialState = {
     ZIP_CODE: "",
   },
   objUseCoupon: {
-    id: 1,
+    id: 0,
     coupon_name: "",
   },
   objUseDelivery: {
@@ -41,11 +41,21 @@ const initialState = {
     delivery_name: "",
   },
   objUseAddressDelivery: {
-    address_name: 1,
+    FIRST_NAME: "",
+    LAST_NAME: "",
+    EMAIL: "",
+    ADDRESS_NAME_ORDER: "",
+    PROVINCE_CODE_ORDER: 1,
+    PROVINCE_NAME_ORDER: "",
+    DISTRICT_CODE_ORDER: 1,
+    DISTRICT_NAME_ORDER: "",
+    SUB_DISTRICT_CODE_ORDER: 1,
+    SUB_DISTRICT_NAME_ORDER: "",
+    ZIP_CODE_ORDER: "", 
+    PHONE_NUMBER_ORDER: "",
+    TOKEN: "",
   },
-  // listTrOrder: [],
-  // disabledInput: false,
-  // editable: false,
+  listTrOrder: [],
 };
 
 export const reducer = persistReducer(

@@ -69,9 +69,6 @@ function CartScreen(props) {
       setRefreshingPage(false);
     });
   }, []);
-  // const { objCartScreen } = useSelector((state) => ({
-  //   objCartScreen: state.actionCart.objCartScreen,
-  // }));
 
   useEffect(() => {
     loadCartLists();

@@ -30,7 +30,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { height, width } = Dimensions.get("screen");
 const token = getToken();
-//const rootImage = "http://10.0.1.37:8080";
 const rootImage = "http://newpclinic.com/wd";
 
 function OrderScreen(props) {
@@ -48,7 +47,7 @@ function OrderScreen(props) {
     listTrCartScreen: state.actionCart.listTrCartScreen,
   }));
 
-  const {  objUseCoupon,objUseDelivery,objUseAddressDelivery } = useSelector((state) => ({
+  const { objUseCoupon,objUseDelivery,objUseAddressDelivery } = useSelector((state) => ({
     objUseCoupon: state.actionOrder.objUseCoupon,
     objUseDelivery: state.actionOrder.objUseDelivery,
     objUseAddressDelivery: state.actionOrder.objUseAddressDelivery,
@@ -56,10 +55,7 @@ function OrderScreen(props) {
 
   useEffect(() => {
     AsyncStorage["ListTrCartScreen"] = listTrCartScreen;
-    // props.clearObjOrderScreen();
   }, []);
-
-  console.log(AsyncStorage["ListTrCartScreen"])
 
   //#region modalConfirm
   const [modalVisible, setModalVisible] = useState(false);
@@ -163,6 +159,36 @@ function OrderScreen(props) {
       </Block>
     );
   };
+  // Other List
+  const renderOtherList = ({ item }) => {
+    const onOtherChangepage = (item) => {
+      props.navigation.navigate(item.page)
+      // console.log(AsyncStorage["_USER_ADDRESS_DELIVERY"])
+    }
+    return (
+      <Block style={styles.blockHeaderInfo} key={item.id}>
+        <TouchableOpacity onPress={() => onOtherChangepage(item)}>
+          <Block row middle space="between" style={{ paddingTop: 7 }}>
+            <Text
+              style={{
+                textAlign: "left",
+                color: "black",
+                fontSize: 17,
+                fontFamily: "kanitRegular",
+              }}
+            >
+              {item.text}
+            </Text>
+            <Icon
+              name="angle-right"
+              family="font-awesome"
+              style={{ paddingRight: 15 }}
+            />
+          </Block>
+        </TouchableOpacity>
+      </Block>
+    );
+  };
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
@@ -190,40 +216,31 @@ function OrderScreen(props) {
 
               {/* Product List */}
               <FlatList
-                data={listTrCartScreen < 1 ? AsyncStorage["ListTrCartScreen"] : listTrCartScreen}
+                data={
+                  listTrCartScreen < 1
+                    ? AsyncStorage["ListTrCartScreen"]
+                    : listTrCartScreen
+                }
                 style={styles.containers}
                 renderItem={renderOrderLists}
                 numColumns={1}
                 keyExtractor={(item) => item.cart_id.toString()}
               />
 
-              {/* List Other */}
+              {/* Test */}
+              <Text>{objUseCoupon.id}</Text>
               <Text>{objUseDelivery.id}</Text>
-              {infoItem.map((item) => (
-                <Block style={styles.blockHeaderInfo} key={item.key}>
-                  <TouchableOpacity
-                    onPress={() => props.navigation.navigate(item.page)}
-                  >
-                    <Block row middle space="between" style={{ paddingTop: 7 }}>
-                      <Text
-                        style={{
-                          textAlign: "left",
-                          color: "black",
-                          fontSize: 17,
-                          fontFamily: "kanitRegular",
-                        }}
-                      >
-                        {item.text}
-                      </Text>
-                      <Icon
-                        name="angle-right"
-                        family="font-awesome"
-                        style={{ paddingRight: 5 }}
-                      />
-                    </Block>
-                  </TouchableOpacity>
-                </Block>
-              ))}
+              <Text>{objUseAddressDelivery.EMAIL}</Text>
+
+              {/* List Other */}
+              <FlatList
+                data={otherListItem}
+                style={styles.containers}
+                renderItem={renderOtherList}
+                numColumns={1}
+                keyExtractor={(item) => item.id.toString()}
+                listKey={(item) => item.id}
+              />
 
               {/* Button */}
               <Block
@@ -409,19 +426,19 @@ const styles2 = StyleSheet.create({
   },
 });
 
-const infoItem = [
+const otherListItem = [
   {
-    key: "1",
+    id: "1",
     text: "ใช้ส่วนลด",
     page: "Use Coupon",
   },
   {
-    key: "2",
+    id: "2",
     text: "ช่องทางการจัดส่ง",
     page: "Use Delivery",
   },
   {
-    key: "3",
+    id: "3",
     text: "ที่อยู่ในการจัดส่ง",
     page: "Use Address Delivery",
   },

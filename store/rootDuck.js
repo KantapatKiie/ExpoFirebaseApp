@@ -25,6 +25,7 @@ import * as actionOrderStatus from "../actions/action-order-status/ActionOrderSt
 import * as actionOrder from "../actions/action-order-status/ActionOrder";
 import * as actionEvents from "../actions/action-events/ActionEvents";
 import * as actionProductType from "../actions/action-product-type/ActionProductType";
+
 import * as i18n from "./ducks/i18n";
 
 export const rootReducer = combineReducers({

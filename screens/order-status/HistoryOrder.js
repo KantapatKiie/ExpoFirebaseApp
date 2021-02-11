@@ -362,7 +362,7 @@ function HistoryOrder(props) {
                 type="solid"
                 containerStyle={styles.blockButton2}
                 buttonStyle={styles.buttonStyle2}
-                onPress={handleCancelOrder}
+                onPress={() => handleCancelOrder(item)}
               />
             </Block>
           ) : (

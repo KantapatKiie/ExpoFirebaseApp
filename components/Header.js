@@ -24,9 +24,6 @@ import { connect, useSelector } from "react-redux";
 import { actions as ActionProductType } from "../actions/action-product-type/ActionProductType";
 import ModalLoading from "../components/ModalLoading";
 import { SafeAreaView } from "react-native";
-// import curlirize from 'axios-curlirize';
-
-// curlirize(axios);
 
 const { width } = Dimensions.get("window");
 let token = getToken();
@@ -48,29 +45,166 @@ function Header(props) {
   const [countCart, setCountCart] = useState(0);
   async function loadCountCart() {
     if ((await token) !== null && (await token) !== undefined) {
-      await axios({
-        method: "GET",
-        url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
-        timeout: 2500,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + (await token),
-        },
-      })
-        .then((response) => {
-          if (response.data.data.result != undefined) {
-            setCountCart(response.data.data.result);
-          } else {
-            setCountCart(null);
-          }
+      setTimeout(async () => {
+        await axios({
+          method: "GET",
+          url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
+          timeout: 2500,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + (await token),
+          },
         })
-        .catch(function (error) {
-          setCountCart(null);
-          console.log(error);
-        });
+          .then((response) => {
+            if (response.data.data.result != undefined) {
+              setCountCart(response.data.data.result);
+            } else {
+              setCountCart(null);
+            }
+          })
+          .catch(function (error) {
+            setCountCart(null);
+            console.log(error);
+          });
+      }, 1500);
     }
   }
+
+  useEffect(() => {
+    setTimeout(async () => {
+      await loadDataTypes();
+    }, 500);
+    setTimeout(async () => {
+      await loadDataBrands();
+    }, 500);
+    // setTimeout(async () => {
+    //   await loadCountCart();
+    // }, 500);
+  }, []);
+
+  //Flatlist Bar
+  const [listProductType, setListProductType] = useState(null);
+  const [listProductBrands, setListProductBrands] = useState(null);
+  async function loadDataTypes() {
+    await axios({
+      method: "GET",
+      url: API_URL.CATEGORY_PRODUCT_LISTVIEW_API,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Connection: "keep-alive",
+        "X-CSRF-TOKEN": "",
+        "Accept-Encoding": "gzip, deflate",
+      },
+    })
+      .then(async (resType) => {
+        let newlstType = await resType.data.data;
+        setListProductType(newlstType);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+  async function loadDataBrands() {
+    await axios({
+      method: "GET",
+      url: API_URL.BRANDS_PRODUCT_LISTVIEW_API,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Connection: "keep-alive",
+        "X-CSRF-TOKEN": "",
+        "Accept-Encoding": "gzip, deflate",
+      },
+    })
+      .then(async (resBrands) => {
+        let newlstBrands = await resBrands.data.data;
+        setListProductBrands(newlstBrands);
+      })
+      .catch(function (error) {
+        console.log(error.response);
+      });
+  }
+  const ListTypeProduct = ({ item }) => {
+    const categoryProductType = async (item) => {
+      setLoading(true);
+      await axios
+        .get(API_URL.CATEGORY_PRODUCT_SEARCH_API + item.id, {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: 1,
+          },
+        })
+        .then((response) => {
+          let newObj = Object.assign({}, objProductType);
+          newObj.TABS_TYPE = true;
+          props.setObjProductType(newObj);
+          props.setListTrProductType(response.data.data);
+          setLoading(false);
+          props.navigation.navigate("Product Type");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+      setLoading(false);
+    };
+    return (
+      <Block style={styles2.itemType}>
+        <TouchableOpacity onPress={() => categoryProductType(item)}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={{ width: 74, height: 64 }}
+          />
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+  const ListProductBrands = ({ item }) => {
+    const categoryProductBrands = async (item) => {
+      setLoading(true);
+      await axios
+        .get(API_URL.BRANDS_PRODUCT_LISTVIEW_API + item.id + "/products", {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: 1,
+          },
+        })
+        .then(function (response) {
+          let newObj = Object.assign({}, objProductType);
+          newObj.TABS_TYPE = true;
+          props.setObjProductType(newObj);
+          props.setListTrProductType(response.data.data);
+          setLoading(false);
+          props.navigation.navigate("Product Type");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+      setLoading(false);
+    };
+    return (
+      <Block style={styles2.itemBrand}>
+        <TouchableOpacity
+          shadowless
+          onPress={() => categoryProductBrands(item)}
+        >
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={{ width: 75, height: 35 }}
+          />
+        </TouchableOpacity>
+      </Block>
+    );
+  };
 
   const ModalNotification = ({ style, navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
@@ -1322,124 +1456,6 @@ function Header(props) {
     }
   };
 
-  //Flatlist Bar
-  const [listProductType, setListProductType] = useState(null);
-  const [listProductBrands, setListProductBrands] = useState(null);
-  async function loadDataType() {
-    await axios({
-      method: "GET",
-      url: API_URL.CATEGORY_PRODUCT_LISTVIEW_API,
-      timeout: 2000,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    })
-      .then(function (response) {
-        let newlstType = response.data.data;
-        setListProductType(newlstType);
-        axios({
-          method: "GET",
-          url: API_URL.BRANDS_PRODUCT_LISTVIEW_API,
-          timeout: 2500,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }).then(function (response) {
-          let newlstBrands = response.data.data;
-          setListProductBrands(newlstBrands);
-        });
-      })
-      .catch(function (error) {
-        console.log(error.response);
-      });
-  }
-  const ListTypeProduct = ({ item }) => {
-    const categoryProductType = async (item) => {
-      setLoading(true);
-      await axios
-        .get(API_URL.CATEGORY_PRODUCT_SEARCH_API + item.id, {
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          params: {
-            page: 1,
-          },
-        })
-        .then((response) => {
-          let newObj = Object.assign({}, objProductType);
-          newObj.TABS_TYPE = true;
-          props.setObjProductType(newObj);
-          props.setListTrProductType(response.data.data);
-          setLoading(false);
-          props.navigation.navigate("Product Type");
-        })
-        .catch(function (error) {
-          setLoading(false);
-          console.log(error);
-        });
-      setLoading(false);
-    };
-    return (
-      <Block style={styles2.itemType}>
-        <TouchableOpacity onPress={() => categoryProductType(item)}>
-          <Image
-            source={{ uri: rootImage + item.image }}
-            style={{ width: 74, height: 64 }}
-          />
-        </TouchableOpacity>
-      </Block>
-    );
-  };
-  const ListProductBrands = ({ item }) => {
-    const categoryProductBrands = async (item) => {
-      setLoading(true);
-      await axios
-        .get(API_URL.BRANDS_PRODUCT_LISTVIEW_API + item.id + "/products", {
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          params: {
-            page: 1,
-          },
-        })
-        .then(function (response) {
-          let newObj = Object.assign({}, objProductType);
-          newObj.TABS_TYPE = true;
-          props.setObjProductType(newObj);
-          props.setListTrProductType(response.data.data);
-          setLoading(false);
-          props.navigation.navigate("Product Type");
-        })
-        .catch(function (error) {
-          setLoading(false);
-          console.log(error);
-        });
-      setLoading(false);
-    };
-    return (
-      <Block style={styles2.itemBrand}>
-        <TouchableOpacity
-          shadowless
-          onPress={() => categoryProductBrands(item)}
-        >
-          <Image
-            source={{ uri: rootImage + item.image }}
-            style={{ width: 75, height: 35 }}
-          />
-        </TouchableOpacity>
-      </Block>
-    );
-  };
-
-  useLayoutEffect(() => {
-    loadDataType();
-    // loadCountCart();
-  }, []);
-
   return (
     <>
       <SafeAreaView>
@@ -1641,32 +1657,3 @@ const styles2 = StyleSheet.create({
     width: 50,
   },
 });
-
-// await axios({
-//   method: "GET",
-//   url: API_URL.CATEGORY_PRODUCT_LISTVIEW_API,
-//   timeout: 2000,
-//   headers: {
-//     Accept: "application/json",
-//     "Content-Type": "application/json",
-//   },
-// })
-//   .then(function (response) {
-//     let newlstType = response.data.data;
-//     setListProductType(newlstType);
-//     axios({
-//       method: "GET",
-//       url: API_URL.BRANDS_PRODUCT_LISTVIEW_API,
-//       timeout: 2500,
-//       headers: {
-//         Accept: "application/json",
-//         "Content-Type": "application/json",
-//       },
-//     }).then(function (response) {
-//       let newlstBrands = response.data.data;
-//       setListProductBrands(newlstBrands);
-//     });
-//   })
-//   .catch(function (error) {
-//     console.log(error.response);
-//   });

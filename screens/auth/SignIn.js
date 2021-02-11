@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { connect } from "react-redux";
+import { connect, useSelector } from "react-redux";
 import {
   StyleSheet,
   Text,
@@ -18,7 +18,9 @@ import axios from "axios";
 import moment from "moment";
 import ModalLoading from "../../components/ModalLoading";
 import { getToken, setToken, removeToken } from "../../store/mock/token";
+import { actions as ActionLogin } from "../../actions/action-actives/ActionLogin";
 import { actions as ActionEditProfile } from "../../actions/action-actives/ActionEditProfile";
+import { actions as ActionOrder } from "../../actions/action-order-status/ActionOrder";
 import { Block } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import * as Facebook from "expo-facebook";
@@ -26,6 +28,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import WangdekInfo from "../../components/WangdekInfo";
 import { API_URL } from "../../config/config.app";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -90,10 +93,17 @@ const defalutLoginMasterHD = {
 
 function SignIn(props) {
   // IsLogIn Complete View
-  const [isLoggedin, setLoggedinStatus] = useState(false);
+  const [isLoggedin, setLoggedinStatus] = useState(token);
   const [objLoginMasterHD, setObjLoginMasterHD] = useState(
     defalutLoginMasterHD
   );
+  const { objOrderScreen } = useSelector((state) => ({
+    objOrderScreen: state.actionOrder.objOrderScreen,
+  }));
+  const [stateObj, setStateObj] = useState({
+    email: "",
+    password: "",
+  });
 
   useEffect(() => {
     setRequiredEmail(false);
@@ -110,11 +120,6 @@ function SignIn(props) {
       }
     })();
   }, []);
-
-  const [stateObj, setStateObj] = useState({
-    email: "",
-    password: "",
-  });
 
   const onChangeEmail = (e) => {
     let newObj = Object.assign({}, stateObj);
@@ -156,12 +161,13 @@ function SignIn(props) {
           )
         : result.uri.replace("file://", "");
 
-    const formData = new FormData();
-    formData.append("avatar", {
-      uri: path,
-      name: "avatar",
-      type: "image/jpeg",
-    });
+    const bodyFormData = new FormData();
+    bodyFormData.append("avatar", path);
+    console.log(bodyFormData);
+    const postData = {
+      avatar: path,
+      image: path,
+    };
 
     if (!result.cancelled) {
       setLoadImageUser(null);
@@ -172,11 +178,10 @@ function SignIn(props) {
         headers: {
           Authorization: "Bearer " + (await token),
           Accept: "application/json",
-          "Content-Type": "multipart/form-data boundary=",
+          "Content-Type": "multipart/form-data; charset=UTF-8",
+          "Access-Control-Allow-Origin": "*",
         },
-        body: {
-          avatar: formData,
-        },
+        data: bodyFormData,
       })
         .then(function (response) {
           console.log(response.data);
@@ -220,17 +225,16 @@ function SignIn(props) {
 
                 setLoadImageUser(newLogin.IMAGE);
 
-                let tokenGenerate = await response.data.data.token;
-                newLogin.TOKEN = tokenGenerate;
-                await setToken(tokenGenerate);
-                console.log(tokenGenerate);
+                let tokenGenerate = await response.data.data.token
+                newLogin.TOKEN = await response.data.data.token;
+                await setToken(newLogin.TOKEN);
 
                 //get UserInfo
                 await axios
                   .get(API_URL.USER_INFO_API, {
                     headers: {
                       Accept: "application/json",
-                      Authorization: "Bearer " + tokenGenerate,
+                      Authorization: "Bearer " + (await tokenGenerate),
                     },
                   })
                   .then(async (response) => {
@@ -387,6 +391,13 @@ function SignIn(props) {
                           });
                       });
                   });
+                let objAddress = Object.assign({}, objOrderScreen);
+                objAddress.ADDRESS_NAME = "123123123123";
+                objAddress.ZIP_CODE = "ABCDEFG";
+                props.setobjOrderScreen(objAddress);
+
+                setLoggedinStatus(true);
+                setLoading(false);
                 ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
               })
               .catch(function (error) {
@@ -400,7 +411,7 @@ function SignIn(props) {
                   ToastAndroid.SHORT
                 );
               });
-          }, 1000);
+          }, 500);
         } else {
           setLoading(false);
           setLoggedinStatus(false);
@@ -473,7 +484,7 @@ function SignIn(props) {
     }
   };
 
-  //Change Page
+  //Edit Profile
   const onChangePageEditProfile = () => {
     let newObjList = Object.assign({}, objLoginMasterHD);
     newObjList.FIRST_NAME = objLoginMasterHD.FIRST_NAME;
@@ -514,13 +525,9 @@ function SignIn(props) {
     newObjList.ZIP_CODE_ORDER = objLoginMasterHD.postcode_deliveries;
     newObjList.PHONE_NUMBER_ORDER = newObjList.telephone;
 
-    // console.log(newObjList);
     props.setObjEditProfile(newObjList);
     props.navigation.navigate("Edit Profile");
   };
-
-  console.log(imagePicker);
-  console.log(loadImageUser);
 
   return (
     <>
@@ -1062,15 +1069,18 @@ function SignIn(props) {
 }
 
 const mapActions = {
-  // setObjLogin: ActionLogin.setObjLogin,
-  // pushListTrLoginHD: ActionLogin.pushListTrLoginHD,
-  // setListTrLoginHD: ActionLogin.setListTrLoginHD,
-  // clearObjLogin: ActionLogin.clearObjLogin,
+  setObjLogin: ActionLogin.setObjLogin,
+  pushListTrLoginHD: ActionLogin.pushListTrLoginHD,
+  setListTrLoginHD: ActionLogin.setListTrLoginHD,
+  clearObjLogin: ActionLogin.clearObjLogin,
 
   setObjEditProfile: ActionEditProfile.setObjEditProfile,
   pushListTrEditProfileHD: ActionEditProfile.pushListTrEditProfileHD,
   setListTrEditProfileHD: ActionEditProfile.setListTrEditProfileHD,
   clearObjEditProfile: ActionEditProfile.clearObjEditProfile,
+
+  setobjOrderScreen: ActionOrder.setobjOrderScreen,
+  setObjUseAddressDelivery: ActionOrder.setObjUseAddressDelivery,
 };
 
 export default connect(null, mapActions)(SignIn);

@@ -4,28 +4,100 @@ import {
   Image,
   StyleSheet,
   Dimensions,
-  ScrollView,
+  FlatList,
+  SectionList,
+  SafeAreaView,
   Modal,
   TextInput,
   TouchableOpacity,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import * as ActionOrder from "../../../actions/action-order-status/ActionOrder";
 import WangdekInfo from "../../../components/WangdekInfo";
-import { Icon } from "../../../components/";
 import { Button } from "react-native-elements";
+import { API_URL } from "../../../config/config.app";
+import { getToken } from "../../../store/mock/token";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+const token = getToken();
+const rootImage = "http://newpclinic.com/wd";
 
 function UseCoupon(props) {
   const { objOrderScreen } = useSelector((state) => ({
     objOrderScreen: state.actionOrder.objOrderScreen,
   }));
+  const { objUseCoupon } = useSelector((state) => ({
+    objUseCoupon: state.actionOrder.objUseCoupon,
+  }));
 
   useEffect(() => {
-    // props.clearObjUseCoupon();
+    loadDataCouponUser();
   }, []);
+
+  const [couponList, setCouponList] = useState(null);
+  const [coponThis, setCouponThis] = useState(null);
+  async function loadDataCouponUser() {
+    if ((await token) !== null && (await token) !== undefined) {
+      await axios
+        .get(API_URL.COUPON_LIST_TR_API, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          setCouponList(response.data.data);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+  }
+  const ListItemCoupon = ({ item }) => {
+    const selectCouponThis = (item) => {
+      setCouponThis(item.id)
+      if (coponThis !== undefined && coponThis !== null) {
+        let objCoupon = Object.assign({}, objUseCoupon);
+        objCoupon.id = coponThis;
+        console.log(coponThis)
+        props.setObjUseCoupon(objCoupon);
+        props.navigation.navigate("Order Screen");
+      }
+    }
+    return (
+      
+        <Block
+          row
+          style={{
+            backgroundColor: "#ededed",
+            width: width,
+            height: 110
+          }}
+        >
+          <Image
+            source={{ uri : rootImage + item.image}}
+            style={{ width: 160, height: 80, margin: 20 }}
+          />
+          <Button
+            titleStyle={{
+              color: "white",
+              fontFamily: "kanitRegular",
+            }}
+            title={"ใช้คูปอง"}
+            type="solid"
+            buttonStyle={styles.buttonCoupon}
+            onPress={() => selectCouponThis(item)}
+          />
+        </Block>
+    );
+  };
 
   //#region modalConfirm
   const [modalVisible, setModalVisible] = useState(false);
@@ -92,93 +164,111 @@ function UseCoupon(props) {
     newObj.CODE_COUPON = value;
     props.setObjUseCoupon(newObj);
   };
+
+  const onSelectCoupon = () => {
+    let objCoupon = Object.assign({}, objUseCoupon);
+    objCoupon.id = coponThis;
+    props.setObjUseCoupon(objCoupon);
+    props.navigation.navigate("Order Screen");
+  }
   return (
     <>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Title */}
-        <TouchableOpacity onPress={() => props.navigation.navigate("Order Screen")}>
-          <Block row style={styles.container}>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-              }}
-            >
-              {"<  "}ใช้ส่วนลด
-            </Text>
-          </Block>
-        </TouchableOpacity>
+      <SafeAreaView style={{ flex: 1 }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={COUPON_CART_LIST}
+          renderSectionHeader={() => (
+            <>
+              {/* Title */}
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate("Order Screen")}
+              >
+                <Block row style={styles.container}>
+                  <Text
+                    style={{
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      fontSize: 18,
+                    }}
+                  >
+                    {"<  "}ใช้ส่วนลด
+                  </Text>
+                </Block>
+              </TouchableOpacity>
 
-        {/* Head */}
-        <Block style={{ backgroundColor: "white" }}>
-          <Block style={{ margin: 15 }}>
-            <Text style={styles.fontTitleProduct}>กรอกโค้ดเพื่อรับส่วนลด</Text>
-            <Block style={styles.inputView}>
-              <TextInput
-                style={styles.inputText}
-                placeholder={"กรุณากรอกรหัสส่วนลด"}
-                placeholderTextColor="#808080"
-                value={objOrderScreen.CODE_COUPON}
-                onChangeText={onChangeCodeCoupon}
-              />
-            </Block>
-          </Block>
-          <Block
-            style={{ paddingTop: 10, paddingBottom: 30, alignSelf: "center" }}
-          >
-            <Button
-              titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-              title={"ใช้โค้ด"}
-              type="solid"
-              buttonStyle={styles.buttonStyle1}
-              onPress={() => props.navigation.navigate("")}
-            />
-          </Block>
+              {/* Detail */}
+              <Block style={{ backgroundColor: "white" }}>
+                <Block style={{ margin: 15 }}>
+                  <Text style={styles.fontTitleProduct}>
+                    กรอกโค้ดเพื่อรับส่วนลด
+                  </Text>
+                  <Block style={styles.inputView}>
+                    <TextInput
+                      style={styles.inputText}
+                      placeholder={"กรุณากรอกรหัสส่วนลด"}
+                      placeholderTextColor="#808080"
+                      value={objOrderScreen.CODE_COUPON}
+                      onChangeText={onChangeCodeCoupon}
+                    />
+                  </Block>
+                </Block>
+                <Block
+                  style={{
+                    paddingTop: 10,
+                    paddingBottom: 30,
+                    alignSelf: "center",
+                  }}
+                >
+                  <Button
+                    titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                    title={"ใช้โค้ด"}
+                    type="solid"
+                    buttonStyle={styles.buttonStyle1}
+                    onPress={() => props.navigation.navigate("")}
+                  />
+                </Block>
 
-          {/* My coupon */}
-          <Block style={{backgroundColor:"white"}}>
-            <Text style={styles.fontTitleProduct}>คูปองของฉัน</Text>
-            <Block
-              row
-              style={{ backgroundColor: "#ededed", width: width, height: 120 , marginBottom:5}}
-            >
-              <Image
-                source={require("../../../assets/images/coupon/coupon-1.png")}
-                style={{ width: 160, height: 80, margin: 20 }}
-              />
-              <Button
-                titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-                title={"ใช้คูปอง"}
-                type="solid"
-                buttonStyle={styles.buttonCoupon}
-                onPress={() => props.navigation.navigate("")}
-              />
-            </Block>
-          </Block>
-        </Block>
+                {/* My coupon */}
+                <Block style={{ backgroundColor: "white" }}>
+                  <Text style={styles.fontTitleProduct}>คูปองของฉัน</Text>
+                  <FlatList
+                    horizontal={false}
+                    data={couponList}
+                    renderItem={({ item }) =>
+                      item.code !== "" ? <ListItemCoupon item={item} /> : null
+                    }
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(item) => item.id.toString()}
+                  />
+                </Block>
+              </Block>
 
-        {/* Button */}
-        <Block
-          style={{
-            paddingTop: 40,
-            paddingBottom: 40,
-            alignSelf: "center",
-            backgroundColor: "white",
-            width: width,
+              {/* Button */}
+              <Block
+                style={{
+                  paddingTop: 40,
+                  paddingBottom: 40,
+                  alignSelf: "center",
+                  backgroundColor: "white",
+                  width: width,
+                }}
+              >
+                <Button
+                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                  title={"ตกลง"}
+                  type="solid"
+                  buttonStyle={styles.buttonStyle1}
+                  onPress={onSelectCoupon}
+                />
+              </Block>
+            </>
+          )}
+          renderSectionFooter={() => <>{<WangdekInfo />}</>}
+          renderItem={() => {
+            return null;
           }}
-        >
-          <Button
-            titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-            title={"ตกลง"}
-            type="solid"
-            buttonStyle={styles.buttonStyle1}
-            onPress={() => props.navigation.navigate("Order Screen")}
-          />
-        </Block>
-       
-        <WangdekInfo />
-      </ScrollView>
+        />
+      </SafeAreaView>
       {modal}
     </>
   );
@@ -288,3 +378,16 @@ const styles2 = StyleSheet.create({
     marginTop: 10,
   },
 });
+
+const COUPON_CART_LIST = [
+  {
+    title: "Mock",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
+    ],
+  },
+];

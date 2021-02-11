@@ -63,7 +63,7 @@ function UseDelivery(props) {
   const renderDeliveryList = () => {
     return (
       <>
-        {listDelivery != "undefined"
+        {listDelivery != undefined
           ? listDelivery.map((item) => (
               <Block
                 row
