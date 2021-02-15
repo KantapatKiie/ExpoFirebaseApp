@@ -26,7 +26,7 @@ import { getToken } from "../../../store/mock/token";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
-const rootImage = "http://newpclinic.com/wd";
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 function UseCoupon(props) {
   const { objOrderScreen } = useSelector((state) => ({
@@ -62,15 +62,19 @@ function UseCoupon(props) {
   }
   const ListItemCoupon = ({ item }) => {
     const selectCouponThis = (item) => {
-      setCouponThis(item.id)
-      if (coponThis !== undefined && coponThis !== null) {
-        let objCoupon = Object.assign({}, objUseCoupon);
-        objCoupon.id = coponThis;
-        console.log(coponThis)
-        props.setObjUseCoupon(objCoupon);
-        props.navigation.navigate("Order Screen");
-      }
-    }
+      setCouponThis(item.id);
+      let objCoupon = Object.assign({}, objUseCoupon);
+      objCoupon.code = item.code;
+      objCoupon.id = item.id;
+      objCoupon.image = item.image;
+      objCoupon.title1_en = item.title1_en;
+      objCoupon.title1_th = item.title1_th;
+      objCoupon.title2_en = item.title2_en;
+      objCoupon.title2_th = item.title2_th;
+
+      props.setObjUseCoupon(objCoupon);
+      props.navigation.navigate("Order Screen");
+    };
     return (
       
         <Block

@@ -36,7 +36,7 @@ import ModalLoading from "../components/ModalLoading";
 import { ToastAndroid } from "react-native";
 
 const { width } = Dimensions.get("screen");
-const rootImage = "http://newpclinic.com/wd";
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 let token = getToken();
 
 const defalutCouponList = [
@@ -127,15 +127,11 @@ function Home(props) {
 
   useEffect(() => {
     setModalVisible(false); // Popup Coupon
-    // setTimeout(async () => {
-    //   loadDataFlashsale();
-    // }, 500);
-    // setTimeout(async () => {
-    //   loadDataCoupon();
-    // }, 500);
-    // setTimeout(async () => {
-    //   await loadDataProductLists();
-    // }, 500);
+    setTimeout(async () => {
+      loadDataFlashsale();
+    }, 250);
+    loadDataCoupon();
+    loadDataProductLists();
   }, [countDownTime]);
 
   //#region Time & Translate
@@ -299,8 +295,6 @@ function Home(props) {
   const [listBestsale, setListBestsale] = useState(defalutBestsaleProduct);
   const [listPopularSale, setListPopularSale] = useState(defalutPopularProduct);
   async function loadDataProductLists() {
-    console.log("Get products")
-    setTimeout(async () => {
     await axios({
       method: "GET",
       url: API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API,
@@ -315,41 +309,38 @@ function Home(props) {
     })
       .then(async (resBestsale) => {
         var lstBestSale = await resBestsale.data.data.product_lists;
+
         let newlstBestsale = [];
         for (let i = 0; i < 4; i++) {
           if (lstBestSale[i] !== undefined) newlstBestsale.push(lstBestSale[i]);
         }
         //Popularity List
-        setTimeout(async () => {
-          await axios({
-            method: "GET",
-            url: API_URL.POPULARITY_PRODUCT_LISTVIEW_API,
-            timeout: 2500,
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-            params: {
-              page: 1,
-            },
-          }).then(async (resPopuplar) => {
-            let lstPopular = await resPopuplar.data.data.product_lists;
-            let newlstPopular = [];
-            for (let i = 0; i < 4; i++) {
-              if (lstPopular[i] !== undefined)
-                newlstPopular.push(lstPopular[i]);
-            }
+        await axios({
+          method: "GET",
+          url: API_URL.POPULARITY_PRODUCT_LISTVIEW_API,
+          timeout: 2500,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: 1,
+          },
+        }).then(async (resPopuplar) => {
+          let lstPopular = await resPopuplar.data.data.product_lists;
+          let newlstPopular = [];
+          for (let i = 0; i < 4; i++) {
+            if (lstPopular[i] !== undefined) newlstPopular.push(lstPopular[i]);
+          }
           if (newlstBestsale || lstPopular) {
             setListBestsale(newlstBestsale);
             setListPopularSale(lstPopular);
           }
-        }, 500);
         });
       })
       .catch(function (error) {
         console.log(error);
       });
-    },500);
   }
   const renderBestsaler = ({ item }) => {
     const selectProductBestsale = async (item) => {

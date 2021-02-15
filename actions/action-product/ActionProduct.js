@@ -21,8 +21,8 @@ const initialState = {
     COUNT: 1,
     TOTAL_PRICE: 0,
 
-    flash_sale_events_id: 1,
-    flash_sales_id: 1,
+    flash_sale_events_id: 0,
+    flash_sales_id: 0,
     product_id: 3,
     product_name_th: "เสื้อผ้า 001",
     product_name_en: "Clothing 001",

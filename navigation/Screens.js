@@ -34,6 +34,7 @@ import HistoryOrderScreen from "../screens/order-status/HistoryOrder";
 import OrderStatusScreen from "../screens/order-status/OrderStatus";
 //Order Screen & Notification-order
 import OrderScreen from "../screens/product-cart/OrderScreen";
+import OrderStatusPriceScreen from "../screens/product-cart/OrderStatusPriceScreen";
 import UseCouponScreen from "../screens/product-cart/notification-order-screen/UseCoupon";
 import UseDeliveryScreen from "../screens/product-cart/notification-order-screen/UseDelivery";
 import UseAddressDeliveryScreen from "../screens/product-cart/notification-order-screen/UseAddressDelivery";
@@ -839,6 +840,31 @@ function OrderScreenStack() {
     </Stack.Navigator>
   );
 }
+function OrderStatusPriceStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Order Status Price Screen"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Order Status Price Screen"
+        component={OrderStatusPriceScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Order Status Price Screen"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
 function UseCouponStack() {
   return (
     <Stack.Navigator
@@ -1214,6 +1240,11 @@ function OnboardingStack(props) {
         <Stack.Screen
           name="Order Screen"
           component={OrderScreenStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Order Status Price Screen"
+          component={OrderStatusPriceStack}
           options={{ header: () => null }}
         />
         <Stack.Screen

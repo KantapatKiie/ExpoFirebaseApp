@@ -29,7 +29,7 @@ import products2 from "../constants/products2";
 const { width } = Dimensions.get("screen");
 const token = getToken();
 //const rootImage = "http://10.0.1.37:8080";
-const rootImage = "http://newpclinic.com/wd";
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 function HistoryView(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);

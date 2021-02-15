@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import {
-  View,
   Image,
   SafeAreaView,
   FlatList,
   StyleSheet,
   Dimensions,
   SectionList,
-  Modal,
   TouchableOpacity,
+  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -19,18 +18,18 @@ import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import { actions as ActionOrder } from "../../actions/action-order-status/ActionOrder";
 import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
+import { actions as ActionOrderStatus } from "../../actions/action-order-status/ActionOrderStatus.js";
+
 import WangdekInfo from "../../components/WangdekInfo";
 import { Icon } from "../../components/";
 import { Button } from "react-native-elements";
 import commaNumber from "comma-number";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-// import ModalLoading from "../../components/ModalLoading";
 
 const { height, width } = Dimensions.get("screen");
 const token = getToken();
-const rootImage = "http://newpclinic.com/wd";
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 function OrderScreen(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -39,84 +38,40 @@ function OrderScreen(props) {
   } else {
     moment.locale("en-au");
   }
-  // const { objOrderScreen } = useSelector((state) => ({
-  //   objOrderScreen: state.actionOrder.objOrderScreen,
-  // }));
-  const { objCartScreen, listTrCartScreen } = useSelector((state) => ({
-    objCartScreen: state.actionCart.objCartScreen,
+  const { listTrCartScreen } = useSelector((state) => ({
     listTrCartScreen: state.actionCart.listTrCartScreen,
   }));
 
-  const { objUseCoupon,objUseDelivery,objUseAddressDelivery } = useSelector((state) => ({
-    objUseCoupon: state.actionOrder.objUseCoupon,
-    objUseDelivery: state.actionOrder.objUseDelivery,
-    objUseAddressDelivery: state.actionOrder.objUseAddressDelivery,
-  }));
+  const { objUseCoupon, objUseDelivery, objUseAddressDelivery } = useSelector(
+    (state) => ({
+      objUseCoupon: state.actionOrder.objUseCoupon,
+      objUseDelivery: state.actionOrder.objUseDelivery,
+      objUseAddressDelivery: state.actionOrder.objUseAddressDelivery,
+    })
+  );
+  const [listTrOrder, setListTrOrder] = useState();
 
   useEffect(() => {
-    AsyncStorage["ListTrCartScreen"] = listTrCartScreen;
+    loadCartLists();
   }, []);
-
-  //#region modalConfirm
-  const [modalVisible, setModalVisible] = useState(false);
-  const handleConfirm = (e) => {
-    setModalVisible(false);
-  };
-  const modalHeader = (
-    <View style={styles2.modalHeader}>
-      <Text style={styles2.title}>Notifications 📢</Text>
-      <View style={styles2.divider}></View>
-    </View>
-  );
-  const modalBody = (
-    <View style={styles2.modalBody}>
-      <Text style={styles2.bodyText}>
-        Are you sure you want to product confirm ?
-      </Text>
-    </View>
-  );
-  const modalFooter = (
-    <View style={styles2.modalFooter}>
-      <View style={styles2.divider}></View>
-      <View style={{ flexDirection: "row-reverse", margin: 10 }}>
-        <TouchableOpacity
-          style={{ ...styles2.actions, backgroundColor: "#ed6868" }}
-          onPress={() => {
-            setModalVisible(!modalVisible);
-          }}
-        >
-          <Text style={styles2.actionText}>No</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{ ...styles2.actions, backgroundColor: "#54bf6d" }}
-          onPress={(e) => handleConfirm(e)}
-        >
-          <Text style={styles2.actionText}>Yes</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-  const modalContainer = (
-    <View style={styles2.modalContainer}>
-      {modalHeader}
-      {modalBody}
-      {modalFooter}
-    </View>
-  );
-  const modal = (
-    <Modal
-      transparent={true}
-      visible={modalVisible}
-      onRequestClose={() => {
-        Alert.alert("Modal has been closed.");
-      }}
-    >
-      <View style={styles2.modal}>
-        <View>{modalContainer}</View>
-      </View>
-    </Modal>
-  );
-  //#endregion
+  async function loadCartLists() {
+    await axios({
+      method: "GET",
+      url: API_URL.ADD_CART_ORDER_LISTVIEW_API,
+      headers: {
+        Accept: "*/*",
+        Authorization: "Bearer " + (await token),
+        "Content-Type": "application/json",
+      },
+    })
+      .then(async (response) => {
+        let newlst = await response.data.data;
+        setListTrOrder(newlst);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
 
   // Order List
   const renderOrderLists = ({ item }) => {
@@ -160,25 +115,35 @@ function OrderScreen(props) {
     );
   };
   // Other List
+  const onThisConfirmOrders = async () => {
+    if (listTrOrder.length > 0) {
+      if (objUseDelivery.id !== 0) {
+        if (objUseAddressDelivery.FIRST_NAME !== "") {
+          props.setListTrOrder(listTrOrder);
+          props.setObjUseCoupon(objUseCoupon);
+          props.setObjUseDelivery(objUseDelivery);
+          props.setObjUseAddressDelivery(objUseAddressDelivery);
+          props.navigation.navigate("Order Status Price Screen");
+        } else {
+          ToastAndroid.show("กรุณาเลือกที่อยู่ในการจัดส่ง", ToastAndroid.SHORT);
+        }
+      } else {
+        ToastAndroid.show("กรุณาเลือกช่องทางการจัดส่ง", ToastAndroid.SHORT);
+      }
+    } else {
+      ToastAndroid.show("ไม่มีสินค้าในตะกร้า", ToastAndroid.SHORT);
+      alert("ไม่มีสินค้าในตะกร้า");
+    }
+  };
   const renderOtherList = ({ item }) => {
     const onOtherChangepage = (item) => {
-      props.navigation.navigate(item.page)
-      // console.log(AsyncStorage["_USER_ADDRESS_DELIVERY"])
-    }
+      props.navigation.navigate(item.page);
+    };
     return (
       <Block style={styles.blockHeaderInfo} key={item.id}>
         <TouchableOpacity onPress={() => onOtherChangepage(item)}>
           <Block row middle space="between" style={{ paddingTop: 7 }}>
-            <Text
-              style={{
-                textAlign: "left",
-                color: "black",
-                fontSize: 17,
-                fontFamily: "kanitRegular",
-              }}
-            >
-              {item.text}
-            </Text>
+            <Text style={styles.textOtherlist}>{item.text}</Text>
             <Icon
               name="angle-right"
               family="font-awesome"
@@ -189,6 +154,7 @@ function OrderScreen(props) {
       </Block>
     );
   };
+
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
@@ -216,21 +182,12 @@ function OrderScreen(props) {
 
               {/* Product List */}
               <FlatList
-                data={
-                  listTrCartScreen < 1
-                    ? AsyncStorage["ListTrCartScreen"]
-                    : listTrCartScreen
-                }
+                data={listTrOrder}
                 style={styles.containers}
                 renderItem={renderOrderLists}
                 numColumns={1}
                 keyExtractor={(item) => item.cart_id.toString()}
               />
-
-              {/* Test */}
-              <Text>{objUseCoupon.id}</Text>
-              <Text>{objUseDelivery.id}</Text>
-              <Text>{objUseAddressDelivery.EMAIL}</Text>
 
               {/* List Other */}
               <FlatList
@@ -265,7 +222,7 @@ function OrderScreen(props) {
                   type="solid"
                   containerStyle={styles.blockButton2}
                   buttonStyle={styles.buttonStyle2}
-                  onPress={() => props.navigation.navigate("Order Status")}
+                  onPress={onThisConfirmOrders}
                 />
               </Block>
             </>
@@ -276,8 +233,6 @@ function OrderScreen(props) {
           }}
         />
       </SafeAreaView>
-
-      {modal}
     </>
   );
 }
@@ -294,6 +249,8 @@ const mapActions = {
   setObjCartScreen: ActionCart.setObjCartScreen,
   clearObjCartScreen: ActionCart.clearObjCartScreen,
   setListTrCartScreen: ActionCart.setListTrCartScreen,
+
+  setObjOrderStatus: ActionOrderStatus.setObjOrderStatus,
 };
 
 export default connect(null, mapActions)(OrderScreen);
@@ -372,57 +329,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
   },
-});
-
-//Style Modal
-const styles2 = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modal: {
-    backgroundColor: "#00000099",
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  modalContainer: {
-    backgroundColor: "#f9fafb",
-    width: "80%",
-    borderRadius: 13,
-  },
-  modalHeader: {},
-  title: {
-    fontWeight: "bold",
-    fontSize: 20,
-    padding: 15,
-    color: "#000",
-  },
-  divider: {
-    width: "100%",
-    height: 1,
-    backgroundColor: "lightgray",
-  },
-  modalBody: {
-    backgroundColor: "#fff",
-    paddingVertical: 25,
-    paddingHorizontal: 10,
-  },
-  modalFooter: {},
-  actions: {
-    borderRadius: 5,
-    marginHorizontal: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  actionText: {
-    color: "#fff",
-  },
-  bloxStyle: {
-    marginTop: 10,
+  textOtherlist: {
+    textAlign: "left",
+    color: "black",
+    fontSize: 17,
+    fontFamily: "kanitRegular",
   },
 });
 

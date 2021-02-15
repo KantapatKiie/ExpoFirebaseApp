@@ -28,7 +28,7 @@ import ModalLoading from "../../components/ModalLoading";
 const { width } = Dimensions.get("screen");
 let token = getToken();
 //const rootImage = "http://10.0.1.37:8080";
-const rootImage = "http://newpclinic.com/wd";
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 const defaultListProductType = [
   {

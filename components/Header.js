@@ -27,7 +27,7 @@ import { SafeAreaView } from "react-native";
 
 const { width } = Dimensions.get("window");
 let token = getToken();
-const rootImage = "http://newpclinic.com/wd";
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 function Header(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -72,15 +72,9 @@ function Header(props) {
   }
 
   useEffect(() => {
-    setTimeout(async () => {
-      await loadDataTypes();
-    }, 500);
-    setTimeout(async () => {
-      await loadDataBrands();
-    }, 500);
-    // setTimeout(async () => {
-    //   await loadCountCart();
-    // }, 500);
+    loadDataTypes();
+    loadDataBrands();
+    loadCountCart();
   }, []);
 
   //Flatlist Bar
@@ -114,8 +108,6 @@ function Header(props) {
         Accept: "application/json",
         "Content-Type": "application/json",
         Connection: "keep-alive",
-        "X-CSRF-TOKEN": "",
-        "Accept-Encoding": "gzip, deflate",
       },
     })
       .then(async (resBrands) => {

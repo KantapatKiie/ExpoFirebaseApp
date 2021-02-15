@@ -20,7 +20,7 @@ import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import * as ActionCart from "../../actions/action-cart/ActionCart";
 import WangdekInfo from "../../components/WangdekInfo";
-import NumericInput from 'rn-numeric-input'
+import NumericInput from "rn-numeric-input";
 import { Button } from "react-native-elements";
 import commaNumber from "comma-number";
 import { API_URL } from "../../config/config.app";
@@ -29,13 +29,12 @@ import ModalLoading from "../../components/ModalLoading";
 
 const { height, width } = Dimensions.get("screen");
 const token = getToken();
-//const rootImage = "http://10.0.1.37:8080";
-const rootImage = "http://newpclinic.com/wd";
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 const defaultCartListOrders = [
   {
-    cart_id: 1,
-    product_id: 3,
+    cart_id: 99999,
+    product_id: 0,
     product_name_th: "เสื้อผ้า 001",
     product_name_en: "Clothing 001",
     product_image: "/storage/3/images-%281%29.jfif",
@@ -149,12 +148,11 @@ function CartScreen(props) {
             {/* quantity */}
             <Block row>
               <Text style={styles.detailText}>จำนวน : </Text>
-              
+
               <NumericInput
                 initValue={item.quantity}
                 // value={numericInputValue}
                 onChange={onChangeNumericInputValue}
-                onLimitReached={(isMax,msg) => console.log(isMax,msg)}
                 totalWidth={110}
                 totalHeight={35}
                 iconSize={18}

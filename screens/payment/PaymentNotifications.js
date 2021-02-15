@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   TextInput,
   ToastAndroid,
-  Image,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -26,8 +25,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
 import ModalLoading from "../../components/ModalLoading";
-import * as DocumentPicker from "expo-document-picker";
-import { Feather } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 
 const { width } = Dimensions.get("screen");
 let token = getToken();
@@ -173,23 +171,19 @@ function PaymentNotifications(props) {
   // Image Picker Profile
   const [imagePicker, setImagePicker] = useState(null);
   const pickImage = async () => {
-    let result = await DocumentPicker.getDocumentAsync({
-      type: "*/*",
+    let result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: false,
       aspect: [4, 3],
       quality: 1,
     });
 
-    const path =
-      Platform.OS === "android"
-        ? result.uri
-        : result.uri.replace("file://", "");
-
-    if (!result.cancelled) {
-      setImagePicker(path);
-    } else {
-      ToastAndroid.show("Not Seleted Images", ToastAndroid.SHORT);
+    if (result.cancelled) {
+      return;
     }
+    setLoadImageUser(result.uri)
+
+    
+    
   };
 
   const onPaymentTransfer = async () => {
@@ -202,50 +196,50 @@ function PaymentNotifications(props) {
           "Content-Type": "application/json",
         },
       })
-      .then(function (response) {
-        const dataUpload = new FormData();
-        // if (response.data.success !== true) {
-        //   setLoading(false);
-        //   ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
-        // } else {
-        //   if (imagePicker != null) {
-        //     const fileToUpload = imagePicker;
-        //     dataUpload = new FormData();
-        //     dataUpload.append("name", "Image Upload");
-        //     dataUpload.append("file_attachment", fileToUpload);
-        //     console.log(dataUpload);
-        //   }
-        //   await axios({
-        //     method: "POST",
-        //     url: API_URL.PAYMENTS_TRANSFER_API,
-        //     headers: {
-        //       Accept: "*/*",
-        //       Authorization: "Bearer " + (await token),
-        //       // "Content-Type": "application/json",
-        //       "Content-Type": "multipart/form-data",
-        //       "X-localization": locale,
-        //     },
-        //     data: {
-        //       orders_code: objSearch.order_no,
-        //       bank_accounts_id: objSearch.bank_code.toString(),
-        //       fullname: objSearch.fullname,
-        //       contact: objSearch.telephone,
-        //       email: objSearch.email,
-        //       payment_date: moment(objSearch.transfer_date).format(
-        //         "YYYY-MM-DD"
-        //       ),
-        //       payment_time: objSearch.transfer_time,
-        //       amount: objSearch.money_transfer,
-        //       image: dataUpload,
-        //     },
-        //   }).then(function (response) {
-        //     setLoading(false);
-        //     ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
-        //   });
-        // }
+      .then(async (response) => {
+        if (response.data.success !== true) {
+          setLoading(false);
+          ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        } else {
+          if (imagePicker != null) {
+            let localUri = result.uri;
+            let filename = localUri.split("/").pop();
+
+            let match = /\.(\w+)$/.exec(filename);
+            let type = match ? `image/${match[1]}` : `image`;
+
+            let formData = new FormData();
+            formData.append("avatar", { uri: localUri, name: filename, type });
+          }
+          await axios({
+            method: "POST",
+            url: API_URL.PAYMENTS_TRANSFER_API,
+            headers: {
+              Accept: "*/*",
+              Authorization: "Bearer " + (await token),
+              "Content-Type": "multipart/form-data",
+            },
+            data: {
+              orders_code: objSearch.order_no,
+              bank_accounts_id: objSearch.bank_code.toString(),
+              fullname: objSearch.fullname,
+              contact: objSearch.telephone,
+              email: objSearch.email,
+              payment_date: moment(objSearch.transfer_date).format(
+                "YYYY-MM-DD"
+              ),
+              payment_time: moment(objSearch.transfer_time).format("HH:mm"),
+              amount: objSearch.money_transfer,
+            },
+            body: formData,
+          }).then(function (response) {
+            setLoading(false);
+            ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+          });
+        }
       })
       .catch(function (error) {
-        // console.log(error.response.data.data)
+        console.log(error)
         setLoading(false);
         ToastAndroid.show(error.response.data.data, ToastAndroid.SHORT);
       });
@@ -424,7 +418,7 @@ function PaymentNotifications(props) {
             // )}
           />
         </Block>
-        
+
         {/* Date */}
         <Block style={styles.container2}>
           <Block row>

@@ -20,6 +20,7 @@ import { RadioButton } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
 import { API_URL } from "../../../config/config.app";
 import { getToken } from "../../../store/mock/token";
+import ModalLoading from "../../../components/ModalLoading";
 
 const { height, width } = Dimensions.get("screen");
 const token = getToken();
@@ -31,12 +32,14 @@ function UseAddressDelivery(props) {
   } else {
     moment.locale("en-au");
   }
+  const [loading, setLoading] = useState(null);
   const [checkedDelivery, setCheckedDelivery] = useState("address");
   const { objUseAddressDelivery } = useSelector((state) => ({
     objUseAddressDelivery: state.actionOrder.objUseAddressDelivery,
   }));
 
   useEffect(() => {
+    setCheckedDelivery("address");
     onLoadUserDelivery();
     getProvinces();
   }, []);
@@ -60,6 +63,7 @@ function UseAddressDelivery(props) {
     },
   ]);
   async function onLoadUserDelivery() {
+    setLoading(true);
     let newObj = Object.assign({}, objUseAddressDelivery);
     await axios
       .get(API_URL.USER_INFO_API, {
@@ -86,6 +90,13 @@ function UseAddressDelivery(props) {
         newObj.ZIP_CODE_ORDER =
           response.data.data.address_deliveries[0].postcode;
 
+        //Addres 1 Original no edit
+        newObj.FIRST_NAME_ORIGINAL = newObj.FIRST_NAME;
+        newObj.LAST_NAME_ORIGINAL = newObj.LAST_NAME;
+        newObj.EMAIL_ORIGINAL = newObj.EMAIL;
+        newObj.PHONE_NUMBER_ORDER_ORIGINAL = newObj.PHONE_NUMBER_ORDER;
+        newObj.ADDRESS_NAME_ORDER_ORIGINAL = newObj.ADDRESS_NAME_ORDER;
+
         //District
         await axios
           .get(API_URL.DISTRICT_API, {
@@ -98,7 +109,10 @@ function UseAddressDelivery(props) {
               (item) => item.id == parseInt(newObj.district_id_deliveries)
             );
             newObj.DISTRICT_CODE_ORDER = newlstDistrict.id;
-            newObj.DISTRICT_NAME_ORDER = newlstDistrict.name_th;
+            newObj.DISTRICT_NAME_ORDER = newlstDistrict.name_th.toString();
+
+            newObj.DISTRICT_CODE_ORDER_ORIGINAL = newObj.DISTRICT_CODE_ORDER;
+            newObj.DISTRICT_NAME_ORDER_ORIGINAL = newObj.DISTRICT_NAME_ORDER;
 
             //Sub-District
             await axios
@@ -113,8 +127,14 @@ function UseAddressDelivery(props) {
                     item.id == parseInt(newObj.sub_district_id_deliveries)
                 );
                 newObj.SUB_DISTRICT_CODE_ORDER = newlstSubDistrict.id;
-                newObj.SUB_DISTRICT_NAME_ORDER = newlstSubDistrict.name_th;
-                newObj.ZIP_CODE_ORDER = newlstSubDistrict.zip_code;
+                newObj.SUB_DISTRICT_NAME_ORDER = newlstSubDistrict.name_th.toString();
+                newObj.ZIP_CODE_ORDER = newlstSubDistrict.zip_code.toString();
+
+                newObj.SUB_DISTRICT_CODE_ORDER_ORIGINAL =
+                  newObj.SUB_DISTRICT_CODE_ORDER;
+                newObj.SUB_DISTRICT_NAME_ORDER_ORIGINAL =
+                  newObj.SUB_DISTRICT_NAME_ORDER;
+                newObj.ZIP_CODE_ORDER_ORIGINAL = newObj.ZIP_CODE_ORDER;
 
                 //Province
                 await axios.get(API_URL.PROVINCE_API).then(function (response) {
@@ -122,17 +142,23 @@ function UseAddressDelivery(props) {
                     (item) => item.id == parseInt(newObj.province_id_deliveries)
                   );
                   newObj.PROVINCE_CODE_ORDER = newlstProvince.id;
-                  newObj.PROVINCE_NAME_ORDER = newlstProvince.name_th;
+                  newObj.PROVINCE_NAME_ORDER = newlstProvince.name_th.toString();
 
+                  newObj.PROVINCE_CODE_ORDER_ORIGINAL =
+                    newObj.PROVINCE_CODE_ORDER;
+                  newObj.PROVINCE_NAME_ORDER_ORIGINAL =
+                    newObj.PROVINCE_NAME_ORDER;
                   props.setObjUseAddressDelivery(newObj);
-                  console.log(newObj);
                 });
               });
           });
+        setLoading(false);
       })
       .catch(function (error) {
         console.log(error);
+        setLoading(false);
       });
+    setLoading(false);
   }
   const getProvinces = async () => {
     await axios
@@ -224,6 +250,35 @@ function UseAddressDelivery(props) {
     props.setObjUseAddressDelivery(newObj);
   };
 
+  const onSelectAddressThis = () => {
+    let objAddress = Object.assign({}, objUseAddressDelivery);
+    if (checkedDelivery == "address") {
+      objAddress.FIRST_NAME = objUseAddressDelivery.FIRST_NAME_ORIGINAL;
+      objAddress.LAST_NAME = objUseAddressDelivery.LAST_NAME_ORIGINAL;
+      objAddress.ADDRESS_NAME_ORDER =
+        objUseAddressDelivery.ADDRESS_NAME_ORDER_ORIGINAL;
+      objAddress.PHONE_NUMBER_ORDER =
+        objUseAddressDelivery.PHONE_NUMBER_ORDER_ORIGINAL;
+
+      objAddress.EMAIL = objUseAddressDelivery.EMAIL_ORIGINAL;
+      objAddress.DISTRICT_CODE_ORDER =
+        objUseAddressDelivery.DISTRICT_CODE_ORDER_ORIGINAL;
+      objAddress.DISTRICT_NAME_ORDER =
+        objUseAddressDelivery.DISTRICT_NAME_ORDER_ORIGINAL;
+      objAddress.SUB_DISTRICT_CODE_ORDER =
+        objUseAddressDelivery.SUB_DISTRICT_CODE_ORDER_ORIGINAL;
+      objAddress.SUB_DISTRICT_NAME_ORDER =
+        objUseAddressDelivery.SUB_DISTRICT_NAME_ORDER_ORIGINAL;
+      objAddress.PROVINCE_CODE_ORDER =
+        objUseAddressDelivery.PROVINCE_CODE_ORDER_ORIGINAL;
+      objAddress.PROVINCE_NAME_ORDER =
+        objUseAddressDelivery.PROVINCE_NAME_ORDER_ORIGINAL;
+      objAddress.ZIP_CODE_ORDER = objUseAddressDelivery.ZIP_CODE_ORDER_ORIGINAL;
+    }
+    props.setObjUseAddressDelivery(objAddress);
+    props.navigation.navigate("Order Screen");
+  };
+
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -251,7 +306,7 @@ function UseAddressDelivery(props) {
             onValueChange={(value) => setCheckedDelivery(value)}
             value={checkedDelivery}
           >
-            {/* Address Original */}
+            {/* Address 1 */}
             <Block
               style={
                 checkedDelivery === "address"
@@ -266,19 +321,23 @@ function UseAddressDelivery(props) {
               <Block style={{ marginTop: 15 }}>
                 <Text style={styles.textDescAddress}>
                   ชื่อ :{" "}
-                  {objUseAddressDelivery.FIRST_NAME +
+                  {objUseAddressDelivery.FIRST_NAME_ORIGINAL +
                     " " +
-                    objUseAddressDelivery.LAST_NAME}
+                    objUseAddressDelivery.LAST_NAME_ORIGINAL}
                 </Text>
                 <Text style={styles.textDescAddress}>
-                  เบอร์โทร : {objUseAddressDelivery.PHONE_NUMBER_ORDER}
+                  เบอร์โทร : {objUseAddressDelivery.PHONE_NUMBER_ORDER_ORIGINAL}
                 </Text>
                 <Text style={styles.textDescAddress}>
-                  ที่อยู่ : {objUseAddressDelivery.ADDRESS_NAME_ORDER}
+                  ที่อยู่ : {objUseAddressDelivery.ADDRESS_NAME_ORDER_ORIGINAL}{" "}
+                  {objUseAddressDelivery.DISTRICT_NAME_ORDER_ORIGINAL}{" "}
+                  {objUseAddressDelivery.SUB_DISTRICT_NAME_ORDER_ORIGINAL}{" "}
+                  {objUseAddressDelivery.PROVINCE_NAME_ORDER_ORIGINAL}{" "}
+                  {objUseAddressDelivery.ZIP_CODE_ORDER_ORIGINAL}
                 </Text>
               </Block>
             </Block>
-            {/* Address Fix */}
+            {/* Address 2 */}
             <Block
               style={
                 checkedDelivery === "fix_address"
@@ -306,6 +365,7 @@ function UseAddressDelivery(props) {
                         objUseAddressDelivery.LAST_NAME
                       }
                       onChangeText={onChangeFirstName}
+                      editable={checkedDelivery == "address" ? false : true}
                     />
                   </Block>
                 </Block>
@@ -319,6 +379,7 @@ function UseAddressDelivery(props) {
                       value={objUseAddressDelivery.PHONE_NUMBER_ORDER}
                       onChangeText={onChangePhoneNumber}
                       keyboardType="phone-pad"
+                      editable={checkedDelivery == "address" ? false : true}
                     />
                   </Block>
                 </Block>
@@ -329,6 +390,7 @@ function UseAddressDelivery(props) {
                       style={styles.inputText}
                       value={objUseAddressDelivery.ADDRESS_NAME_ORDER}
                       onChangeText={onChangeAdress}
+                      editable={checkedDelivery == "address" ? false : true}
                     />
                   </Block>
                 </Block>
@@ -365,7 +427,7 @@ function UseAddressDelivery(props) {
                       borderRadius: 20,
                       color: "white",
                     }}
-                    // controller={(instance) => (controller = instance)}
+                    disabled={checkedDelivery == "address" ? true : false}
                     defaultValue={
                       objUseAddressDelivery.PROVINCE_NAME_ORDER == ""
                         ? null
@@ -406,9 +468,9 @@ function UseAddressDelivery(props) {
                       borderRadius: 20,
                       color: "white",
                     }}
-                    // controller={(instance) => (controller = instance)}
+                    disabled={checkedDelivery == "address" ? true : false}
                     defaultValue={
-                      objUseAddressDelivery.DISTRICT_NAME_ORDER == ""
+                      objUseAddressDelivery.PROVINCE_NAME_ORDER == ""
                         ? null
                         : objUseAddressDelivery.DISTRICT_CODE_ORDER
                     }
@@ -447,6 +509,7 @@ function UseAddressDelivery(props) {
                       borderRadius: 20,
                       color: "white",
                     }}
+                    disabled={checkedDelivery == "address" ? true : false}
                     defaultValue={
                       objUseAddressDelivery.SUB_DISTRICT_NAME_ORDER == ""
                         ? null
@@ -456,6 +519,7 @@ function UseAddressDelivery(props) {
                   />
                 </Block>
 
+                {/* ZipCode */}
                 <Block style={{ marginBottom: 5 }}>
                   <Text style={styles.textDescAddress}>รหัสไปรษณีย์ :</Text>
                   <Block style={styles.inputView}>
@@ -463,6 +527,7 @@ function UseAddressDelivery(props) {
                       style={styles.inputText}
                       value={objUseAddressDelivery.ZIP_CODE_ORDER}
                       editable={false}
+                      editable={checkedDelivery == "address" ? false : true}
                     />
                   </Block>
                 </Block>
@@ -486,11 +551,13 @@ function UseAddressDelivery(props) {
             title={"ตกลง"}
             type="solid"
             buttonStyle={styles.buttonStyle1}
-            onPress={() => props.navigation.navigate("Order Screen")}
+            onPress={onSelectAddressThis}
           />
         </Block>
         <WangdekInfo />
       </ScrollView>
+
+      <ModalLoading loading={loading} />
     </>
   );
 }

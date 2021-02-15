@@ -14,7 +14,7 @@ import commaNumber from "comma-number";
 
 const { width } = Dimensions.get("screen");
 //const rootImage = "http://10.0.1.37:8080";
-const rootImage = "http://newpclinic.com/wd";
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 function Product(props) {
   const {

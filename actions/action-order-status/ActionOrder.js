@@ -4,6 +4,7 @@ import moment from "moment";
 
 const actionTypes = {
   setobjOrderScreenins: "OBJ_ORDER_PRODUCTS_DETAIL_HD",
+  setobjOrderStatusPriceScreenins: "OBJ_ORDER_STAUS_PRICEPRODUCTS_DETAIL_HD",
   clearobjOrderScreen: "CLEAR_OBJ_ORDER_PRODUCTS_DETAIL",
   setDisabledInput: "SET_DISABLED_INPUT_ORDER_PRODUCTS_DETAIL",
   pushListTrOrder: "PUSH_LIST_TR_ORDER_PRODUCTS_DETAIL",
@@ -32,18 +33,64 @@ const initialState = {
     SUB_DISTRICT_NAME: "",
     ZIP_CODE: "",
   },
+  objOrderStatusPriceScreen: {
+    id: 9,
+    code: "ORD-2020120010",
+    payment_type: "โอนเข้าบัญชีธนาคาร",
+    pickup_optional: 0,
+    logistics_id: 1,
+    users_id: 8,
+    total_amount: "6.00",
+    total_weight: 112,
+    discount: "0.00",
+    discount_promotion: 500,
+    coupons_id: null,
+    promotion_discount: 0,
+    delivery_charge: 2,
+    fullname: "test1 test2",
+    telephone: "xxxxxxxx, xxx-xxxxxxx",
+    address: "aaa",
+    sub_district_id: 711301,
+    district_id: 794,
+    province_id: 56,
+    postcode: 71170,
+    vat: "0.00",
+    tracking_no: null,
+    inv_sent_count: 0,
+    inv_sent_last: null,
+    inv_number: "INV-2020120010",
+    rcpt_sent_count: "0",
+    rcpt_sent_last: null,
+    rcpt_number: null,
+    status: 0,
+    created_by: 5,
+    updated_by: 5,
+    created_at: moment(new Date()).format("YYYY-MM-DDT00:00:000"),
+    updated_at: moment(new Date()).format("YYYY-MM-DDT00:00:000"),
+    deleted_at: null,
+  },
   objUseCoupon: {
+    code: "Z00000",
     id: 0,
-    coupon_name: "",
+    image: "/storage/83/coupon-2.png",
+    title1_en: "title1_en",
+    title1_th: "title1_th",
+    title2_en: "title2_en",
+    title2_th: "title2_th",
   },
   objUseDelivery: {
     id: 0,
-    delivery_name: "",
+    base_price: "50.00",
+    image: "/storage/5/download.png",
+    name_en: "Kerry",
+    name_th: "เคอร์รี่",
+    period: "3-5",
   },
   objUseAddressDelivery: {
     FIRST_NAME: "",
     LAST_NAME: "",
     EMAIL: "",
+    PHONE_NUMBER_ORDER: "",
     ADDRESS_NAME_ORDER: "",
     PROVINCE_CODE_ORDER: 1,
     PROVINCE_NAME_ORDER: "",
@@ -51,8 +98,21 @@ const initialState = {
     DISTRICT_NAME_ORDER: "",
     SUB_DISTRICT_CODE_ORDER: 1,
     SUB_DISTRICT_NAME_ORDER: "",
-    ZIP_CODE_ORDER: "", 
-    PHONE_NUMBER_ORDER: "",
+    ZIP_CODE_ORDER: "",
+
+    FIRST_NAME_ORIGINAL: "",
+    LAST_NAME_ORIGINAL: "",
+    PHONE_NUMBER_ORDER_ORIGINAL: "",
+    ADDRESS_NAME_ORDER_ORIGINAL: "",
+    EMAIL_ORIGINAL: "",
+    PROVINCE_CODE_ORDER_ORIGINAL: 1,
+    PROVINCE_NAME_ORDER_ORIGINAL: "",
+    DISTRICT_CODE_ORDER_ORIGINAL: 1,
+    DISTRICT_NAME_ORDER_ORIGINAL: "",
+    SUB_DISTRICT_CODE_ORDER_ORIGINAL: 1,
+    SUB_DISTRICT_NAME_ORDER_ORIGINAL: "",
+    ZIP_CODE_ORDER_ORIGINAL: "",
+
     TOKEN: "",
   },
   listTrOrder: [],
@@ -66,6 +126,13 @@ export const reducer = persistReducer(
         return {
           ...state,
           objOrderScreen: action.payload.obj,
+        };
+      }
+
+      case actionTypes.setobjOrderStatusPriceScreenins: {
+        return {
+          ...state,
+          objOrderStatusPriceScreen: action.payload.obj,
         };
       }
 
@@ -122,6 +189,11 @@ export const reducer = persistReducer(
 export const actions = {
   setobjOrderScreen: (obj) => ({
     type: actionTypes.setobjOrderScreenins,
+    payload: { obj },
+  }),
+
+  setobjOrderStatusPriceScreenins: (obj) => ({
+    type: actionTypes.setobjOrderStatusPriceScreenins,
     payload: { obj },
   }),
 

@@ -32,7 +32,7 @@ import ModalLoading from "../../components/ModalLoading";
 const { width } = Dimensions.get("screen");
 const token = getToken();
 //const rootImage = "http://10.0.1.37:8080";
-const rootImage = "http://newpclinic.com/wd";
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 const defaultListFalsesaleProduct = [
   {
@@ -208,6 +208,7 @@ function FlashsaleProduct(props) {
         setLoading(false);
       });
   };
+  console.log(listCouponHD)
   return (
     <>
       <View style={styles.container}>
@@ -218,26 +219,30 @@ function FlashsaleProduct(props) {
             renderSectionHeader={({ section }) => (
               <>
                 {/* Coupon */}
-                <Block style={styles.containerHeader}>
-                  <Image
-                    source={require("../../assets/images/coupon/couponhead.png")}
-                    style={{
-                      width: width - 200,
-                      height: 25,
-                      alignSelf: "center",
-                      marginTop: 20,
-                    }}
-                  />
-                  {section.horizontal ? (
-                    <FlatList
-                      horizontal
-                      data={listCouponHD}
-                      renderItem={({ item }) => <ListItemCoupon item={item} />}
-                      showsHorizontalScrollIndicator={false}
-                      keyExtractor={(item) => item.id.toString()}
+                {listCouponHD ? (
+                  <Block style={styles.containerHeader}>
+                    <Image
+                      source={require("../../assets/images/coupon/couponhead.png")}
+                      style={{
+                        width: width - 200,
+                        height: 25,
+                        alignSelf: "center",
+                        marginTop: 20,
+                      }}
                     />
-                  ) : null}
-                </Block>
+                    {section.horizontal ? (
+                      <FlatList
+                        horizontal
+                        data={listCouponHD}
+                        renderItem={({ item }) => (
+                          <ListItemCoupon item={item} />
+                        )}
+                        showsHorizontalScrollIndicator={false}
+                        keyExtractor={(item) => item.id.toString()}
+                      />
+                    ) : null}
+                  </Block>
+                ) : null}
 
                 {/* Flash Sale Count Down */}
                 <LinearGradient

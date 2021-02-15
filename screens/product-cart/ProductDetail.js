@@ -32,7 +32,7 @@ import { getToken } from "../../store/mock/token";
 const { width } = Dimensions.get("screen");
 const token = getToken();
 //const rootImage = "http://10.0.1.37:8080";
-const rootImage = "http://newpclinic.com/wd";
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 const defaultSocialsMedia = [
   {
@@ -115,6 +115,7 @@ function ProductDetail(props) {
   };
 
   const addProductToCarts = async () => {
+    console.log(objProductActivity.flash_sale_events_id == 0 ? "" : objProductActivity.flash_sale_events_id)
     await axios({
       method: "POST",
       url: API_URL.ADD_CART_ORDER_LISTVIEW_API,
@@ -122,11 +123,11 @@ function ProductDetail(props) {
         Accept: "*/*",
         Authorization: "Bearer " + (await token),
         "Content-Type": "application/json",
-        "X-localization": locale,
+        // "X-localization": locale,
       },
       data: {
-        flash_sale_events_id: objProductActivity.flash_sale_events_id,
-        flash_sales_id: objProductActivity.flash_sales_id,
+        flash_sale_events_id: objProductActivity.flash_sale_events_id == 0 ? "" : objProductActivity.flash_sale_events_id,
+        flash_sales_id: objProductActivity.flash_sales_id == 0 ? "" : objProductActivity.flash_sales_id,
         product_id: objProductActivity.product_id,
         product_quantity: objProductActivity.quantity,
       },
@@ -394,7 +395,6 @@ function ProductDetail(props) {
               initValue={parseInt(objProductActivity.quantity)}
               value={parseInt(objProductActivity.quantity)}
               onChange={(value) => onChangeValue(value)}
-              onLimitReached={(isMax,msg) => console.log(isMax,msg)}
               totalWidth={125}
               totalHeight={32}
               iconSize={18}
