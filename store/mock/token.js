@@ -1,9 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const getToken = async () => {
+export async function getToken () {
   try {
-    const value = await AsyncStorage.getItem("@auth_token");
-    if (value !== null) {
+    var value = await AsyncStorage.getItem("@auth_token");
+    if (value !== null && value !== undefined) {
       return value;
     }
   } catch (e) {
@@ -11,18 +11,24 @@ export const getToken = async () => {
   }
 };
 
-export const setToken = async (token) => {
+export async function setToken (token) {
   try {
-    await AsyncStorage.setItem("@auth_token", await token);
+    await AsyncStorage.setItem("@auth_token", token);
+
+    var value = await AsyncStorage.getItem("@auth_token");
+    if (value !== null && value !== undefined) {
+      return value;
+    }
   } catch (e) {
     return null;
   }
 };
 
-export const removeToken = async () => {
+export async function removeToken () {
   try {
     await AsyncStorage.removeItem("@auth_token");
   } catch (e) {
     return null;
   }
 };
+

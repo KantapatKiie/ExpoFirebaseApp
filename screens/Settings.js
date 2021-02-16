@@ -4,7 +4,7 @@ import {
   View,
   Dimensions,
 } from "react-native";
-import { Block, Text, theme, Icon } from "galio-framework";
+import { Block, Text, theme } from "galio-framework";
 import { connect } from "react-redux";
 import * as i18n from "../store/ducks/i18n";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -44,12 +44,12 @@ function Settings(props) {
         <Text
           bold
           center
-          size={theme.SIZES.BASE}
+          size={18}
           style={{ paddingBottom: 5, fontFamily: "kanitRegular" }}
         >
           Language Settings
         </Text>
-        <Text center muted size={13} style={{ fontFamily: "kanitRegular" }}>
+        <Text center muted size={14} style={{ fontFamily: "kanitRegular" }}>
           Please select your language
         </Text>
       </Block>

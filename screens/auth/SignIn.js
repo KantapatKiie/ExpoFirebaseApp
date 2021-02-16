@@ -91,7 +91,7 @@ const defalutLoginMasterHD = {
 
 function SignIn(props) {
   // IsLogIn Complete View
-  const [isLoggedin, setLoggedinStatus] = useState(!token ? true : false);
+  const [isLoggedin, setLoggedinStatus] = useState(token._W ? true : false);
 
   const [objLoginMasterHD, setObjLoginMasterHD] = useState(
     defalutLoginMasterHD
@@ -105,8 +105,12 @@ function SignIn(props) {
     setRequiredEmail(false);
     setRequiredPass(false);
     setLoading(false);
+    if(token._W){
+      onLoadGetUserInfo();
+    }
   }, []);
 
+  
   const onChangeEmail = (e) => {
     let newObj = Object.assign({}, stateObj);
     newObj.email = e;
@@ -124,6 +128,160 @@ function SignIn(props) {
   const [requiredPass, setRequiredPass] = useState(false);
   const [imagePicker, setImagePicker] = useState(null);
   const [loadImageUser, setLoadImageUser] = useState(null);
+  async function onLoadGetUserInfo() {
+    setLoading(true);
+    let newLogin = Object.assign({}, objLoginMasterHD)
+    await axios
+      .get(API_URL.USER_INFO_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+        },
+      })
+      .then(async (response) => {
+        newLogin.FIRST_NAME = response.data.data.first_name;
+        newLogin.LAST_NAME = response.data.data.last_name;
+        newLogin.TELEPHONE = response.data.data.profile.telephone;
+        newLogin.EMAIL = response.data.data.email;
+        newLogin.ADDRESS = response.data.data.profile.address;
+        newLogin.PROVINCE_ID = response.data.data.profile.province_id;
+        newLogin.DISTRICT_ID = response.data.data.profile.district_id;
+        newLogin.SUB_DISTRICT_ID = response.data.data.profile.sub_district_id;
+        newLogin.IMAGE = await response.data.data.image;
+        setLoadImageUser(newLogin.IMAGE);
+
+        //#region get EditProfile
+        newLogin.profile_id = response.data.data.profile.id;
+        newLogin.sex = response.data.data.profile.sex;
+        newLogin.birthday = response.data.data.profile.birthday;
+        newLogin.telephone = response.data.data.profile.telephone;
+        newLogin.address = response.data.data.profile.address;
+        newLogin.province_id = response.data.data.profile.province_id;
+        newLogin.district_id = response.data.data.profile.district_id;
+        newLogin.sub_district_id = response.data.data.profile.sub_district_id;
+        newLogin.postcode = response.data.data.profile.postcode;
+        newLogin.receive_info = response.data.data.profile.receive_info;
+
+        newLogin.address_deliveries_id =
+          response.data.data.address_deliveries[0].id;
+        newLogin.address_deliveries =
+          response.data.data.address_deliveries[0].address;
+        newLogin.province_id_deliveries =
+          response.data.data.address_deliveries[0].province_id;
+        newLogin.district_id_deliveries =
+          response.data.data.address_deliveries[0].district_id;
+        newLogin.sub_district_id_deliveries =
+          response.data.data.address_deliveries[0].sub_district_id;
+        newLogin.postcode_deliveries =
+          response.data.data.address_deliveries[0].postcode;
+        newLogin.telephone_deliveries =
+          response.data.data.address_deliveries[0].telephone;
+        //#endregion
+
+        //getAddress User & Delivery
+        await axios
+          .get(API_URL.DISTRICT_API, {
+            params: {
+              province_id: newLogin.PROVINCE_ID,
+            },
+          })
+          .then(async (response) => {
+            let newlstDistrict = response.data.data.find(
+              (item) => item.id == parseInt(newLogin.DISTRICT_ID)
+            );
+            newLogin.DISTRICT_NAME = newlstDistrict.name_th;
+
+            await axios
+              .get(API_URL.SUB_DISTRICT_API, {
+                params: {
+                  district_id: newLogin.DISTRICT_ID,
+                },
+              })
+              .then(async (response) => {
+                let newlstSubDistrict = response.data.data.find(
+                  (item) => item.id == parseInt(newLogin.SUB_DISTRICT_ID)
+                );
+                newLogin.SUB_DISTRICT_NAME = newlstSubDistrict.name_th;
+                newLogin.ZIP_CODE = newlstSubDistrict.zip_code;
+
+                await axios.get(API_URL.PROVINCE_API).then(function (response) {
+                  let newlstProvince = response.data.data.find(
+                    (item) => item.id == parseInt(newLogin.PROVINCE_ID)
+                  );
+                  newLogin.PROVINCE_NAME = newlstProvince.name_th;
+                  newLogin.ADDRESS_FULL_NAME =
+                    newLogin.ADDRESS +
+                    " " +
+                    newLogin.DISTRICT_NAME +
+                    " " +
+                    newLogin.SUB_DISTRICT_NAME +
+                    " " +
+                    newLogin.PROVINCE_NAME +
+                    " " +
+                    newLogin.ZIP_CODE;
+
+                  //Delivery Address
+                  //District
+                  axios
+                    .get(API_URL.DISTRICT_API, {
+                      params: {
+                        province_id: newLogin.province_id_deliveries,
+                      },
+                    })
+                    .then(function (response) {
+                      let newlstDistrict = response.data.data.find(
+                        (item) =>
+                          item.id == parseInt(newLogin.district_id_deliveries)
+                      );
+                      newLogin.DISTRICT_NAME_ORDER = newlstDistrict.name_th;
+
+                      //Sub-District
+                      axios
+                        .get(API_URL.SUB_DISTRICT_API, {
+                          params: {
+                            district_id: newLogin.district_id_deliveries,
+                          },
+                        })
+                        .then(function (response) {
+                          let newlstSubDistrict = response.data.data.find(
+                            (item) =>
+                              item.id ==
+                              parseInt(newLogin.sub_district_id_deliveries)
+                          );
+                          newLogin.SUB_DISTRICT_NAME_ORDER =
+                            newlstSubDistrict.name_th;
+                          newLogin.ZIP_CODE_ORDER = newlstSubDistrict.zip_code;
+
+                          //province
+                          axios
+                            .get(API_URL.PROVINCE_API)
+                            .then(function (response) {
+                              let newlstProvince = response.data.data.find(
+                                (item) =>
+                                  item.id ==
+                                  parseInt(newLogin.province_id_deliveries)
+                              );
+                              newLogin.PROVINCE_NAME_ORDER =
+                                newlstProvince.name_th;
+
+                              setObjLoginMasterHD(newLogin);
+                              setLoggedinStatus(true);
+                              setLoading(false);
+                            });
+                        });
+                    });
+                });
+              });
+          });
+        setLoggedinStatus(true);
+        setLoading(false);
+        ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+      });
+
+    setLoggedinStatus(true);
+    setLoading(false);
+  }
+
   // Image Picker Profile
   const pickImageUpload = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -212,8 +370,11 @@ function SignIn(props) {
                     },
                   })
                   .then(async (response) => {
+                    newLogin.FIRST_NAME = response.data.data.first_name;
+                    newLogin.LAST_NAME = response.data.data.last_name;
                     newLogin.TELEPHONE = await response.data.data.profile
                       .telephone;
+                    newLogin.EMAIL = response.data.data.email;
                     newLogin.ADDRESS = response.data.data.profile.address;
                     newLogin.PROVINCE_ID =
                       response.data.data.profile.province_id;
@@ -497,13 +658,12 @@ function SignIn(props) {
     props.setObjEditProfile(newObjList);
     props.navigation.navigate("Edit Profile");
   };
-  console.log(token);
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
         {!isLoggedin ? (
           <>
-            {!isLoggedin || !token.Promise ? ( //Not Login
+            {!isLoggedin || !token._W ? ( //Not Login
               <>
                 {/* Title */}
                 <Block

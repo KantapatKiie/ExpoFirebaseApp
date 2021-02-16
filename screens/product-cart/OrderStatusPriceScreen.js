@@ -9,6 +9,9 @@ import {
   SafeAreaView,
   FlatList,
   RefreshControl,
+  Modal,
+  ScrollView,
+  TextInput,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -17,30 +20,22 @@ import "moment/locale/en-au";
 import * as ActionOrder from "../../actions/action-order-status/ActionOrder";
 import { Block, Text } from "galio-framework";
 import WangdekInfo from "../../components/WangdekInfo";
-import { Button } from "react-native-elements";
 import ModalLoading from "../../components/ModalLoading";
 import { API_URL } from "../../config/config.app";
 import commaNumber from "comma-number";
 import { getToken } from "../../store/mock/token";
 import { RadioButton } from "react-native-paper";
+import { Button } from "react-native-elements";
+import DropDownPicker from "react-native-dropdown-picker";
+import { ToastAndroid } from "react-native";
+import Omise from "omise-react-native";
+import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
+Omise.config("pkey_test_5mvrvso2arsfg21lm3v", "2019-05-29");
 let TotalAmounts = 0;
-
-const cartListProductDetail = [
-  {
-    id: 13,
-    product_id: 4,
-    product_name_th: "เสื้อผ้า 002",
-    product_name_en: "Clothing 002",
-    image: "/storage/4/images.jfif",
-    quantity: 1,
-    amount_full: "0.00",
-    amount: "1.00",
-  },
-];
 
 function OrderStatus(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -57,6 +52,9 @@ function OrderStatus(props) {
     };
     setRefreshingPage(true);
     wait(1000).then(() => {
+      setCheckPayType(1);
+      loadDataDeliveryList(objUseDelivery.id);
+      summaryPriceListTrOrder(listTrOrder);
       ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
       setRefreshingPage(false);
     });
@@ -78,10 +76,33 @@ function OrderStatus(props) {
 
   useEffect(() => {
     setCheckPayType(1);
-    setCartList(listTrOrder);
     loadDataDeliveryList(objUseDelivery.id);
     summaryPriceListTrOrder(listTrOrder);
+    getCountry();
+    checkedOmiseTransfer();
   }, []);
+  const checkedOmiseTransfer = async () => {
+    const tokenOmise = await Omise.createToken({
+      card: {
+        name: "KANTAPAT",
+        city: "Bangkok",
+        postal_code: 10210,
+        number: "4242424242424242",
+        expiration_month: 10,
+        expiration_year: 2022,
+        security_code: 111,
+      },
+    });
+
+    // const transferData = await Omise.createSource({
+    //   amount: 1500,
+    //   currency: "thb",
+    //   // type: 'internet_banking_bbl',
+    //   card: tokenOmise.id,
+    // });
+
+    console.log(tokenOmise.id);
+  };
 
   const [newDelivery, setNewDelivery] = useState({
     id: 0,
@@ -120,15 +141,21 @@ function OrderStatus(props) {
     }
     newSummaryPrice.total_amount = Amounts;
     newSummaryPrice.discount = Discounts;
-    newSummaryPrice.vat = ( ((parseFloat(Amounts) + parseFloat(newDelivery.base_price)) - parseFloat(Discounts)) * 0.07);
-    
-    TotalAmounts = parseFloat(Amounts) + parseFloat(newDelivery.base_price) + parseFloat(newSummaryPrice.vat);
+    newSummaryPrice.vat =
+      (parseFloat(Amounts) +
+        parseFloat(newDelivery.base_price) -
+        parseFloat(Discounts)) *
+      0.07;
+
+    TotalAmounts =
+      parseFloat(Amounts) +
+      parseFloat(newDelivery.base_price) +
+      parseFloat(newSummaryPrice.vat);
 
     props.setobjOrderStatusPriceScreenins(newSummaryPrice);
   };
 
   const [checkPayType, setCheckPayType] = useState(1);
-  const [cartList, setCartList] = useState(cartListProductDetail);
   const renderDetailStatus = ({ item }) => {
     return (
       <Block style={{ height: 140, margin: 15 }} key={item.id}>
@@ -201,43 +228,257 @@ function OrderStatus(props) {
     );
   };
 
-  const onSelectToPaymentPage = () => {
-    // await axios({
-    //   method: "POST",
-    //   url: API_URL.CREATE_ORDER_HD_API,
-    //   headers: {
-    //     Accept: "*/*",
-    //     Authorization: "Bearer " + (await token),
-    //     "Content-Type": "application/json",
-    //   },
-    //   data: {
-    //     coupons_id: objUseCoupon.id,
-    //     logistics_id: objUseDelivery.id,
-    //     delivery_address: {
-    //       fullname: objUseAddressDelivery.FIRST_NAME + " " + objUseAddressDelivery.LAST_NAME,
-    //       telephone: objUseAddressDelivery.PHONE_NUMBER_ORDER,
-    //       address: objUseAddressDelivery.ADDRESS_NAME_ORDER,
-    //       sub_district_id: objUseAddressDelivery.SUB_DISTRICT_CODE_ORDER,
-    //       district_id: objUseAddressDelivery.DISTRICT_CODE_ORDER,
-    //       province_id: objUseAddressDelivery.PROVINCE_CODE_ORDER,
-    //       postcode: objUseAddressDelivery.ZIP_CODE_ORDER,
-    //     },
-    //     payment_type: "0",
-    //     total_amount: "12000",
-    //     delivery_charge: "50",
-    //     discount: "50",
-    //     promotion_discount: "7.89",
-    //     vat: "65.80",
-    //   },
-    // })
-    //   .then(function (response) {
-    //     ToastAndroid.show(response.data, ToastAndroid.SHORT);
-    //         props.navigation.navigate("Payment");
-    //   })
-    //   .catch(function (error) {
-    //     console.log(error);
-    //   });
-    props.navigation.navigate("Payment");
+  //#region Payment Credit/Debit
+  const [objModal, setObjModal] = useState({
+    card_number: "",
+    card_name: "",
+    expire_date: "",
+    secure_code: "",
+    bank_code: 0,
+    bank_name: "",
+  });
+  const [modalVisible, setModalVisible] = useState(false);
+  const handleConfirmPayment = (e) => {
+    setModalVisible(false);
+  };
+  const onChangeCardNumber = (e) => {
+    let newObj = Object.assign({}, objModal);
+    newObj.card_number = e;
+    setObjModal(newObj);
+  };
+  const onChangeCardName = (e) => {
+    let newObj = Object.assign({}, objModal);
+    newObj.card_name = e;
+    setObjModal(newObj);
+  };
+  const onChangeExpriceDate = (e) => {
+    let newObj = Object.assign({}, objModal);
+    if (e.length >= 2) {
+      newObj.expire_date = e.substr(0, 2) + "/" + (e.substr(3) || "");
+    }
+    else{
+      newObj.expire_date = e
+    }
+    setObjModal(newObj);
+  };
+  const onChangeSecureCode = (e) => {
+    let newObj = Object.assign({}, objModal);
+    newObj.secure_code = e;
+    setObjModal(newObj);
+  };
+  const [country, setCountry] = useState([
+    {
+      label: objModal.bank_name,
+      value: objModal.bank_code,
+    },
+  ]);
+  const getCountry = async () => {
+    await axios
+      .get(API_URL.BANK_LIST_HD_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(function (response) {
+        let newlstBin = response.data.data.map(function (item) {
+          item.label = item.bank_name_en + " - " + item.bank_name_th;
+          item.value = item.id;
+          return item;
+        });
+        setCountry(newlstBin);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const onChangeCountry = (item) => {
+    let newObj = Object.assign({}, objModal);
+    newObj.bank_code = item.value;
+    newObj.bank_name = item.label;
+    setObjModal(newObj);
+  };
+  const modalPayment = (
+    <Modal transparent={true} visible={modalVisible} animationType="none">
+      <Block style={stylesModal.modal}>
+        <Block style={stylesModal.modalContainer}>
+          {/* Header */}
+          <Block row style={{ margin: 25 }}>
+            <Image
+              source={require("../../assets/images/omise/omise-main.png")}
+              style={{ width: 65, height: 65 }}
+            />
+            <Block>
+              <Text style={stylesModal.titleMain}>OMISE </Text>
+              <Text style={stylesModal.titleFooter}>Secured by Omise </Text>
+            </Block>
+            <TouchableOpacity style={stylesModal.closeModal} onPress={() => setModalVisible(false)}>
+              <Icons name="close" size={20} color="black" />
+            </TouchableOpacity>
+          </Block>
+          {/* Detail */}
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Block style={stylesModal.modalBody}>
+              <Block style={{ marginLeft: 12, matginTop: 5 }}>
+                <Text style={stylesModal.bodyText}>Credit / Debit</Text>
+              </Block>
+              <Block style={{ marginTop: 20, marginleft: 20 }}>
+                <Block style={{ marginLeft: 10 }}>
+                  <Block style={stylesModal.inputView}>
+                    <TextInput
+                      style={stylesModal.inputKey}
+                      placeholder={"Card Number"}
+                      placeholderTextColor="#808080"
+                      value={objModal.card_number}
+                      onChangeText={onChangeCardNumber}
+                      keyboardType={"ascii-capable"}
+                      maxLength={16}
+                    />
+                  </Block>
+                  <Block style={stylesModal.inputView}>
+                    <TextInput
+                      style={stylesModal.inputKey}
+                      placeholder={"Number on card"}
+                      placeholderTextColor="#808080"
+                      value={objModal.card_name}
+                      onChangeText={onChangeCardName}
+                    />
+                  </Block>
+                </Block>
+                <Block row style={{ marginLeft: 10 }}>
+                  <Block style={stylesModal.inputViews}>
+                    <TextInput
+                      style={stylesModal.inputKey}
+                      placeholder={"Expire date"}
+                      placeholderTextColor="#808080"
+                      value={objModal.expire_date}
+                      onChangeText={onChangeExpriceDate}
+                      keyboardType={"phone-pad"}
+                      maxLength={5}
+                    />
+                  </Block>
+                  <Block style={stylesModal.inputViewsRow}>
+                    <TextInput
+                      style={stylesModal.inputKey}
+                      placeholder={"Security code"}
+                      placeholderTextColor="#808080"
+                      value={objModal.secure_code}
+                      onChangeText={onChangeSecureCode}
+                      keyboardType={"numeric"}
+                      maxLength={3}
+                    />
+                  </Block>
+                </Block>
+
+                <DropDownPicker
+                  items={country}
+                  containerStyle={{ height: 38, width: 290, margin: 10 }}
+                  style={{ backgroundColor: "#fafafa" }}
+                  itemStyle={{
+                    justifyContent: "flex-start",
+                  }}
+                  dropDownStyle={{ backgroundColor: "#fafafa" }}
+                  placeholderStyle={{
+                    textAlign: "left",
+                    color: "gray",
+                  }}
+                  placeholder={"- Country -"}
+                  labelStyle={{
+                    textAlign: "left",
+                    color: "#000",
+                  }}
+                  arrowColor={"white"}
+                  arrowSize={15}
+                  arrowStyle={{
+                    backgroundColor: "#02d483",
+                    borderRadius: 20,
+                    color: "white",
+                  }}
+                  defaultValue={
+                    objModal.bank_name == "" ? null : objModal.bank_code
+                  }
+                  onChangeItem={(item) => onChangeCountry(item)}
+                />
+              </Block>
+            </Block>
+            {/* modalFooter */}
+            <Block style={stylesModal.modalFooter}>
+              <Block style={{ margin: 10, marginTop: 15 }}>
+                <Button
+                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                  title={"Checkout 9,999.00 THB"}
+                  type="solid"
+                  containerStyle={{ margin: 15 }}
+                  buttonStyle={{ backgroundColor: "#0c5aeb" }}
+                  onPress={handleConfirmPayment}
+                />
+                <Block row style={{ alignSelf: "center", marginTop: 25 }}>
+                  <Text style={stylesModal.titleFooter2}>
+                    Secured by Omise{" "}
+                  </Text>
+                  <Image
+                    source={require("../../assets/images/omise/omise-img.png")}
+                    style={{ width: 85, height: 24 }}
+                  />
+                </Block>
+              </Block>
+            </Block>
+          </ScrollView>
+        </Block>
+      </Block>
+    </Modal>
+  );
+
+  //#endregion
+
+  const onConfirmToPaymentPage = async () => {
+    if (checkPayType === 1) {
+      await axios({
+        method: "POST",
+        url: API_URL.CREATE_ORDER_HD_API,
+        headers: {
+          Accept: "*/*",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+        data: {
+          coupons_id: objUseCoupon.id,
+          logistics_id: objUseDelivery.id,
+          delivery_address: {
+            fullname:
+              objUseAddressDelivery.FIRST_NAME +
+              " " +
+              objUseAddressDelivery.LAST_NAME,
+            telephone: objUseAddressDelivery.PHONE_NUMBER_ORDER,
+            address: objUseAddressDelivery.ADDRESS_NAME_ORDER,
+            sub_district_id: objUseAddressDelivery.SUB_DISTRICT_CODE_ORDER,
+            district_id: objUseAddressDelivery.DISTRICT_CODE_ORDER,
+            province_id: objUseAddressDelivery.PROVINCE_CODE_ORDER,
+            postcode: objUseAddressDelivery.ZIP_CODE_ORDER,
+          },
+          payment_type: checkPayType == 1 ? 0 : 1,
+          total_amount: objOrderStatusPriceScreen.total_amount,
+          delivery_charge: newDelivery.base_price,
+          discount: objOrderStatusPriceScreen.discount,
+          promotion_discount: objOrderStatusPriceScreen.promotion_discount,
+          vat: objOrderStatusPriceScreen.vat,
+        },
+      })
+        .then(function (response) {
+          ToastAndroid.show(
+            "เลขที่สั่งซื้อ " + response.data.data.code,
+            ToastAndroid.SHORT
+          );
+          props.navigation.navigate("Payment");
+        })
+        .catch(function (error) {
+          console.log(error.response.data);
+        });
+    } else {
+      setModalVisible(true);
+      ToastAndroid.show("Omise comming soon", ToastAndroid.SHORT);
+    }
   };
 
   return (
@@ -522,7 +763,11 @@ function OrderStatus(props) {
                     }}
                   >
                     ยอดรวมค่าสินค้า : ฿{" "}
-                    {commaNumber(parseFloat(objOrderStatusPriceScreen.total_amount).toFixed(2))}
+                    {commaNumber(
+                      parseFloat(
+                        objOrderStatusPriceScreen.total_amount
+                      ).toFixed(2)
+                    )}
                   </Text>
                   <Text
                     style={{
@@ -600,7 +845,10 @@ function OrderStatus(props) {
                   </Text>
 
                   <Block style={{ marginTop: 15 }}>
-                    <Block style={styles.blockPaymentType}>
+                    <TouchableOpacity
+                      style={styles.blockPaymentType}
+                      onPress={() => setCheckPayType(1)}
+                    >
                       <Block row style={{ margin: 15 }}>
                         <RadioButton
                           value={1}
@@ -620,8 +868,11 @@ function OrderStatus(props) {
                           โอนเข้าบัญชีธนาคาร
                         </Text>
                       </Block>
-                    </Block>
-                    <Block style={styles.blockPaymentTypes}>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.blockPaymentTypes}
+                      onPress={() => setCheckPayType(2)}
+                    >
                       <Block row style={{ margin: 15 }}>
                         <RadioButton
                           value={2}
@@ -640,7 +891,7 @@ function OrderStatus(props) {
                           ชำระผ่านบัตรเครดิต/เดบิต
                         </Text>
                       </Block>
-                    </Block>
+                    </TouchableOpacity>
                   </Block>
                 </Block>
               </Block>
@@ -670,7 +921,7 @@ function OrderStatus(props) {
                   type="solid"
                   containerStyle={styles.blockButton2}
                   buttonStyle={styles.buttonStyle2}
-                  onPress={onSelectToPaymentPage}
+                  onPress={onConfirmToPaymentPage}
                 />
               </Block>
             </>
@@ -681,8 +932,8 @@ function OrderStatus(props) {
           }}
         />
       </SafeAreaView>
-
       <ModalLoading loading={loading} />
+      {modalPayment}
     </>
   );
 }
@@ -755,79 +1006,119 @@ const styles = StyleSheet.create({
   },
 });
 
-const styles2 = StyleSheet.create({
-  textImage2: {
-    width: 40,
-    height: 40,
-    marginLeft: 45,
+const stylesModal = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  textImage2_op: {
-    width: 40,
-    height: 40,
-    marginLeft: 45,
-    opacity: 0.2,
+  modal: {
+    backgroundColor: "#00000099",
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
-  textImage3: {
-    width: 40,
-    height: 40,
-    marginLeft: 47,
+  modalContainer: {
+    backgroundColor: "#f9fafb",
+    width: width - 50,
+    height: "85%",
+    borderRadius: 12,
   },
-  textImage3_op: {
-    width: 40,
-    height: 40,
-    marginLeft: 47,
-    opacity: 0.2,
+  titleMain: {
+    fontSize: 24,
+    color: "black",
+    fontFamily: "kanitBold",
+    marginTop: 5,
+    marginLeft: 18,
   },
-  textImage4: {
-    width: 40,
-    height: 40,
-    marginLeft: 49,
+  titleFooter: {
+    fontSize: 15,
+    color: "#a8a8a8",
+    fontFamily: "kanitRegular",
+    marginLeft: 18,
   },
-  textImage4_op: {
-    width: 40,
-    height: 40,
-    marginLeft: 49,
-    opacity: 0.2,
+  titleFooter2: {
+    fontSize: 15,
+    color: "#a8a8a8",
+    fontFamily: "kanitRegular",
   },
-
-  //Text Bottom
-  textBottom2: {
+  closeModal:{
+    marginBottom:50,
+    marginLeft: 60,
+  },
+  bodyText: {
+    fontSize: 18,
     color: "black",
     fontFamily: "kanitRegular",
-    fontSize: 13,
-    marginLeft: 34,
   },
-  textBottom2_op: {
-    color: "gray",
-    fontFamily: "kanitRegular",
-    fontSize: 13,
-    marginLeft: 34,
-  },
-  textBottom3: {
+  inputKey: {
+    height: 50,
     color: "black",
-    fontFamily: "kanitRegular",
     fontSize: 13,
-    marginLeft: 35,
-    textAlign: "center",
   },
-  textBottom3_op: {
-    color: "gray",
-    fontFamily: "kanitRegular",
-    fontSize: 13,
-    marginLeft: 35,
-    textAlign: "center",
+  inputView: {
+    width: "90%",
+    backgroundColor: "#ffffff",
+    height: 35,
+    marginBottom: 20,
+    justifyContent: "center",
+    padding: 20,
+    borderWidth: 0.7,
+    borderColor: "#e0e0e0",
+    borderRadius: 4
   },
-  textBottom4: {
-    color: "black",
-    fontFamily: "kanitRegular",
-    fontSize: 13,
-    marginLeft: 25,
+  inputViews: {
+    width: "42%",
+    backgroundColor: "#ffffff",
+    height: 35,
+    marginBottom: 20,
+    justifyContent: "center",
+    padding: 20,
+    borderWidth: 0.7,
+    borderColor: "#e0e0e0",
+    borderRadius: 4
   },
-  textBottom4_op: {
-    color: "gray",
-    fontFamily: "kanitRegular",
-    fontSize: 13,
-    marginLeft: 25,
+  inputViewsRow:{
+    width: "42%",
+    backgroundColor: "#ffffff",
+    height: 35,
+    marginBottom: 20,
+    marginLeft: 20,
+    justifyContent: "center",
+    padding: 20,
+    borderWidth: 0.7,
+    borderColor: "#e0e0e0",
+    borderRadius: 4
+  },
+  divider: {
+    width: "100%",
+    height: 1,
+    backgroundColor: "lightgray",
+  },
+  modalBody: {
+    marginLeft: 15,
+  },
+  modalFooter: {
+  },
+  actions: {
+    borderRadius: 5,
+    margin: 5,
+    backgroundColor: "#2e50ff",
+    width: 300,
+    height: 45,
+    alignSelf: "center",
+  },
+  actionText: {
+    color: "#fff",
+    alignItems: "center",
+    fontSize: 16,
+    fontWeight: "bold",
+    alignSelf: "center",
+  },
+  bloxStyle: {
+    marginTop: 10,
   },
 });
 

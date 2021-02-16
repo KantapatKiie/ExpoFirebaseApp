@@ -20,10 +20,10 @@ const store = createStore(rootReducer);
 export default class App extends React.Component {
   constructor(props) {
     super(props);
+    this._loadingFont = this._loadingFont.bind(this);
     this.state = {
       loadingFont: true,
     };
-    this._loadingFont = this._loadingFont.bind(this);
   }
   componentDidMount() {
     this._loadingFont();
@@ -37,6 +37,7 @@ export default class App extends React.Component {
     });
     this.setState({ loadingFont: false });
   }
+  
   render() {
     const { loadingFont } = this.state;
     if (loadingFont) {
@@ -56,3 +57,6 @@ export default class App extends React.Component {
     );
   }
 }
+
+
+

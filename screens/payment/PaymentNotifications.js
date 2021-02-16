@@ -22,13 +22,13 @@ import WangdekInfo from "../../components/WangdekInfo";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import DropDownPicker from "react-native-dropdown-picker";
+import * as ImagePicker from "expo-image-picker";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
 import ModalLoading from "../../components/ModalLoading";
-import * as ImagePicker from "expo-image-picker";
 
 const { width } = Dimensions.get("screen");
-let token = getToken();
+const token = getToken();
 
 function PaymentNotifications(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -180,10 +180,7 @@ function PaymentNotifications(props) {
     if (result.cancelled) {
       return;
     }
-    setLoadImageUser(result.uri)
-
-    
-    
+    setLoadImageUser(result.uri);
   };
 
   const onPaymentTransfer = async () => {
@@ -239,7 +236,7 @@ function PaymentNotifications(props) {
         }
       })
       .catch(function (error) {
-        console.log(error)
+        console.log(error);
         setLoading(false);
         ToastAndroid.show(error.response.data.data, ToastAndroid.SHORT);
       });
@@ -412,10 +409,6 @@ function PaymentNotifications(props) {
               objSearch.bank_name == "" ? null : objSearch.bank_code
             }
             onChangeItem={(item) => onChangeBank(item)}
-            // customTickIcon={() =>(
-            //   <>
-            //   </>
-            // )}
           />
         </Block>
 
@@ -590,6 +583,7 @@ function PaymentNotifications(props) {
             onPress={onPaymentTransfer}
           />
         </Block>
+
         <WangdekInfo />
       </ScrollView>
       <ModalLoading loading={loading} />

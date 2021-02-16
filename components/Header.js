@@ -41,6 +41,11 @@ function Header(props) {
     objProductType: state.actionProductType.objProductType,
   }));
 
+  useEffect(() => {
+    loadDataBrandsTypes();
+    loadCountCart();
+  }, []);
+
   //Count Cart
   const [countCart, setCountCart] = useState(0);
   async function loadCountCart() {
@@ -56,31 +61,20 @@ function Header(props) {
             Authorization: "Bearer " + (await token),
           },
         })
-          .then((response) => {
-            if (response.data.data.result != undefined) {
-              setCountCart(response.data.data.result);
-            } else {
-              setCountCart(null);
-            }
+          .then(async (response) => {
+            await setCountCart(response.data.data.result);
           })
           .catch(function (error) {
-            setCountCart(null);
             console.log(error);
           });
-      }, 1500);
+      }, 500);
     }
   }
 
-  useEffect(() => {
-    loadDataTypes();
-    loadDataBrands();
-    loadCountCart();
-  }, []);
-
-  //Flatlist Bar
+  //Menu Bar
   const [listProductType, setListProductType] = useState(null);
   const [listProductBrands, setListProductBrands] = useState(null);
-  async function loadDataTypes() {
+  async function loadDataBrandsTypes() {
     await axios({
       method: "GET",
       url: API_URL.CATEGORY_PRODUCT_LISTVIEW_API,
@@ -95,27 +89,26 @@ function Header(props) {
       .then(async (resType) => {
         let newlstType = await resType.data.data;
         setListProductType(newlstType);
+
+        await axios({
+          method: "GET",
+          url: API_URL.BRANDS_PRODUCT_LISTVIEW_API,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Connection: "keep-alive",
+          },
+        })
+          .then(async (resBrands) => {
+            let newlstBrands = await resBrands.data.data;
+            setListProductBrands(newlstBrands);
+          })
+          .catch(function (error) {
+            console.log(error.response);
+          });
       })
       .catch(function (error) {
         console.log(error);
-      });
-  }
-  async function loadDataBrands() {
-    await axios({
-      method: "GET",
-      url: API_URL.BRANDS_PRODUCT_LISTVIEW_API,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Connection: "keep-alive",
-      },
-    })
-      .then(async (resBrands) => {
-        let newlstBrands = await resBrands.data.data;
-        setListProductBrands(newlstBrands);
-      })
-      .catch(function (error) {
-        console.log(error.response);
       });
   }
   const ListTypeProduct = ({ item }) => {

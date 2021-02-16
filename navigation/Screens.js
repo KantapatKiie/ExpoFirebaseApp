@@ -7,7 +7,6 @@ import { connect } from "react-redux";
 import * as ActionLogin from "../actions/action-actives/ActionLogin";
 import * as firebase from "firebase";
 import * as Notifications from "expo-notifications";
-// import * as Permissions from "expo-permissions";
 // Screen //
 import HomeScreen from "../screens/Home";
 import ProfileScreen from "../screens/Profile";

@@ -1,8 +1,6 @@
 // const { REACT_NATIVE_APP_URL_API, REACT_NATIVE_APP_DELAY_SEARCH } = process.env;
 // export const DELAY_SEARCH = REACT_NATIVE_APP_DELAY_SEARCH;
 
-// const { REACT_NATIVE_APP_AUTH_API } = "http://wangdek.am2bmarketing.co.th/api/v1"
-// const REACT_NATIVE_APP_API = "http://10.0.1.61:8080/api/v1";
 // const REACT_NATIVE_APP_API = "http://newpclinic.com/wd/api/v1";
 const REACT_NATIVE_APP_API = "http://demo-ecommerce.am2bmarketing.co.th/api/v1";
 
