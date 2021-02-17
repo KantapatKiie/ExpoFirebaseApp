@@ -28,7 +28,6 @@ import ModalLoading from "../components/ModalLoading";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
-//const rootImage = "http://10.0.1.37:8080";
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 const defaultListFavorite = [
@@ -67,10 +66,6 @@ function FavoriteView(props) {
       setRefreshingPage(false);
     });
   }, []);
-
-  const { objFavoriteView } = useSelector((state) => ({
-    objFavoriteView: state.actionFavoriteView.objFavoriteView,
-  }));
 
   useEffect(() => {
     setNumList(2);
@@ -131,7 +126,7 @@ function FavoriteView(props) {
         console.log(error);
       });
   };
-  const renderProduct = ({ item }) => {
+  const renderFavoriteProducts = ({ item }) => {
     //Favorite Click
     const onFavoriteProduct = async (key, favorite) => {
       let newObjOld = stateObj.filter((item) => item.id != key);
@@ -272,7 +267,7 @@ function FavoriteView(props) {
               <FlatList
                 data={stateObj}
                 style={styles.containers}
-                renderItem={renderProduct}
+                renderItem={renderFavoriteProducts}
                 numColumns={numColumns}
                 keyExtractor={(item) => item.id.toString()}
               />

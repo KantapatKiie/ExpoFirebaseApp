@@ -28,7 +28,6 @@ import ModalLoading from "../../components/ModalLoading";
 
 const { width } = Dimensions.get("screen");
 let token = getToken();
-//const rootImage = "http://10.0.1.37:8080";
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 const defalutBestsaleProduct = [
@@ -78,9 +77,7 @@ function ProductAll(props) {
   }));
 
   useEffect(() => {
-    setTimeout(async () => {
-      loadDataBestsaler();
-    }, 500);
+    loadProductListAllType();
   }, []);
 
   // Best selling
@@ -89,7 +86,7 @@ function ProductAll(props) {
   const [listPromotions, setListPromotions] = useState(
     defalutPromotionsProduct
   );
-  async function loadDataBestsaler() {
+  async function loadProductListAllType() {
     await axios
       .get(API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API, {
         headers: {
@@ -107,7 +104,7 @@ function ProductAll(props) {
           if (lstBestSale[i] !== undefined)
             await newlstBestsale.push(lstBestSale[i]);
         }
-        await setListBestsale(newlstBestsale);
+        setListBestsale(newlstBestsale);
 
         //Popularity List
         await axios
@@ -127,7 +124,7 @@ function ProductAll(props) {
               if (lstPopular[i] !== undefined)
                 await newlstPopular.push(lstPopular[i]);
             }
-            await setListPopularSale(lstPopular);
+            setListPopularSale(lstPopular);
 
             //Promotion List
             await axios

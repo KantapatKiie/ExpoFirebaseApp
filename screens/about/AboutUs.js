@@ -1,25 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { connect, useSelector } from "react-redux";
+import React from "react";
 import {
   StyleSheet,
   Text,
-  View,
-  TextInput,
   TouchableOpacity,
   ScrollView,
-  Platform,
-  UIManager,
   Image,
   Dimensions,
 } from "react-native";
 import { Block } from "galio-framework";
-import { Icon } from "../../components";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
-import MattelLogo from "../../constants/MattelLogo";
 
-const { height, width } = Dimensions.get("screen");
-
+const { width } = Dimensions.get("screen");
 
 function AboutUs(props) {
   return (

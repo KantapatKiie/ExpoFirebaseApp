@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { connect, useSelector } from "react-redux";
+import React from "react";
 import {
   StyleSheet,
-  Text,
   View,
-  TextInput,
+  Text,
   TouchableOpacity,
   ScrollView,
   Image,
@@ -13,22 +11,19 @@ import {
 import { Block } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
-import Slideshow from "react-native-image-slider-show";
+import SwiperFlatList from "react-native-swiper-flatlist";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
 
 function HowTo(props) {
-  const [stateObj, setStateObj] = useState({
-    email: "",
-    password: "",
-  });
-
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Block style={{ backgroundColor: "white" }}>
           {/* Title */}
-          <TouchableOpacity onPress={() => props.navigation.navigate("Flash Sale")}>
+          <TouchableOpacity
+            onPress={() => props.navigation.navigate("Flash Sale")}
+          >
             <Block
               row
               style={{
@@ -103,23 +98,41 @@ function HowTo(props) {
               info@wangdekshopping.com
             </Text>
           </Block>
-          {/* Slideshow */}
+
+          {/* Slide image */}
           <Block style={{ marginBottom: 20 }}>
-            <Slideshow
-              dataSource={[
-                { url: require("../../assets/images/HowTo/step1.jpg") },
-                { url: require("../../assets/images/HowTo/step2.jpg") },
-                { url: require("../../assets/images/HowTo/step3.jpg") },
-                { url: require("../../assets/images/HowTo/step4.jpg") },
-                { url: require("../../assets/images/HowTo/step5.jpg") },
-              ]}
-              height={445}
-              arrowSize={10}
-              indicatorColor={"#757474"}
-              indicatorSelectedColor={"orange"}
-              arrowColor={"black"}
-            />
+            <SwiperFlatList
+              index={0}
+              autoplay={false}
+              autoplayDelay={2}
+              autoplayLoop={false}
+              showPagination={true}
+              paginationActiveColor={"#ffb300"}
+              paginationDefaultColor={"#b5b5b5"}
+            >
+              <Image
+                source={require("../../assets/images/HowTo/step1.jpg")}
+                style={styles.imageSlider}
+              />
+              <Image
+                source={require("../../assets/images/HowTo/step2.jpg")}
+                style={styles.imageSlider}
+              />
+              <Image
+                source={require("../../assets/images/HowTo/step3.jpg")}
+                style={styles.imageSlider}
+              />
+              <Image
+                source={require("../../assets/images/HowTo/step4.jpg")}
+                style={styles.imageSlider}
+              />
+              <Image
+                source={require("../../assets/images/HowTo/step5.jpg")}
+                style={styles.imageSlider}
+              />
+            </SwiperFlatList>
           </Block>
+
           {/* Guide 1 */}
           <Block style={{ marginTop: 25 }}>
             <Text
@@ -239,13 +252,15 @@ function HowTo(props) {
             </Block>
           </Block>
           {/* Image Show */}
-          <Image
-            source={require("../../assets/images/HowTo/00.jpg")}
-            style={{
-              width: width,
-              height: 550,
-            }}
-          />
+          <Block style={{ marginTop: 25, marginBottom: 15 }}>
+            <Image
+              source={require("../../assets/images/HowTo/00.jpg")}
+              style={{
+                width: width,
+                height: 550,
+              }}
+            />
+          </Block>
           {/* Guide 4 */}
           <Block style={{ marginTop: 25 }}>
             <Text
@@ -283,7 +298,9 @@ function HowTo(props) {
               >
                 สามารถดู
               </Text>
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate("Payment")}
+              >
                 <Text
                   style={{
                     fontSize: 14,
@@ -348,7 +365,11 @@ function HowTo(props) {
               >
                 สามารถดู
               </Text>
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() =>
+                  props.navigation.navigate("Payment Notifications")
+                }
+              >
                 <Text
                   style={{
                     fontSize: 14,
@@ -449,5 +470,9 @@ const styles = StyleSheet.create({
     flex: 1,
     resizeMode: "cover",
     justifyContent: "center",
+  },
+  imageSlider: {
+    height: 455,
+    width: width,
   },
 });

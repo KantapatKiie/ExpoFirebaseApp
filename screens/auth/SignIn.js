@@ -281,7 +281,6 @@ function SignIn(props) {
     setLoggedinStatus(true);
     setLoading(false);
   }
-
   // Image Picker Profile
   const pickImageUpload = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({

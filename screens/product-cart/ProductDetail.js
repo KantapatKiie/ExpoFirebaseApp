@@ -108,7 +108,7 @@ function ProductDetail(props) {
     }
     props.setObjProductActivity(newFavorite);
   };
-  const onChangeValue = (value) => {
+  const onChangeCountProduct = (value) => {
     let newObj = Object.assign({}, objProductActivity);
     newObj.quantity = value;
     props.setObjProductActivity(newObj);
@@ -394,7 +394,7 @@ function ProductDetail(props) {
             <NumericInput
               initValue={parseInt(objProductActivity.quantity)}
               value={parseInt(objProductActivity.quantity)}
-              onChange={(value) => onChangeValue(value)}
+              onChange={(value) => onChangeCountProduct(value)}
               totalWidth={125}
               totalHeight={32}
               iconSize={18}

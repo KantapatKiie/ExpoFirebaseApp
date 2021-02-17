@@ -38,26 +38,6 @@ function PaymentNotifications(props) {
     moment.locale("en-au");
   }
   const [loading, setLoading] = useState(null);
-  const { objPaymentNotificationHD } = useSelector((state) => ({
-    objPaymentNotificationHD:
-      state.actionPaymentNotifications.objPaymentNotificationHD,
-  }));
-
-  useEffect(() => {
-    setObjSearch({
-      order_no: "ORD-2020120010",
-      fullname: "",
-      telephone: "",
-      email: "",
-      money_transfer: "",
-      bank_code: 0,
-      bank_name: "",
-      transfer_date: moment(new Date()).format("DD/MM/YYYY"),
-      transfer_time: moment(new Date()).format("HH : mm"),
-    });
-    getBankList();
-  }, []);
-
   const [objSearch, setObjSearch] = useState({
     order_no: "",
     fullname: "",
@@ -66,18 +46,25 @@ function PaymentNotifications(props) {
     money_transfer: "",
     bank_code: 0,
     bank_name: "",
-    transfer_date: moment(new Date()).format("DD/MM/YYYY"),
+    transfer_date: moment(new Date()).format("YYYY-MM-DD"),
     transfer_time: moment(new Date()).format("HH : mm"),
   });
 
-  //Block 1
-  const onChangeOrderNumber = (e) => {
-    let newObj = Object.assign({}, objSearch);
-    newObj.order_no = e;
-    setObjSearch(newObj);
-  };
+  useEffect(() => {
+    setObjSearch({
+      order_no: "ORD-2020120010",
+      fullname: "Kantapat",
+      telephone: "090090",
+      email: "kantapat@hormail.com",
+      money_transfer: "5000",
+      bank_code: 0,
+      bank_name: "",
+      transfer_date: moment(new Date()).format("YYYY-MM-DD"),
+      transfer_time: moment(new Date()).format("HH : mm"),
+    });
+    getBankList();
+  }, []);
 
-  //DatePicker
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const showDatePicker = () => {
     setDatePickerVisibility(true);
@@ -147,6 +134,11 @@ function PaymentNotifications(props) {
     setObjSearch(newObj);
   };
 
+  const onChangeOrderNumber = (e) => {
+    let newObj = Object.assign({}, objSearch);
+    newObj.order_no = e;
+    setObjSearch(newObj);
+  };
   const onChangeFullname = (e) => {
     let newObj = Object.assign({}, objSearch);
     newObj.fullname = e;
@@ -180,10 +172,11 @@ function PaymentNotifications(props) {
     if (result.cancelled) {
       return;
     }
-    setLoadImageUser(result.uri);
+    setImagePicker(result.uri);
   };
 
   const onPaymentTransfer = async () => {
+
     setLoading(true);
     await axios
       .get(API_URL.CHECK_ORDER_PAYMENT_API + objSearch.order_no, {
@@ -194,45 +187,46 @@ function PaymentNotifications(props) {
         },
       })
       .then(async (response) => {
+
+        let formData = new FormData();
         if (response.data.success !== true) {
           setLoading(false);
-          ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+
+          ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
         } else {
           if (imagePicker != null) {
-            let localUri = result.uri;
+            let localUri = imagePicker;
             let filename = localUri.split("/").pop();
 
             let match = /\.(\w+)$/.exec(filename);
             let type = match ? `image/${match[1]}` : `image`;
 
-            let formData = new FormData();
-            formData.append("avatar", { uri: localUri, name: filename, type });
+            formData.append("orders_code", objSearch.order_no);
+            formData.append("bank_accounts_id", objSearch.bank_code);
+            formData.append("fullname", objSearch.fullname);
+            formData.append("contact", objSearch.telephone);
+            formData.append("email", objSearch.email);
+            formData.append("payment_date", moment(objSearch.transfer_date).format(
+              "YYYY-MM-DD"
+            ));
+            formData.append("payment_time", moment(objSearch.payment_time).format("HH:mm"));
+            formData.append("amount", objSearch.money_transfer);
+            formData.append("image", { uri: localUri, name: filename, type });
+
+            await axios({
+              method: "POST",
+              url: API_URL.PAYMENTS_TRANSFER_API,
+              headers: {
+                "content-type": "multipart/form-data",
+                Authorization: "Bearer " + (await token),
+              },
+              data: formData,
+            }).then(function (response) {
+              console.log(response.data);
+              setLoading(false);
+              ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+            });
           }
-          await axios({
-            method: "POST",
-            url: API_URL.PAYMENTS_TRANSFER_API,
-            headers: {
-              Accept: "*/*",
-              Authorization: "Bearer " + (await token),
-              "Content-Type": "multipart/form-data",
-            },
-            data: {
-              orders_code: objSearch.order_no,
-              bank_accounts_id: objSearch.bank_code.toString(),
-              fullname: objSearch.fullname,
-              contact: objSearch.telephone,
-              email: objSearch.email,
-              payment_date: moment(objSearch.transfer_date).format(
-                "YYYY-MM-DD"
-              ),
-              payment_time: moment(objSearch.transfer_time).format("HH:mm"),
-              amount: objSearch.money_transfer,
-            },
-            body: formData,
-          }).then(function (response) {
-            setLoading(false);
-            ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
-          });
         }
       })
       .catch(function (error) {

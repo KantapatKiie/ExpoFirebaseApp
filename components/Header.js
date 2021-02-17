@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { withNavigation } from "@react-navigation/compat";
 import {
   TouchableOpacity,
@@ -46,8 +46,9 @@ function Header(props) {
     loadCountCart();
   }, []);
 
-  //Count Cart
+  //Count _Cart_&_Notifications_
   const [countCart, setCountCart] = useState(0);
+  const [countNews, setCountNews] = useState(0);
   async function loadCountCart() {
     if ((await token) !== null && (await token) !== undefined) {
       setTimeout(async () => {
@@ -224,7 +225,7 @@ function Header(props) {
           // onPress={() => { setModalVisible(true);}}
         >
           <Icons name="notifications" color={"#383838"} size={20} />
-          <Block middle style={styles.notify} />
+          {countNews > 0 ? <Block middle style={styles.notify} /> : null}
         </TouchableOpacity>
       </>
     );
@@ -897,6 +898,32 @@ function Header(props) {
             isWhite={white}
           />,
         ];
+      case "Term Conditions":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Privacy Policy":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
 
       default:
         break;
@@ -1423,6 +1450,32 @@ function Header(props) {
           />,
         ];
       case "Flashsale Product":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Term Conditions":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Privacy Policy":
         return [
           <ModalFavorite
             key="chat-search"

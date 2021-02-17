@@ -127,9 +127,7 @@ function Home(props) {
 
   useEffect(() => {
     setModalVisible(false); // Popup Coupon
-    setTimeout(async () => {
-      loadDataFlashsale();
-    }, 250);
+    loadDataFlashsale();
     loadDataCoupon();
     loadDataProductLists();
   }, [countDownTime]);
@@ -164,8 +162,8 @@ function Home(props) {
       })
       .then(async (response) => {
         let objNew = Object.assign({}, objHomeHD);
-        let dateEnds = moment(await response.data.data.end_at, "YYYY-MM-DD HH");
-        let dateTimeNow = moment(new Date(), "YYYY-MM-DD HH");
+        let dateEnds = moment(await response.data.data.end_at, "YYYY-MM-DD HH:mm:ss");
+        let dateTimeNow = moment(new Date(), "YYYY-MM-DD HH:mm:ss");
         objNew.timeEnds = await dateEnds.diff(dateTimeNow, "times");
 
         setCountDownTime(objNew.timeEnds);

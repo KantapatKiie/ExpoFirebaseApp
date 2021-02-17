@@ -46,6 +46,8 @@ import NewsScreen from "../screens/notifications/News";
 import AboutUsScreen from "../screens/about/AboutUs";
 import NewsRelationScreen from "../screens/notifications/NewsRelation";
 import NewsRelationDetailScreen from "../screens/notifications/NewsRelationDetail";
+import TermConditionScreen from "../screens/notifications/TermConditions";
+import PrivacyPolicyScreen from "../screens/notifications/PrivacyPolicy";
 import MyCouponScreen from "../screens/coupon/MyCoupon";
 
 //SET FIREBASE-CONFIG
@@ -547,6 +549,58 @@ function NewsRelationDetailStack() {
               search
               tabs
               title="News Realtion Detail"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function TermConditionStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Term Conditions"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Term Conditions"
+        component={TermConditionScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Term Conditions"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function PrivacyPolicyStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Privacy Policy"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Privacy Policy"
+        component={PrivacyPolicyScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Privacy Policy"
               scene={scene}
               navigation={navigation}
             />
@@ -1100,9 +1154,6 @@ function OnboardingStack(props) {
   // }
   //#endregion
 
-  // useEffect(() => {
-  //   LogBox.ignoreLogs(["VirtualizedLists should never be nested!"]);
-  // }, [props]);
   return (
     <>
       <Stack.Navigator>
@@ -1194,6 +1245,16 @@ function OnboardingStack(props) {
         <Stack.Screen
           name="News Relation Detail"
           component={NewsRelationDetailStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Term Conditions"
+          component={TermConditionStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Privacy Policy"
+          component={PrivacyPolicyStack}
           options={{ header: () => null }}
         />
         <Stack.Screen

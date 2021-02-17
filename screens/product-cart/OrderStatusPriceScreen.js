@@ -79,30 +79,8 @@ function OrderStatus(props) {
     loadDataDeliveryList(objUseDelivery.id);
     summaryPriceListTrOrder(listTrOrder);
     getCountry();
-    checkedOmiseTransfer();
   }, []);
-  const checkedOmiseTransfer = async () => {
-    const tokenOmise = await Omise.createToken({
-      card: {
-        name: "KANTAPAT",
-        city: "Bangkok",
-        postal_code: 10210,
-        number: "4242424242424242",
-        expiration_month: 10,
-        expiration_year: 2022,
-        security_code: 111,
-      },
-    });
-
-    // const transferData = await Omise.createSource({
-    //   amount: 1500,
-    //   currency: "thb",
-    //   // type: 'internet_banking_bbl',
-    //   card: tokenOmise.id,
-    // });
-
-    console.log(tokenOmise.id);
-  };
+  
 
   const [newDelivery, setNewDelivery] = useState({
     id: 0,
@@ -229,7 +207,7 @@ function OrderStatus(props) {
   };
 
   //#region Payment Credit/Debit
-  const [objModal, setObjModal] = useState({
+  const [objjOmiseTransfer, setObjOmiseTransfer] = useState({
     card_number: "",
     card_name: "",
     expire_date: "",
@@ -238,38 +216,62 @@ function OrderStatus(props) {
     bank_name: "",
   });
   const [modalVisible, setModalVisible] = useState(false);
+  const checkedOmiseTransfer = async () => {
+    const tokenOmise = await Omise.createToken({
+      card: {
+        name: "KANTAPAT",
+        city: "Bangkok",
+        postal_code: 10210,
+        number: "4242424242424242",
+        expiration_month: 10,
+        expiration_year: 2022,
+        security_code: 111,
+      },
+    });
+
+    return tokenOmise;
+
+    // const transferData = await Omise.createSource({
+    //   amount: 1500,
+    //   currency: "thb",
+    //   // type: 'internet_banking_bbl',
+    //   card: tokenOmise.id,
+    // });
+
+    console.log(tokenOmise.id);
+  };
   const handleConfirmPayment = (e) => {
     setModalVisible(false);
   };
   const onChangeCardNumber = (e) => {
-    let newObj = Object.assign({}, objModal);
+    let newObj = Object.assign({}, objjOmiseTransfer);
     newObj.card_number = e;
-    setObjModal(newObj);
+    setObjOmiseTransfer(newObj);
   };
   const onChangeCardName = (e) => {
-    let newObj = Object.assign({}, objModal);
+    let newObj = Object.assign({}, objjOmiseTransfer);
     newObj.card_name = e;
-    setObjModal(newObj);
+    setObjOmiseTransfer(newObj);
   };
   const onChangeExpriceDate = (e) => {
-    let newObj = Object.assign({}, objModal);
+    let newObj = Object.assign({}, objjOmiseTransfer);
     if (e.length >= 2) {
       newObj.expire_date = e.substr(0, 2) + "/" + (e.substr(3) || "");
     }
     else{
       newObj.expire_date = e
     }
-    setObjModal(newObj);
+    setObjOmiseTransfer(newObj);
   };
   const onChangeSecureCode = (e) => {
-    let newObj = Object.assign({}, objModal);
+    let newObj = Object.assign({}, objjOmiseTransfer);
     newObj.secure_code = e;
-    setObjModal(newObj);
+    setObjOmiseTransfer(newObj);
   };
   const [country, setCountry] = useState([
     {
-      label: objModal.bank_name,
-      value: objModal.bank_code,
+      label: objjOmiseTransfer.bank_name,
+      value: objjOmiseTransfer.bank_code,
     },
   ]);
   const getCountry = async () => {
@@ -294,10 +296,10 @@ function OrderStatus(props) {
       });
   };
   const onChangeCountry = (item) => {
-    let newObj = Object.assign({}, objModal);
+    let newObj = Object.assign({}, objjOmiseTransfer);
     newObj.bank_code = item.value;
     newObj.bank_name = item.label;
-    setObjModal(newObj);
+    setObjOmiseTransfer(newObj);
   };
   const modalPayment = (
     <Modal transparent={true} visible={modalVisible} animationType="none">
@@ -330,7 +332,7 @@ function OrderStatus(props) {
                       style={stylesModal.inputKey}
                       placeholder={"Card Number"}
                       placeholderTextColor="#808080"
-                      value={objModal.card_number}
+                      value={objjOmiseTransfer.card_number}
                       onChangeText={onChangeCardNumber}
                       keyboardType={"ascii-capable"}
                       maxLength={16}
@@ -339,9 +341,9 @@ function OrderStatus(props) {
                   <Block style={stylesModal.inputView}>
                     <TextInput
                       style={stylesModal.inputKey}
-                      placeholder={"Number on card"}
+                      placeholder={"Name on card"}
                       placeholderTextColor="#808080"
-                      value={objModal.card_name}
+                      value={objjOmiseTransfer.card_name}
                       onChangeText={onChangeCardName}
                     />
                   </Block>
@@ -352,7 +354,7 @@ function OrderStatus(props) {
                       style={stylesModal.inputKey}
                       placeholder={"Expire date"}
                       placeholderTextColor="#808080"
-                      value={objModal.expire_date}
+                      value={objjOmiseTransfer.expire_date}
                       onChangeText={onChangeExpriceDate}
                       keyboardType={"phone-pad"}
                       maxLength={5}
@@ -363,7 +365,7 @@ function OrderStatus(props) {
                       style={stylesModal.inputKey}
                       placeholder={"Security code"}
                       placeholderTextColor="#808080"
-                      value={objModal.secure_code}
+                      value={objjOmiseTransfer.secure_code}
                       onChangeText={onChangeSecureCode}
                       keyboardType={"numeric"}
                       maxLength={3}
@@ -396,7 +398,7 @@ function OrderStatus(props) {
                     color: "white",
                   }}
                   defaultValue={
-                    objModal.bank_name == "" ? null : objModal.bank_code
+                    objjOmiseTransfer.bank_name == "" ? null : objjOmiseTransfer.bank_code
                   }
                   onChangeItem={(item) => onChangeCountry(item)}
                 />
@@ -407,7 +409,7 @@ function OrderStatus(props) {
               <Block style={{ margin: 10, marginTop: 15 }}>
                 <Button
                   titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-                  title={"Checkout 9,999.00 THB"}
+                  title={"Checkout " + commaNumber(parseFloat(TotalAmounts).toFixed(2)) + " THB"}
                   type="solid"
                   containerStyle={{ margin: 15 }}
                   buttonStyle={{ backgroundColor: "#0c5aeb" }}
@@ -429,7 +431,6 @@ function OrderStatus(props) {
       </Block>
     </Modal>
   );
-
   //#endregion
 
   const onConfirmToPaymentPage = async () => {
@@ -477,7 +478,8 @@ function OrderStatus(props) {
         });
     } else {
       setModalVisible(true);
-      ToastAndroid.show("Omise comming soon", ToastAndroid.SHORT);
+      const tokenOmise = await checkedOmiseTransfer();
+      ToastAndroid.show("Omise token : " + tokenOmise.id, ToastAndroid.SHORT);
     }
   };
 

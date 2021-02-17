@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   FlatList,
   RefreshControl,
+  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -27,7 +28,6 @@ import { getToken } from "../../store/mock/token";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
-//const rootImage = "http://10.0.1.37:8080";
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 const firstIndicatorStyles = {
@@ -258,6 +258,24 @@ function OrderStatus(props) {
         </Block>
       </Block>
     );
+  };
+
+  const handleCancelOrder = async () => {
+    await axios
+      .put(API_URL.CANCEL_ORDER_HD_API + item.code, {
+        headers: {
+          Accept: "*/*",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(function (response) {
+        // console.log(response.data);
+        ToastAndroid.show(item.code + " is cancel", ToastAndroid.SHORT);
+      })
+      .catch(function (error) {
+        console.log("error :", error);
+      });
   };
 
   return (
@@ -850,7 +868,7 @@ function OrderStatus(props) {
                   type="solid"
                   containerStyle={styles.blockButton2}
                   buttonStyle={styles.buttonStyle2}
-                  // onPress={() => showToast()}
+                  onPress={() => handleCancelOrder(item)}
                 />
               </Block>
             </>

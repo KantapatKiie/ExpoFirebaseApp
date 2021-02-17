@@ -22,11 +22,11 @@ export default [
   {
     key: "5",
     text: "Term & Conditions",
-    page: "Notifications",
+    page: "Term Conditions",
   },
   {
     key: "6",
     text: "Privacy Policy",
-    page: "About Us",
+    page: "Privacy Policy",
   },
 ];

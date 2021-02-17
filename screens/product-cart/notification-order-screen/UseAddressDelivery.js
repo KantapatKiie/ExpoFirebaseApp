@@ -73,7 +73,7 @@ function UseAddressDelivery(props) {
         },
       })
       .then(async (response) => {
-        newObj.FIRST_NAME = await response.data.data.first_name;
+        newObj.FIRST_NAME = response.data.data.first_name;
         newObj.LAST_NAME = response.data.data.last_name;
         newObj.EMAIL = response.data.data.email;
         newObj.ADDRESS_NAME_ORDER =
@@ -137,12 +137,12 @@ function UseAddressDelivery(props) {
                 newObj.ZIP_CODE_ORDER_ORIGINAL = newObj.ZIP_CODE_ORDER;
 
                 //Province
-                await axios.get(API_URL.PROVINCE_API).then(function (response) {
-                  let newlstProvince = response.data.data.find(
+                await axios.get(API_URL.PROVINCE_API).then(async(response) => {
+                  let newlstProvince = await response.data.data.find(
                     (item) => item.id == parseInt(newObj.province_id_deliveries)
                   );
                   newObj.PROVINCE_CODE_ORDER = newlstProvince.id;
-                  newObj.PROVINCE_NAME_ORDER = newlstProvince.name_th.toString();
+                  newObj.PROVINCE_NAME_ORDER = (newlstProvince.name_th).toString();
 
                   newObj.PROVINCE_CODE_ORDER_ORIGINAL =
                     newObj.PROVINCE_CODE_ORDER;
@@ -252,7 +252,7 @@ function UseAddressDelivery(props) {
 
   const onSelectAddressThis = () => {
     let objAddress = Object.assign({}, objUseAddressDelivery);
-    if (checkedDelivery == "address") {
+    if (checkedDelivery === "address") {
       objAddress.FIRST_NAME = objUseAddressDelivery.FIRST_NAME_ORIGINAL;
       objAddress.LAST_NAME = objUseAddressDelivery.LAST_NAME_ORIGINAL;
       objAddress.ADDRESS_NAME_ORDER =
@@ -394,7 +394,7 @@ function UseAddressDelivery(props) {
                     />
                   </Block>
                 </Block>
-                {/* Select Region */}
+                {/* Country */}
                 <Block style={{ marginBottom: 5 }}>
                   <Text style={styles.textDescAddress}>จังหวัด :</Text>
                   <DropDownPicker
@@ -470,7 +470,7 @@ function UseAddressDelivery(props) {
                     }}
                     disabled={checkedDelivery == "address" ? true : false}
                     defaultValue={
-                      objUseAddressDelivery.PROVINCE_NAME_ORDER == ""
+                      objUseAddressDelivery.DISTRICT_NAME_ORDER == ""
                         ? null
                         : objUseAddressDelivery.DISTRICT_CODE_ORDER
                     }
@@ -518,7 +518,6 @@ function UseAddressDelivery(props) {
                     onChangeItem={(item) => onChangeSubDistrict(item)}
                   />
                 </Block>
-
                 {/* ZipCode */}
                 <Block style={{ marginBottom: 5 }}>
                   <Text style={styles.textDescAddress}>รหัสไปรษณีย์ :</Text>

@@ -15,3 +15,15 @@ The "settings.json" file contains the server configuration that is used to serve
 No, you should not share the ".expo" folder. It does not contain any information that is relevant for other developers working on the project, it is specific to your machine.
 
 Upon project creation, the ".expo" folder is already added to your ".gitignore" file.
+
+EXPO:SETTING
+{
+  "hostType": "lan",
+  "lanType": "ip",
+  "dev": true,
+  "minify": false,
+  "urlRandomness": null,
+  "https": false,
+  "scheme": null,
+  "devClient": false
+}
