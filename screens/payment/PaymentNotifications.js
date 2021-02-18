@@ -52,11 +52,11 @@ function PaymentNotifications(props) {
 
   useEffect(() => {
     setObjSearch({
-      order_no: "ORD-2020120010",
-      fullname: "Kantapat",
-      telephone: "090090",
-      email: "kantapat@hormail.com",
-      money_transfer: "5000",
+      order_no: "",
+      fullname: "",
+      telephone: "",
+      email: "",
+      money_transfer: "",
       bank_code: 0,
       bank_name: "",
       transfer_date: moment(new Date()).format("YYYY-MM-DD"),

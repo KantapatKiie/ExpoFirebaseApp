@@ -21,7 +21,7 @@ import { actions as ActionProduct } from "../../actions/action-product/ActionPro
 import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
 import WangdekInfo from "../../components/WangdekInfo";
 import ReadMore from "react-native-read-more-text";
-import NumericInput from 'rn-numeric-input'
+import NumericInput from "rn-numeric-input";
 import { LinearGradient } from "expo-linear-gradient";
 import { ProgressBar, Colors } from "react-native-paper";
 import CountDown from "react-native-countdown-component";
@@ -31,7 +31,6 @@ import { getToken } from "../../store/mock/token";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
-//const rootImage = "http://10.0.1.37:8080";
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 const defaultSocialsMedia = [
@@ -45,8 +44,8 @@ const defaultSocialsMedia = [
     id: 2,
     name: "line",
     url: "#",
-    image: "/storage/25/line-share.png"
-  }
+    image: "/storage/25/line-share.png",
+  },
 ];
 
 function ProductDetail(props) {
@@ -58,9 +57,6 @@ function ProductDetail(props) {
   }
   const { objProductActivity } = useSelector((state) => ({
     objProductActivity: state.actionProduct.objProductActivity,
-  }));
-  const { objCartBasket } = useSelector((state) => ({
-    objCartBasket: state.actionCart.objCartBasket,
   }));
 
   useEffect(() => {
@@ -99,7 +95,7 @@ function ProductDetail(props) {
     );
   };
 
-  const onClickFavorite = () => {
+  const onClickFavorite = async () => {
     let newFavorite = Object.assign({}, objProductActivity);
     if (objProductActivity.product_favorite == 0) {
       newFavorite.product_favorite = 1;
@@ -107,6 +103,23 @@ function ProductDetail(props) {
       newFavorite.product_favorite = 0;
     }
     props.setObjProductActivity(newFavorite);
+    await axios
+      .put(
+        API_URL.FAVORITE_VIEW_LIST_API + "/" + objProductActivity.product_id,
+        {
+          headers: {
+            Accept: "*/*",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then(function (response) {
+        console.log(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
   const onChangeCountProduct = (value) => {
     let newObj = Object.assign({}, objProductActivity);
@@ -115,7 +128,6 @@ function ProductDetail(props) {
   };
 
   const addProductToCarts = async () => {
-    console.log(objProductActivity.flash_sale_events_id == 0 ? "" : objProductActivity.flash_sale_events_id)
     await axios({
       method: "POST",
       url: API_URL.ADD_CART_ORDER_LISTVIEW_API,
@@ -123,11 +135,16 @@ function ProductDetail(props) {
         Accept: "*/*",
         Authorization: "Bearer " + (await token),
         "Content-Type": "application/json",
-        // "X-localization": locale,
       },
       data: {
-        flash_sale_events_id: objProductActivity.flash_sale_events_id == 0 ? "" : objProductActivity.flash_sale_events_id,
-        flash_sales_id: objProductActivity.flash_sales_id == 0 ? "" : objProductActivity.flash_sales_id,
+        flash_sale_events_id:
+          objProductActivity.flash_sale_events_id == 0
+            ? ""
+            : objProductActivity.flash_sale_events_id,
+        flash_sales_id:
+          objProductActivity.flash_sales_id == 0
+            ? ""
+            : objProductActivity.flash_sales_id,
         product_id: objProductActivity.product_id,
         product_quantity: objProductActivity.quantity,
       },
@@ -172,7 +189,6 @@ function ProductDetail(props) {
       .get(API_URL.SOCIALS_LIST_HD_API, {
         headers: {
           Accept: "application/json",
-          Authorization: "Bearer " + (await token),
           "Content-Type": "application/json",
         },
       })
@@ -216,7 +232,7 @@ function ProductDetail(props) {
           >
             <Image
               source={{
-                uri: objProductActivity.IMAGE,
+                uri: rootImage + objProductActivity.IMAGE,
               }}
               style={{
                 height: 320,

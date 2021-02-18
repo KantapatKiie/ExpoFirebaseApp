@@ -18,7 +18,8 @@ import "moment/locale/th";
 import "moment/locale/en-au";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
-import * as ActionFilterSearch from "../../actions/action-filter-search/ActionFilterSearch.js";
+import { actions as ActionFilterSearch } from "../../actions/action-filter-search/ActionFilterSearch.js";
+import { actions as ActionProductType } from "../../actions/action-product-type/ActionProductType";
 import { Block, Text } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
@@ -26,6 +27,7 @@ import { Button } from "react-native-elements";
 import { Searchbar } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
 import RangeSlider from "react-native-range-slider-expo";
+import ModalLoading from "../../components/ModalLoading";
 
 const { width } = Dimensions.get("window");
 let token = getToken();
@@ -37,8 +39,12 @@ function FilterSearch(props) {
   } else {
     moment.locale("en-au");
   }
+  const [loading, setLoading] = useState(null);
   const { objFilterSearch } = useSelector((state) => ({
     objFilterSearch: state.actionFilterSearch.objFilterSearch,
+  }));
+  const { objProductType } = useSelector((state) => ({
+    objProductType: state.actionProductType.objProductType,
   }));
 
   useEffect(() => {
@@ -78,7 +84,6 @@ function FilterSearch(props) {
         Accept: "application/json",
         "Content-Type": "application/json",
         Connection: "keep-alive",
-        "X-CSRF-TOKEN": "",
         "Accept-Encoding": "gzip, deflate",
       },
     })
@@ -154,7 +159,7 @@ function FilterSearch(props) {
               textAlign: "center",
             }}
           >
-            (999)
+            {item.stocks}
           </Text>
         </Block>
       </Block>
@@ -213,7 +218,7 @@ function FilterSearch(props) {
               textAlign: "center",
             }}
           >
-            (999)
+            {item.stocks}
           </Text>
         </Block>
       </Block>
@@ -224,13 +229,50 @@ function FilterSearch(props) {
   const [fromValue, setFromValue] = useState(0);
   const [toValue, setToValue] = useState(0);
 
-  const onSearchProductFilter = () => {
-    ToastAndroid.show("search filter", ToastAndroid.SHORT);
+  async function onSearchProductFilter() {
+    let newListTypes = listProductType.reduce(
+      (a, b) => (b.image !== "" && a.push(b.id), a),
+      []
+    );
+    let newListBrands = listProductBrands.reduce(
+      (a, b) => (b.image !== "" && a.push(b.id), a),
+      []
+    );
+    setLoading(true);
+    await axios({
+      method: "POST",
+      url: API_URL.PRODUCT_FILTHER_SEARCH_HD_API,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        page: "1",
+        keyword: objFilterSearch.SEARCH_ORDER,
+        category_selected: newListTypes,
+        brand_selected: newListBrands,
+        min_price: fromValue,
+        max_price: toValue.toString(),
+        sort: 1,
+      },
+    })
+      .then(function (response) {
+        setLoading(false);
+        let newObj = Object.assign({}, objProductType);
+        newObj.TABS_TYPE = true;
+        props.setObjProductType(newObj);
+        props.setListTrProductType(response.data.data);
+        props.navigation.navigate("Product Type");
+      })
+      .catch((error) => {
+        console.log("error", error);
+        setLoading(false);
+      });
+    setLoading(false);
   }
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1 , backgroundColor: "white"}}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
         <SectionList
           stickySectionHeadersEnabled={false}
           sections={FILTER_LIST}
@@ -273,7 +315,6 @@ function FilterSearch(props) {
                     fontSize: 15,
                     fontFamily: "kanitRegular",
                   }}
-                  
                 />
                 <DropDownPicker
                   items={itemFilter}
@@ -476,16 +517,16 @@ function FilterSearch(props) {
                 </Block>
                 <RangeSlider
                   min={0}
-                  max={20000}
+                  max={5000}
                   fromValueOnChange={(value) => setFromValue(value)}
                   toValueOnChange={(value) => setToValue(value)}
-                  initialFromValue={5000}
-                  initialToValue={15000}
+                  initialFromValue={500}
+                  initialToValue={4500}
                   showValueLabels={true}
                   showRangeLabels={false}
                   inRangeBarColor={"#00a2ff"}
                   outOfRangeBarColor={"#dbdbdb"}
-                  styleSize={14}
+                  styleSize={17}
                 />
               </Block>
 
@@ -507,11 +548,22 @@ function FilterSearch(props) {
           }}
         />
       </SafeAreaView>
+      <ModalLoading loading={loading} />
     </>
   );
 }
 
-export default connect(null, ActionFilterSearch.actions)(FilterSearch);
+const mapActions = {
+  setObjFilterSearch: ActionFilterSearch.setObjFilterSearch,
+  clearObjFilterSearch: ActionFilterSearch.clearObjFilterSearch,
+
+  setObjProductType: ActionProductType.setObjProductType,
+  clearObjProductType: ActionProductType.clearObjProductType,
+  setListTrProductType: ActionProductType.setListTrProductType,
+  pushListTrProductType: ActionProductType.pushListTrProductType,
+};
+
+export default connect(null, mapActions)(FilterSearch);
 
 const styles = StyleSheet.create({
   container: {

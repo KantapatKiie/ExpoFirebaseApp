@@ -60,7 +60,6 @@ function FavoriteView(props) {
     };
     setRefreshingPage(true);
     wait(1000).then(() => {
-      setNumList(2);
       loadListFavorite();
       ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
       setRefreshingPage(false);
@@ -68,7 +67,6 @@ function FavoriteView(props) {
   }, []);
 
   useEffect(() => {
-    setNumList(2);
     loadListFavorite();
   }, []);
 
@@ -78,7 +76,6 @@ function FavoriteView(props) {
   const [numColumns] = useState(2);
   const [numList, setNumList] = useState(2);
   const loadListFavorite = async () => {
-    setStateObj("");
     setLoading(false);
     await axios
       .get(API_URL.FAVORITE_VIEW_LIST_API, {

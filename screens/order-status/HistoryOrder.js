@@ -58,7 +58,6 @@ function HistoryOrder(props) {
     };
     setRefreshingPage(true);
     wait(1000).then(() => {
-      setNumList(2);
       loadHistoryOrderList();
       ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
       setRefreshingPage(false);
@@ -66,7 +65,6 @@ function HistoryOrder(props) {
   }, []);
 
   useEffect(() => {
-    setNumList(2);
     loadHistoryOrderList();
     setObjSerach({
       SEARCH_ORDER: "",

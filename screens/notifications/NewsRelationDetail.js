@@ -1,27 +1,125 @@
 import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
-  View,
+  ToastAndroid,
   TouchableOpacity,
   Image,
   ScrollView,
   Dimensions,
+  Share,
 } from "react-native";
+import axios from "axios";
 import moment from "moment";
 import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
+import { connect, useSelector } from "react-redux";
+import * as ActionNewsRelations from "../../actions/action-news-relations/ActionNewsRelations";
+import { API_URL } from "../../config/config.app";
 import { Block, Text } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
 
 const { height, width } = Dimensions.get("screen");
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
+
+const defaultSocialsMedia = [
+  {
+    id: 1,
+    name: "facebook",
+    url: "https://www.facebook.com/xxx",
+    image: "/storage/24/fb-share.png",
+  },
+  {
+    id: 2,
+    name: "line",
+    url: "#",
+    image: "/storage/25/line-share.png",
+  },
+];
 
 function NewsRelationDetail(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  //#region Translate
+  var SUNDAY = formatTr("SUNDAY").toString();
+  var MONDAY = formatTr("MONDAY").toString();
+  var TUESDAY = formatTr("TUESDAY").toString();
+  var WEDNESDAY = formatTr("WEDNESDAY").toString();
+  var THURSDAY = formatTr("THURSDAY").toString();
+  var FRIDAY = formatTr("FRIDAY").toString();
+  var SATURDAY = formatTr("SATURDAY").toString();
+  //#endregion
+  const { objNewsRelationsHD } = useSelector((state) => ({
+    objNewsRelationsHD: state.actionNewsRelations.objNewsRelationsHD,
+  }));
+console.log(objNewsRelationsHD)
   useEffect(() => {
-    // setItem(false);
+    loadDataSocialsMedia();
+    loadDescription()
   }, []);
-  let TimeActDay = moment(new Date()).format("DD");
-  let TimeActMonth = moment(new Date()).format("MMM");
-  let TimeActivity = moment(new Date()).format("DD MMM YYYY   |   HH:mm ");
+
+  const [descriptionPage, setDescriptionPage] = useState({
+    description_th: "...",
+    description_en: "......",
+  });
+  const loadDescription = async () => {
+    
+    await axios
+      .get(API_URL.NEWS_EVENTS_RELATIONS_HD + objNewsRelationsHD.id, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      })
+      .then(async (response) => {
+        let newlst = await response.data.data;
+        setDescriptionPage(newlst);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
+  const [dataSocials, setDataSocials] = useState(defaultSocialsMedia);
+  const loadDataSocialsMedia = async () => {
+    await axios
+      .get(API_URL.SOCIALS_LIST_HD_API, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      })
+      .then(async (response) => {
+        setDataSocials(response.data.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const shareLinkSocials = (item) => {
+    Share.share(
+      {
+        title: "Share message website",
+        message: "Message",
+        url: item.url,
+      },
+      {
+        dialogTitle: "Share website",
+        tintColor: "black",
+      }
+    )
+      .then(function (response) {
+        ToastAndroid.show(response.data, ToastAndroid.SHORT);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
 
   return (
     <>
@@ -39,7 +137,7 @@ function NewsRelationDetail(props) {
         >
           <Block
             style={{
-              backgroundColor: "orange",
+              backgroundColor: objNewsRelationsHD.colorTitle,
               width: 50,
               height: 65,
               borderRadius: 10,
@@ -54,7 +152,7 @@ function NewsRelationDetail(props) {
                 textAlign: "center",
               }}
             >
-              {TimeActDay}
+              {moment(objNewsRelationsHD.operate_datetime).format("DD")}
             </Text>
             <Text
               style={{
@@ -65,7 +163,7 @@ function NewsRelationDetail(props) {
                 textAlign: "center",
               }}
             >
-              {TimeActMonth}
+              {moment(objNewsRelationsHD.operate_datetime).format("MMM")}
             </Text>
           </Block>
           <Block>
@@ -79,7 +177,9 @@ function NewsRelationDetail(props) {
                 marginRight: 10,
               }}
             >
-              ลุยออนไลน์ให้หนัก! 3 ยักษ์ใหญ่ค้าปลีกไอทีอย่าง "คอปเปอร์ไวร์ด"
+              {locale == "th"
+                ? objNewsRelationsHD.title_th
+                : objNewsRelationsHD.title_en}
             </Text>
           </Block>
         </Block>
@@ -93,27 +193,8 @@ function NewsRelationDetail(props) {
               marginLeft: 15,
             }}
           >
-            วันที่ {TimeActivity} น.
-          </Text>
-          <Image
-            source={require("../../assets/iconRegister/viewpass2.png")}
-            style={{
-              width: 25,
-              height: 25,
-              marginLeft: 50,
-            }}
-          />
-          <Text
-            style={{
-              color: "#8a8a8a",
-              fontFamily: "kanitRegular",
-              fontSize: 17,
-              textAlign: "center",
-              marginLeft: 5,
-              marginRight: 15,
-            }}
-          >
-            เข้าชม 1,234
+            วันที่ {moment(objNewsRelationsHD.operate_datetime).format("LLLL")}{" "}
+            น.
           </Text>
         </Block>
         <Block
@@ -132,12 +213,14 @@ function NewsRelationDetail(props) {
               textAlign: "center",
             }}
           >
-            ข่าวประชาสัมพันธ์
+            {objNewsRelationsHD.type == "news"
+              ? "ข่าวประชาสัมพันธ์"
+              : "กิจกรรม"}
           </Text>
         </Block>
         {/* Body  */}
         <Image
-          source={require("../../assets/images/HowTo/banner-1.jpg")}
+          source={{ uri: rootImage + objNewsRelationsHD.image }}
           style={{
             width: width,
             height: 350,
@@ -158,7 +241,7 @@ function NewsRelationDetail(props) {
               textAlign: "left",
             }}
           >
-            {formatTr("NOTIFICATION_TEXT1")}
+            {locale == "th" ? descriptionPage.description_th : descriptionPage.description_en}
           </Text>
         </Block>
         <Block
@@ -185,30 +268,28 @@ function NewsRelationDetail(props) {
               fontFamily: "kanitRegular",
               fontSize: 15,
               textAlign: "left",
+              marginTop: 5,
             }}
           >
-            แชร์ :
+            {formatTr("SHARE_TEXT")}
           </Text>
-          <TouchableOpacity>
-            <Image
-              source={require("../../assets/images/fb-share.png")}
-              style={{
-                width: 30,
-                height: 30,
-                marginLeft: 10,
-              }}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image
-              source={require("../../assets/images/line-share.png")}
-              style={{
-                width: 30,
-                height: 30,
-                marginLeft: 10,
-              }}
-            />
-          </TouchableOpacity>
+          {dataSocials !== null
+            ? dataSocials.map((item) => (
+                <TouchableOpacity
+                  onPress={() => shareLinkSocials(item)}
+                  key={item.id}
+                >
+                  <Image
+                    source={{ uri: rootImage + item.image }}
+                    style={{
+                      width: 32,
+                      height: 32,
+                      marginLeft: 12,
+                    }}
+                  />
+                </TouchableOpacity>
+              ))
+            : null}
         </Block>
         <WangdekInfo />
       </ScrollView>
@@ -216,7 +297,7 @@ function NewsRelationDetail(props) {
   );
 }
 
-export default NewsRelationDetail;
+export default connect(null, ActionNewsRelations.actions)(NewsRelationDetail);
 
 const styles = StyleSheet.create({
   home: {

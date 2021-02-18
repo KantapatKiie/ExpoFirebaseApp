@@ -91,7 +91,7 @@ function Promotions(props) {
           } else {
             newObj.DETAIL = response.data.data.description_en;
           }
-          newObj.IMAGE = rootImage + response.data.data.image;
+          newObj.IMAGE = response.data.data.image;
           newObj.PRICE = response.data.data.price;
           newObj.product_full_price = response.data.data.full_price;
           newObj.quantity = 1;

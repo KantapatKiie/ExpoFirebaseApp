@@ -27,7 +27,6 @@ import ModalLoading from "../../components/ModalLoading";
 
 const { width } = Dimensions.get("screen");
 let token = getToken();
-//const rootImage = "http://10.0.1.37:8080";
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 const defaultListProductType = [
@@ -65,7 +64,7 @@ function ProductType(props) {
   }, [listTrProductType]);
 
   const loadDataProductListType = async () => {
-    setStateObj("");
+    // setStateObj("");
     if (objProductType.TABS_TYPE == true) {
       setStateObj(listTrProductType);
     } else if (objProductType.HOME_TYPE == true) {
@@ -134,9 +133,64 @@ function ProductType(props) {
       </Block>
     );
   };
-  const onLoadMoreProduct = () => {
-    const newConcatState = stateObj.concat("products2");
-    setStateObj(newConcatState);
+  const [numList, setNumList] = useState(2);
+  const onLoadMoreProduct = async () => {
+    setNumList(numList + 1);
+    if (objProductType.TABS_TYPE == true) {
+      setLoading(true);
+      await axios
+        .get(
+          objProductType.PRODUCT_TYPE === "TYPES"
+            ? API_URL.CATEGORY_PRODUCT_SEARCH_API + objProductType.ITEM_ID
+            : API_URL.BRANDS_PRODUCT_LISTVIEW_API +
+                objProductType.ITEM_ID +
+                "/products",
+          {
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            params: {
+              page: numList,
+            },
+          }
+        )
+        .then(function (response) {
+          setLoading(false);
+          const newConcatState = stateObj.concat(response.data.data);
+          setStateObj(newConcatState);
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+    } else if (objProductType.HOME_TYPE == true) {
+      setLoading(true);
+      await axios
+        .get(objProductType.API_TYPE, {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: numList,
+          },
+        })
+        .then(function (response) {
+          setLoading(false);
+          const newConcatState = stateObj.concat(
+            response.data.data.product_lists
+          );
+          setStateObj(newConcatState);
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+    } else {
+      setLoading(false);
+    }
+    setLoading(false);
   };
 
   const onSelectProduct = (product) => {
@@ -154,7 +208,7 @@ function ProductType(props) {
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
         <SectionList
           stickySectionHeadersEnabled={false}
           sections={PRODUCT_TYPE_LIST}
@@ -179,43 +233,44 @@ function ProductType(props) {
                       fontSize: 25,
                     }}
                   >
-                    ของใช้และของเล่นเด็ก
+                    {objProductType.ITEM_NAME}
                   </Text>
                 </Block>
               </TouchableOpacity>
 
               {/* Filter */}
-              <Block row style={{ marginLeft: 10 }}>
+              <Block row style={{ marginLeft: 10, marginTop: 10 }}>
                 <Image
-                  style={{ width: 35, height: 35, marginTop: 8 }}
+                  style={{ width: 35, height: 35 }}
                   source={require("../../assets/iconSignIn/filter-1.png")}
                 />
-                <Block row style={styles.search}>
-                  <Text
-                    style={{
-                      color: "#7d7d7d",
-                      fontFamily: "kanitRegular",
-                      fontSize: 15,
-                      marginTop: 5,
-                      marginLeft: 10,
-                    }}
-                  >
-                    {"ตัวกรอง"}
-                  </Text>
-                  <TouchableOpacity
-                    style={{
-                      marginLeft: "67%",
-                    }}
-                  >
+                <TouchableOpacity
+                  style={{ marginTop: 2 }}
+                  onPress={() => props.navigation.navigate("Filter Search")}
+                >
+                  <Block row style={styles.search}>
+                    <Text
+                      style={{
+                        color: "#7d7d7d",
+                        fontFamily: "kanitRegular",
+                        fontSize: 15,
+                        marginTop: 5,
+                        marginLeft: 10,
+                      }}
+                    >
+                      {"ตัวกรอง"}
+                    </Text>
+
                     <Image
                       style={{
+                        marginLeft: "67%",
                         width: 34,
                         height: 34,
                       }}
                       source={require("../../assets/iconSignIn/filter-2.png")}
                     />
-                  </TouchableOpacity>
-                </Block>
+                  </Block>
+                </TouchableOpacity>
               </Block>
 
               {/* ListItem */}
@@ -248,7 +303,6 @@ function ProductType(props) {
           }}
         />
       </SafeAreaView>
-
       <ModalLoading loading={loading} />
     </>
   );
@@ -280,11 +334,10 @@ const styles = StyleSheet.create({
   },
   textContainerBlock1: {
     padding: 10,
-    flexWrap: "wrap",
     marginRight: 10,
+    elevation: 1,
   },
   imageProduct: {
-    resizeMode: "cover",
     width: 180,
     height: 150,
   },

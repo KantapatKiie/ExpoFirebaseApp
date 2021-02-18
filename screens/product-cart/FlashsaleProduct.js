@@ -31,7 +31,6 @@ import ModalLoading from "../../components/ModalLoading";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
-//const rootImage = "http://10.0.1.37:8080";
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 const defaultListFalsesaleProduct = [
@@ -66,15 +65,11 @@ function FlashsaleProduct(props) {
   const [loading, setLoading] = useState(null);
 
   useEffect(() => {
-    setLoading(false);
     setStateObj(listTrSearchHD);
-    setNumList(2);
-    if (listTrSearchHD == "") {
-      loadFalshsaleRetry();
-    }
+    loadFalshsaleRetry();
   }, []);
 
-  const loadFalshsaleRetry = async () => {
+  async function loadFalshsaleRetry() {
     await axios
       .get(API_URL.FALSH_SALE_VIEW_API, {
         headers: {
@@ -104,7 +99,7 @@ function FlashsaleProduct(props) {
       .catch(function (error) {
         console.log(error);
       });
-  };
+  }
 
   //FlatList Coupon
   const ListItemCoupon = ({ item }) => {
@@ -208,7 +203,6 @@ function FlashsaleProduct(props) {
         setLoading(false);
       });
   };
-  console.log(listCouponHD)
   return (
     <>
       <View style={styles.container}>
@@ -234,9 +228,11 @@ function FlashsaleProduct(props) {
                       <FlatList
                         horizontal
                         data={listCouponHD}
-                        renderItem={({ item }) => (
-                          <ListItemCoupon item={item} />
-                        )}
+                        renderItem={({ item }) =>
+                          item.code !== "" && item.image ? (
+                            <ListItemCoupon item={item} />
+                          ) : null
+                        }
                         showsHorizontalScrollIndicator={false}
                         keyExtractor={(item) => item.id.toString()}
                       />

@@ -23,6 +23,9 @@ const initialState = {
 
     HOME_TYPE: false,
     TABS_TYPE: false,
+    PRODUCT_TYPE: "",
+    ITEM_ID: 0,
+    ITEM_NAME: "",
     API_TYPE: "http://10.0.1.37:8080/api/v1/products/best_selling",
     FLASHSALE: false,
   },

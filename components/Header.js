@@ -128,6 +128,9 @@ function Header(props) {
         .then((response) => {
           let newObj = Object.assign({}, objProductType);
           newObj.TABS_TYPE = true;
+          newObj.PRODUCT_TYPE = "TYPES";
+          newObj.ITEM_ID = item.id;
+          newObj.ITEM_NAME = locale == "th" ? item.name_th : item.name_en;
           props.setObjProductType(newObj);
           props.setListTrProductType(response.data.data);
           setLoading(false);
@@ -166,6 +169,9 @@ function Header(props) {
         .then(function (response) {
           let newObj = Object.assign({}, objProductType);
           newObj.TABS_TYPE = true;
+          newObj.PRODUCT_TYPE = "BRANDS";
+          newObj.ITEM_ID = item.id;
+          newObj.ITEM_NAME = locale == "th" ? item.name_th : item.name_en;
           props.setObjProductType(newObj);
           props.setListTrProductType(response.data.data);
           setLoading(false);

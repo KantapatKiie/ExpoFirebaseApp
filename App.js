@@ -20,8 +20,8 @@ export default class App extends React.Component {
       loadingFont: true,
     };
   }
-  componentDidMount() {
-    this._loadingFont();
+  async componentDidMount() {
+    await this._loadingFont();
   }
   async _loadingFont() {
     await Font.loadAsync({

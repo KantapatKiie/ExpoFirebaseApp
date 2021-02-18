@@ -17,7 +17,7 @@ function Settings(props) {
   const toggleSwitch = (switchNumber) =>
     setState({ [switchNumber]: !state[switchNumber] });
 
-  const [language, setLanguage] = useState("th-TH");
+  const [language, setLanguage] = useState(props.lang);
   const itemLanguage = [
     {
       label: "Thai",

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Image, StyleSheet } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -7,6 +7,7 @@ import { connect } from "react-redux";
 import * as ActionLogin from "../actions/action-actives/ActionLogin";
 import * as firebase from "firebase";
 import * as Notifications from "expo-notifications";
+import * as Permissions from "expo-permissions";
 // Screen //
 import HomeScreen from "../screens/Home";
 import ProfileScreen from "../screens/Profile";
@@ -50,7 +51,7 @@ import TermConditionScreen from "../screens/notifications/TermConditions";
 import PrivacyPolicyScreen from "../screens/notifications/PrivacyPolicy";
 import MyCouponScreen from "../screens/coupon/MyCoupon";
 
-//SET FIREBASE-CONFIG
+//SET FIREBASE-CONFIG & NOTIFICATIONS-CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyCJcBZXaJYkEn49dfUiqbKW2H5FWLgmKrQ",
   authDomain: "fir-ntms-app.firebaseapp.com",
@@ -64,7 +65,6 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
-//SET NOTIFICATIONS-CONFIG
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -536,19 +536,19 @@ function NewsRelationStack() {
 function NewsRelationDetailStack() {
   return (
     <Stack.Navigator
-      initialRouteName="News Realtion Detail"
+      initialRouteName="News Relation Detail"
       mode="card"
       headerMode="screen"
     >
       <Stack.Screen
-        name="News Realtion Detail"
+        name="News Relation Detail"
         component={NewsRelationDetailScreen}
         options={{
           header: ({ navigation, scene }) => (
             <Header
               search
               tabs
-              title="News Realtion Detail"
+              title="News Relation Detail"
               scene={scene}
               navigation={navigation}
             />
@@ -1107,7 +1107,7 @@ function OnboardingStack(props) {
   //   notificationListener.current = Notifications.addNotificationReceivedListener(
   //     (notification) => {
   //       setNotification(notification);
-  //       console.log(notification);
+
   //     }
   //   );
   //   responseListener.current = Notifications.addNotificationResponseReceivedListener(
@@ -1137,10 +1137,12 @@ function OnboardingStack(props) {
   //     return;
   //   }
   //   token = (await Notifications.getExpoPushTokenAsync()).data;
+  //   // token = (await Notifications.getDevicePushTokenAsync()).data;
+  //   console.log(token);
+
   //   firebase.database().ref("ExpoToken").set({
   //     Token: token,
   //   });
-  //   console.log(token);
 
   //   if (Platform.OS === "android") {
   //     await Notifications.setNotificationChannelAsync("default", {

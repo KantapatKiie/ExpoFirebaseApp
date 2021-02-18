@@ -26,6 +26,7 @@ import { formatTr } from "../i18n/I18nProvider";
 import { actions as ActionHome } from "../actions/action-home/ActionHome";
 import { actions as ActionProduct } from "../actions/action-product/ActionProduct";
 import { actions as ActionProductType } from "../actions/action-product-type/ActionProductType";
+import { actions as ActionNewsRelations } from "../actions/action-news-relations/ActionNewsRelations";
 import WangdekInfo from "../components/WangdekInfo";
 import Icons from "react-native-vector-icons/MaterialIcons";
 import { API_URL } from "../config/config.app";
@@ -75,14 +76,13 @@ const defalutPopularProduct = [
 const defalutInformationList = [
   {
     id: 1,
-    code: "A001",
-    image: "/storage/8/coupon-1.png",
-    title1_th: "title1_th",
-    title1_en: "title1_en",
-    title2_th: "title2_th",
-    title2_en: "title2_en",
-    valid_from: "2021-02-03 15:15:00",
-    valid_until: "2021-02-03 15:15:00",
+    type: "news",
+    title_th: "ข่าว 1",
+    title_en: "News 1",
+    short_description_th: "กกกกก กกดกดกดกด กดกดกดด",
+    short_description_en: "dfdfd dfdfd dfdfdfd fdfdfdf",
+    operate_datetime: "2021-02-16 07:11:58",
+    image: "/storage/85/download.jfif",
   },
 ];
 
@@ -93,6 +93,23 @@ function Home(props) {
   } else {
     moment.locale("en-au");
   }
+  //#region Time & Translate
+  let LeftTime = moment(new Date()).format("HH:mm");
+  
+  var VIEW_ALL = formatTr("VIEW_ALL").toString(); //View all
+  var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
+  var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
+  var NEWS_RELEASE = formatTr("NEWS_RELEASE").toString();
+  var READ_MORE = formatTr("READ_MORE").toString();
+
+  var SUNDAY = formatTr("SUNDAY").toString();
+  var MONDAY = formatTr("MONDAY").toString();
+  var TUESDAY = formatTr("TUESDAY").toString();
+  var WEDNESDAY = formatTr("WEDNESDAY").toString();
+  var THURSDAY = formatTr("THURSDAY").toString();
+  var FRIDAY = formatTr("FRIDAY").toString();
+  var SATURDAY = formatTr("SATURDAY").toString();
+  //#endregion
 
   //Refresh Control
   const [loading, setLoading] = useState(null);
@@ -110,6 +127,7 @@ function Home(props) {
         await loadDataCoupon();
       }, 200);
       loadDataProductLists();
+      loadDataNews();
       ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
       setRefreshingPage(false);
     });
@@ -124,32 +142,21 @@ function Home(props) {
   const { objProductType } = useSelector((state) => ({
     objProductType: state.actionProductType.objProductType,
   }));
+  const { objNewsRelationsHD } = useSelector((state) => ({
+    objNewsRelationsHD: state.actionNewsRelations.objNewsRelationsHD,
+  }));
 
   useEffect(() => {
-    setModalVisible(false); // Popup Coupon
+    // setModalVisible(false); // Popup Coupon
     loadDataFlashsale();
     loadDataCoupon();
     loadDataProductLists();
-  }, [countDownTime]);
-
-  //#region Time & Translate
-  let LeftTime = moment(new Date()).format("HH:mm");
-  let TimeActDay = moment(new Date()).format("DD");
-  let TimeActMonth = moment(new Date()).format("MMM");
-  let TimeActivity = moment(new Date()).format("DD MMM YYYY   |   HH:mm ");
-
-  var VIEW_ALL = formatTr("VIEW_ALL").toString(); //View all
-  var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
-  var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
-  var NEWS_RELEASE = formatTr("NEWS_RELEASE").toString();
-  var READ_MORE = formatTr("READ_MORE").toString();
-  //#endregion
+    loadDataNews();
+  }, []);
 
   // Flashsale onLoad
-  const [countDownTime, setCountDownTime] = useState(
-    parseInt(objHomeHD.timeEnds)
-  );
-  const loadDataFlashsale = async () => {
+  const [countDownTime, setCountDownTime] = useState(objHomeHD.timeEnds);
+  async function loadDataFlashsale() {
     await axios
       .get(API_URL.FALSH_SALE_VIEW_API, {
         headers: {
@@ -161,20 +168,25 @@ function Home(props) {
         },
       })
       .then(async (response) => {
+        var date = moment().utcOffset("+07:00").format("YYYY-MM-DD hh:mm:ss");
+        var expirydate = await response.data.data.end_at;
+        var diffr = moment.duration(moment(expirydate).diff(moment(date)));
+        var hours = parseInt(diffr.asHours());
+        var minutes = parseInt(diffr.minutes());
+        var seconds = parseInt(diffr.seconds());
         let objNew = Object.assign({}, objHomeHD);
-        let dateEnds = moment(await response.data.data.end_at, "YYYY-MM-DD HH:mm:ss");
-        let dateTimeNow = moment(new Date(), "YYYY-MM-DD HH:mm:ss");
-        objNew.timeEnds = await dateEnds.diff(dateTimeNow, "times");
+        objNew.timeEnds = hours * 60 * 60 + minutes * 60 + seconds;
+        let newlistFlashsale = await response.data.data.lists;
 
         setCountDownTime(objNew.timeEnds);
         props.setObjHomeHD(objNew);
-        props.setListTrSearchHD(response.data.data.lists);
+        props.setListTrSearchHD(newlistFlashsale);
       })
       .catch(function (error) {
         console.log(error);
       });
     setCountDownTime(objHomeHD.timeEnds);
-  };
+  }
   // Flashsale Detail
   const onClickFalshsaleDetail = () => {
     props.setListCouponHD(couponList);
@@ -216,7 +228,7 @@ function Home(props) {
       </View>
     );
   };
-  //#region PopupCoupon
+  //Pop-up Coupon
   const [modalVisible, setModalVisible] = useState(false);
   const ModalNotification = () => {
     const renderModalCouponList = ({ item }) => {
@@ -287,7 +299,6 @@ function Home(props) {
       </>
     );
   };
-  //#endregion
 
   // Best selling
   const [listBestsale, setListBestsale] = useState(defalutBestsaleProduct);
@@ -365,7 +376,7 @@ function Home(props) {
           } else {
             newObj.DETAIL = response.data.data.description_en;
           }
-          newObj.IMAGE = rootImage + response.data.data.image;
+          newObj.IMAGE = response.data.data.image;
           newObj.PRICE = response.data.data.price;
           newObj.product_full_price = response.data.data.full_price;
           newObj.quantity = 1;
@@ -455,7 +466,7 @@ function Home(props) {
           } else {
             newObj.DETAIL = response.data.data.description_en;
           }
-          newObj.IMAGE = rootImage + response.data.data.image;
+          newObj.IMAGE = response.data.data.image;
           newObj.PRICE = response.data.data.price;
           newObj.product_full_price = response.data.data.full_price;
           newObj.quantity = 1;
@@ -520,21 +531,88 @@ function Home(props) {
   };
 
   // Information List
-  const [informationList, setInformationList] = useState(defalutCouponList);
-  const ListItemInformation = ({ item }) => {
+  const [informationList, setInformationList] = useState(
+    defalutInformationList
+  );
+  async function loadDataNews() {
+    await axios
+      .get(API_URL.NEWS_EVENTS_RELATIONS_HD, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      })
+      .then(async (response) => {
+        let newlst = await response.data.data.filter(
+          (item) => item.type == "news"
+        );
+        setInformationList(newlst);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+  const renderInformation = ({ item }) => {
+    var fullDate = item.operate_datetime;
+    var colorItem = moment(item.operate_datetime).format("ddd", locale);
+    var colorEtc = "";
+
+    switch (colorItem) {
+      case locale != "th" ? SUNDAY.substring(0, 3) : SUNDAY:
+        colorItem = "#fc4353";
+        colorEtc = "#ba303c";
+        break;
+
+      case locale != "th" ? MONDAY.substring(0, 3) : MONDAY:
+        colorItem = "#fdb837";
+        colorEtc = "#cc952f";
+        break;
+      case locale != "th" ? TUESDAY.substring(0, 3) : TUESDAY:
+        colorItem = "#ec429a";
+        colorEtc = "#c93a84";
+        break;
+
+      case locale != "th" ? WEDNESDAY.substring(0, 3) : WEDNESDAY:
+        colorItem = "#10c990";
+        colorEtc = "#0c9c6f";
+        break;
+
+      case locale != "th" ? THURSDAY.substring(0, 3) : THURSDAY:
+        colorItem = "#fd761a";
+        colorEtc = "#c75e16";
+        break;
+
+      case locale != "th" ? FRIDAY.substring(0, 3) : FRIDAY:
+        colorItem = "#119bf6";
+        colorEtc = "#1080c9";
+        break;
+
+      case locale != "th" ? SATURDAY.substring(0, 3) : SATURDAY:
+        colorItem = "#c924a7";
+        colorEtc = "#961b7d";
+        break;
+
+      default:
+        break;
+    }
+
+    const onSelectNewsEvents = (item) => {
+      let objNews = Object.assign({}, objNewsRelationsHD);
+      props.navigation.navigate("News Relation Detail");
+    };
     return (
       <View style={styles2.items}>
         <Block flex>
           {/* Image */}
           <ImageBackground
             source={{
-              uri: item.uri,
+              uri: rootImage + item.image,
             }}
             style={styles2.itemPhotos}
           >
             <Block
               style={{
-                backgroundColor: item.color,
+                backgroundColor: colorItem,
                 width: 45,
                 height: 60,
                 borderRadius: 10,
@@ -551,7 +629,7 @@ function Home(props) {
                   textAlign: "center",
                 }}
               >
-                {TimeActDay}
+                {moment(fullDate).format("DD")}
               </Text>
               <Text
                 style={{
@@ -562,7 +640,7 @@ function Home(props) {
                   textAlign: "center",
                 }}
               >
-                {TimeActMonth}
+                {moment(fullDate).format("MMM")}
               </Text>
             </Block>
           </ImageBackground>
@@ -574,17 +652,21 @@ function Home(props) {
                 fontFamily: "kanitBold",
               }}
             >
-              {item.title}
+              {locale == "th" ? item.title_th : item.title_en}
             </Text>
-            <Text style={styles2.TextActivity}>{TimeActivity}</Text>
+            <Text style={styles2.TextActivity}>{moment(fullDate).format("LLLL")} </Text>
             <Text style={styles2.TextActivity}>&nbsp;</Text>
             {/* Detail Information */}
-            <Text style={styles2.TextActivity}>{item.body}</Text>
+            <Text style={styles2.TextActivity}>
+              {locale == "th"
+                ? item.short_description_th
+                : item.short_description_en}
+            </Text>
             <Text style={styles2.TextActivity}>&nbsp;</Text>
             <TouchableOpacity
-              onPress={() => props.navigation.navigate("News Relation Detail")}
+              onPress={() => onSelectNewsEvents(item)}
               style={{
-                backgroundColor: item.colorEtc,
+                backgroundColor: colorEtc,
                 borderRadius: 10,
                 width: 100,
                 Opacity: 0.5,
@@ -649,7 +731,9 @@ function Home(props) {
                   horizontal
                   data={couponList}
                   renderItem={({ item }) =>
-                    item.code !== "" ? <ListItemCoupon item={item} /> : null
+                    item.code !== "" && item.image ? (
+                      <ListItemCoupon item={item} />
+                    ) : null
                   }
                   showsHorizontalScrollIndicator={false}
                   keyExtractor={(item) => item.id.toString()}
@@ -661,7 +745,7 @@ function Home(props) {
             <>
               {/* Best seller product */}
               <Block flex style={styles.textContainerBlock1}>
-                <Block style={{ alignSelf: "center" }}>
+                <Block style={{ alignSelf: "center", marginTop: 20 }}>
                   <Text
                     style={{
                       fontSize: 27,
@@ -704,7 +788,7 @@ function Home(props) {
 
               {/* Popular product */}
               <Block flex style={styles.textContainerBlock2}>
-                <Block style={{ alignSelf: "center" }}>
+                <Block style={{ alignSelf: "center", marginTop: 20 }}>
                   <Text
                     style={{
                       fontSize: 25,
@@ -744,11 +828,11 @@ function Home(props) {
               </Block>
 
               {/* Public relations */}
-              <Block>
-                <Block
-                  flex
-                  style={{ backgroundColor: "#f7f7f7", marginBottom: 25 }}
-                >
+              <Block
+                flex
+                style={{ backgroundColor: "#f7f7f7", marginBottom: 25 }}
+              >
+                <Block style={{ alignSelf: "center", margin: 20 }}>
                   <Text
                     style={{
                       fontSize: 25,
@@ -760,36 +844,16 @@ function Home(props) {
                   >
                     {NEWS_RELEASE}
                   </Text>
-                  <SafeAreaView style={{ flex: 1, marginTop: 25 }}>
-                    <SectionList
-                      stickySectionHeadersEnabled={false}
-                      sections={INFORMATION}
-                      renderSectionHeader={({ section }) => (
-                        <>
-                          <Block style={styles2.containerHeader2}>
-                            {section.horizontal ? (
-                              <FlatList
-                                horizontal
-                                data={section.data}
-                                renderItem={({ item }) => (
-                                  <ListItemInformation item={item} />
-                                )}
-                                showsHorizontalScrollIndicator={false}
-                              />
-                            ) : null}
-                          </Block>
-                        </>
-                      )}
-                      // renderSectionFooter={() => <></>}
-                      renderItem={({ item, section }) => {
-                        if (section.horizontal) {
-                          return null;
-                        }
-                        return <ListItemInformation item={item} />;
-                      }}
-                    />
-                  </SafeAreaView>
                 </Block>
+                <FlatList
+                  horizontal={true}
+                  data={informationList}
+                  renderItem={renderInformation}
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item) => item.id.toString()}
+                  listKey={(item) => item.id.toString()}
+                />
+
                 <TouchableOpacity
                   onPress={() => props.navigation.navigate("News Relation")}
                   style={{ marginBottom: 30, marginTop: 15 }}
@@ -843,6 +907,10 @@ const mapActions = {
   clearObjProductType: ActionProductType.clearObjProductType,
   setListTrProductType: ActionProductType.setListTrProductType,
   pushListTrProductType: ActionProductType.pushListTrProductType,
+
+  // News Relations
+  setObjNewsRelationsHD: ActionNewsRelations.setObjNewsRelationsHD,
+  setListTrNewsRelationsHD: ActionNewsRelations.setListTrNewsRelationsHD,
 };
 
 export default withNavigation(connect(null, mapActions)(Home));
@@ -855,78 +923,6 @@ const HOME_LIST = [
       {
         key: "1",
         uri: "../assets/images/coupon/coupon-1.png",
-      },
-    ],
-  },
-];
-
-const INFORMATION = [
-  {
-    title: "Information",
-    horizontal: true,
-    data: [
-      {
-        key: "1",
-        title: "Activity 1",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#fdb837",
-        colorEtc: "#cc952f",
-        uri: "https://picsum.photos/id/1/200",
-      },
-      {
-        key: "2",
-        title: "Activity 2",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#ec429a",
-        colorEtc: "#c93a84",
-        uri: "https://picsum.photos/id/10/200",
-      },
-      {
-        key: "3",
-        title: "Activity 3",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#10c990",
-        colorEtc: "#0c9c6f",
-        uri: "https://picsum.photos/id/1002/200",
-      },
-      {
-        key: "4",
-        title: "Activity 4",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#fd761a",
-        colorEtc: "#c75e16",
-        uri: "https://picsum.photos/id/1006/200",
-      },
-      {
-        key: "5",
-        title: "Activity 5",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#119bf6",
-        colorEtc: "#1080c9",
-        uri: "https://picsum.photos/id/1008/200",
-      },
-      {
-        key: "6",
-        title: "Activity 6",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#c924a7",
-        colorEtc: "#961b7d",
-        uri: "https://picsum.photos/id/1008/200",
-      },
-      {
-        key: "7",
-        title: "Activity 7",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#fc4353",
-        colorEtc: "#ba303c",
-        uri: "https://picsum.photos/id/1008/200",
       },
     ],
   },
@@ -951,7 +947,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#10c985",
     padding: 5,
     width: width,
-    // marginTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#9ee390",
   },
   textContainerBlock2: {
     backgroundColor: "#ffffff",

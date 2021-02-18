@@ -14,7 +14,6 @@ import * as actionContact from "../actions/action-contact/ActionContact";
 import * as actionForgotPassword from "../actions/action-forgot-password/ActionForgotPassword";
 import * as actionChangepassword from "../actions/action-change-password/ActionChangepassword";
 import * as actionFlashsaleProduct from "../actions/action-flashsale-product/ActionFlashsaleProduct";
-import * as actionHistoryView from "../actions/action-history-view/ActionHistoryView";
 import * as actionHistoryOrder from "../actions/action-history-order/ActionHistoryOrder";
 import * as actionFavoriteView from "../actions/action-favorite-view/ActionFavoriteView";
 import * as actionPromotions from "../actions/action-promotions/ActionPromotions";
@@ -24,6 +23,7 @@ import * as actionFilterSearch from "../actions/action-filter-search/ActionFilte
 import * as actionOrderStatus from "../actions/action-order-status/ActionOrderStatus";
 import * as actionOrder from "../actions/action-order-status/ActionOrder";
 import * as actionEvents from "../actions/action-events/ActionEvents";
+import * as actionNewsRelations from "../actions/action-news-relations/ActionNewsRelations";
 import * as actionProductType from "../actions/action-product-type/ActionProductType";
 
 import * as i18n from "./ducks/i18n";
@@ -44,7 +44,6 @@ export const rootReducer = combineReducers({
   actionForgotPassword: actionForgotPassword.reducer,
   actionChangepassword: actionChangepassword.reducer,
   actionFlashsaleProduct: actionFlashsaleProduct.reducer,
-  actionHistoryView: actionHistoryView.reducer,
   actionHistoryOrder: actionHistoryOrder.reducer,
   actionFavoriteView: actionFavoriteView.reducer,
   actionPromotions: actionPromotions.reducer,
@@ -54,6 +53,7 @@ export const rootReducer = combineReducers({
   actionOrderStatus: actionOrderStatus.reducer,
   actionOrder: actionOrder.reducer,
   actionEvents: actionEvents.reducer,
+  actionNewsRelations: actionNewsRelations.reducer,
   actionProductType: actionProductType.reducer,
 });
 

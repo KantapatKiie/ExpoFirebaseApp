@@ -105,12 +105,11 @@ function SignIn(props) {
     setRequiredEmail(false);
     setRequiredPass(false);
     setLoading(false);
-    if(token._W){
+    if (token._W) {
       onLoadGetUserInfo();
     }
   }, []);
 
-  
   const onChangeEmail = (e) => {
     let newObj = Object.assign({}, stateObj);
     newObj.email = e;
@@ -129,8 +128,7 @@ function SignIn(props) {
   const [imagePicker, setImagePicker] = useState(null);
   const [loadImageUser, setLoadImageUser] = useState(null);
   async function onLoadGetUserInfo() {
-    setLoading(true);
-    let newLogin = Object.assign({}, objLoginMasterHD)
+    let newLogin = Object.assign({}, objLoginMasterHD);
     await axios
       .get(API_URL.USER_INFO_API, {
         headers: {
@@ -148,6 +146,8 @@ function SignIn(props) {
         newLogin.DISTRICT_ID = response.data.data.profile.district_id;
         newLogin.SUB_DISTRICT_ID = response.data.data.profile.sub_district_id;
         newLogin.IMAGE = await response.data.data.image;
+        newLogin.ORDER_COMPLETED = response.data.data.order_completed;
+        newLogin.ORDER_CANCELLED = response.data.data.order_cancelled;
         setLoadImageUser(newLogin.IMAGE);
 
         //#region get EditProfile
@@ -266,7 +266,6 @@ function SignIn(props) {
 
                               setObjLoginMasterHD(newLogin);
                               setLoggedinStatus(true);
-                              setLoading(false);
                             });
                         });
                     });
@@ -274,12 +273,10 @@ function SignIn(props) {
               });
           });
         setLoggedinStatus(true);
-        setLoading(false);
         ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
       });
-
-    setLoggedinStatus(true);
     setLoading(false);
+    setLoggedinStatus(true);
   }
   // Image Picker Profile
   const pickImageUpload = async () => {
@@ -336,211 +333,205 @@ function SignIn(props) {
         setRequiredPass(false);
         if (reg.test(stateObj.email) === true) {
           setRequiredEmail(false);
-          setTimeout(() => {
-            setLoading(true);
-            axios({
-              method: "POST",
-              url: API_URL.LOGIN_API,
-              params: {
-                email: stateObj.email,
-                password: stateObj.password,
-              },
+          setLoading(true);
+          axios({
+            method: "POST",
+            url: API_URL.LOGIN_API,
+            params: {
+              email: stateObj.email,
+              password: stateObj.password,
+            },
+          })
+            .then(async (response) => {
+              newLogin.EMAIL = response.data.data.user[0].email;
+              newLogin.PASSWORD = stateObj.password;
+              newLogin.ID = response.data.data.user[0].id;
+              newLogin.FIRST_NAME = response.data.data.user[0].first_name;
+              newLogin.LAST_NAME = response.data.data.user[0].last_name;
+              newLogin.IMAGE = response.data.data.user[0].image;
+              newLogin.ORDER_COMPLETED = response.data.data.order_completed;
+              newLogin.ORDER_CANCELLED = response.data.data.order_cancelled;
+
+              setLoadImageUser(newLogin.IMAGE);
+
+              let tokenGenerate = await response.data.data.token;
+              newLogin.TOKEN = await response.data.data.token;
+              await setToken(tokenGenerate);
+
+              //get UserInfo
+              await axios
+                .get(API_URL.USER_INFO_API, {
+                  headers: {
+                    Accept: "application/json",
+                    Authorization: "Bearer " + (await tokenGenerate),
+                  },
+                })
+                .then(async (response) => {
+                  newLogin.FIRST_NAME = response.data.data.first_name;
+                  newLogin.LAST_NAME = response.data.data.last_name;
+                  newLogin.TELEPHONE = await response.data.data.profile
+                    .telephone;
+                  newLogin.EMAIL = response.data.data.email;
+                  newLogin.ADDRESS = response.data.data.profile.address;
+                  newLogin.PROVINCE_ID = response.data.data.profile.province_id;
+                  newLogin.DISTRICT_ID = response.data.data.profile.district_id;
+                  newLogin.SUB_DISTRICT_ID =
+                    response.data.data.profile.sub_district_id;
+
+                  //get EditProfile
+                  newLogin.profile_id = response.data.data.profile.id;
+                  newLogin.sex = response.data.data.profile.sex;
+                  newLogin.birthday = response.data.data.profile.birthday;
+                  newLogin.telephone = response.data.data.profile.telephone;
+                  newLogin.address = response.data.data.profile.address;
+                  newLogin.province_id = response.data.data.profile.province_id;
+                  newLogin.district_id = response.data.data.profile.district_id;
+                  newLogin.sub_district_id =
+                    response.data.data.profile.sub_district_id;
+                  newLogin.postcode = response.data.data.profile.postcode;
+                  newLogin.receive_info =
+                    response.data.data.profile.receive_info;
+
+                  newLogin.address_deliveries_id =
+                    response.data.data.address_deliveries[0].id;
+                  newLogin.address_deliveries =
+                    response.data.data.address_deliveries[0].address;
+                  newLogin.province_id_deliveries =
+                    response.data.data.address_deliveries[0].province_id;
+                  newLogin.district_id_deliveries =
+                    response.data.data.address_deliveries[0].district_id;
+                  newLogin.sub_district_id_deliveries =
+                    response.data.data.address_deliveries[0].sub_district_id;
+                  newLogin.postcode_deliveries =
+                    response.data.data.address_deliveries[0].postcode;
+                  newLogin.telephone_deliveries =
+                    response.data.data.address_deliveries[0].telephone;
+
+                  //getAddress User & Delivery
+                  axios
+                    .get(API_URL.DISTRICT_API, {
+                      params: {
+                        province_id: newLogin.PROVINCE_ID,
+                      },
+                    })
+                    .then(function (response) {
+                      let newlstDistrict = response.data.data.find(
+                        (item) => item.id == parseInt(newLogin.DISTRICT_ID)
+                      );
+                      newLogin.DISTRICT_NAME = newlstDistrict.name_th;
+
+                      axios
+                        .get(API_URL.SUB_DISTRICT_API, {
+                          params: {
+                            district_id: newLogin.DISTRICT_ID,
+                          },
+                        })
+                        .then(function (response) {
+                          let newlstSubDistrict = response.data.data.find(
+                            (item) =>
+                              item.id == parseInt(newLogin.SUB_DISTRICT_ID)
+                          );
+                          newLogin.SUB_DISTRICT_NAME =
+                            newlstSubDistrict.name_th;
+                          newLogin.ZIP_CODE = newlstSubDistrict.zip_code;
+
+                          axios
+                            .get(API_URL.PROVINCE_API)
+                            .then(function (response) {
+                              let newlstProvince = response.data.data.find(
+                                (item) =>
+                                  item.id == parseInt(newLogin.PROVINCE_ID)
+                              );
+                              newLogin.PROVINCE_NAME = newlstProvince.name_th;
+                              newLogin.ADDRESS_FULL_NAME =
+                                newLogin.ADDRESS +
+                                " " +
+                                newLogin.DISTRICT_NAME +
+                                " " +
+                                newLogin.SUB_DISTRICT_NAME +
+                                " " +
+                                newLogin.PROVINCE_NAME +
+                                " " +
+                                newLogin.ZIP_CODE;
+
+                              //Delivery Address
+                              //District
+                              axios
+                                .get(API_URL.DISTRICT_API, {
+                                  params: {
+                                    province_id:
+                                      newLogin.province_id_deliveries,
+                                  },
+                                })
+                                .then(function (response) {
+                                  let newlstDistrict = response.data.data.find(
+                                    (item) =>
+                                      item.id ==
+                                      parseInt(newLogin.district_id_deliveries)
+                                  );
+                                  newLogin.DISTRICT_NAME_ORDER =
+                                    newlstDistrict.name_th;
+
+                                  //Sub-District
+                                  axios
+                                    .get(API_URL.SUB_DISTRICT_API, {
+                                      params: {
+                                        district_id:
+                                          newLogin.district_id_deliveries,
+                                      },
+                                    })
+                                    .then(function (response) {
+                                      let newlstSubDistrict = response.data.data.find(
+                                        (item) =>
+                                          item.id ==
+                                          parseInt(
+                                            newLogin.sub_district_id_deliveries
+                                          )
+                                      );
+                                      newLogin.SUB_DISTRICT_NAME_ORDER =
+                                        newlstSubDistrict.name_th;
+                                      newLogin.ZIP_CODE_ORDER =
+                                        newlstSubDistrict.zip_code;
+
+                                      //province
+                                      axios
+                                        .get(API_URL.PROVINCE_API)
+                                        .then(function (response) {
+                                          let newlstProvince = response.data.data.find(
+                                            (item) =>
+                                              item.id ==
+                                              parseInt(
+                                                newLogin.province_id_deliveries
+                                              )
+                                          );
+                                          newLogin.PROVINCE_NAME_ORDER =
+                                            newlstProvince.name_th;
+
+                                          setObjLoginMasterHD(newLogin);
+                                          setLoggedinStatus(true);
+                                          setLoading(false);
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+              await setLoggedinStatus(true);
+              setLoading(false);
+              ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
             })
-              .then(async (response) => {
-                newLogin.EMAIL = response.data.data.user[0].email;
-                newLogin.PASSWORD = stateObj.password;
-                newLogin.ID = response.data.data.user[0].id;
-                newLogin.FIRST_NAME = response.data.data.user[0].first_name;
-                newLogin.LAST_NAME = response.data.data.user[0].last_name;
-                newLogin.IMAGE = await response.data.data.user[0].image;
-
-                setLoadImageUser(newLogin.IMAGE);
-
-                let tokenGenerate = await response.data.data.token;
-                newLogin.TOKEN = await response.data.data.token;
-                await setToken(newLogin.TOKEN);
-
-                //get UserInfo
-                await axios
-                  .get(API_URL.USER_INFO_API, {
-                    headers: {
-                      Accept: "application/json",
-                      Authorization: "Bearer " + (await tokenGenerate),
-                    },
-                  })
-                  .then(async (response) => {
-                    newLogin.FIRST_NAME = response.data.data.first_name;
-                    newLogin.LAST_NAME = response.data.data.last_name;
-                    newLogin.TELEPHONE = await response.data.data.profile
-                      .telephone;
-                    newLogin.EMAIL = response.data.data.email;
-                    newLogin.ADDRESS = response.data.data.profile.address;
-                    newLogin.PROVINCE_ID =
-                      response.data.data.profile.province_id;
-                    newLogin.DISTRICT_ID =
-                      response.data.data.profile.district_id;
-                    newLogin.SUB_DISTRICT_ID =
-                      response.data.data.profile.sub_district_id;
-
-                    //get EditProfile
-                    newLogin.profile_id = response.data.data.profile.id;
-                    newLogin.sex = response.data.data.profile.sex;
-                    newLogin.birthday = response.data.data.profile.birthday;
-                    newLogin.telephone = response.data.data.profile.telephone;
-                    newLogin.address = response.data.data.profile.address;
-                    newLogin.province_id =
-                      response.data.data.profile.province_id;
-                    newLogin.district_id =
-                      response.data.data.profile.district_id;
-                    newLogin.sub_district_id =
-                      response.data.data.profile.sub_district_id;
-                    newLogin.postcode = response.data.data.profile.postcode;
-                    newLogin.receive_info =
-                      response.data.data.profile.receive_info;
-
-                    newLogin.address_deliveries_id =
-                      response.data.data.address_deliveries[0].id;
-                    newLogin.address_deliveries =
-                      response.data.data.address_deliveries[0].address;
-                    newLogin.province_id_deliveries =
-                      response.data.data.address_deliveries[0].province_id;
-                    newLogin.district_id_deliveries =
-                      response.data.data.address_deliveries[0].district_id;
-                    newLogin.sub_district_id_deliveries =
-                      response.data.data.address_deliveries[0].sub_district_id;
-                    newLogin.postcode_deliveries =
-                      response.data.data.address_deliveries[0].postcode;
-                    newLogin.telephone_deliveries =
-                      response.data.data.address_deliveries[0].telephone;
-
-                    //getAddress User & Delivery
-                    axios
-                      .get(API_URL.DISTRICT_API, {
-                        params: {
-                          province_id: newLogin.PROVINCE_ID,
-                        },
-                      })
-                      .then(function (response) {
-                        let newlstDistrict = response.data.data.find(
-                          (item) => item.id == parseInt(newLogin.DISTRICT_ID)
-                        );
-                        newLogin.DISTRICT_NAME = newlstDistrict.name_th;
-
-                        axios
-                          .get(API_URL.SUB_DISTRICT_API, {
-                            params: {
-                              district_id: newLogin.DISTRICT_ID,
-                            },
-                          })
-                          .then(function (response) {
-                            let newlstSubDistrict = response.data.data.find(
-                              (item) =>
-                                item.id == parseInt(newLogin.SUB_DISTRICT_ID)
-                            );
-                            newLogin.SUB_DISTRICT_NAME =
-                              newlstSubDistrict.name_th;
-                            newLogin.ZIP_CODE = newlstSubDistrict.zip_code;
-
-                            axios
-                              .get(API_URL.PROVINCE_API)
-                              .then(function (response) {
-                                let newlstProvince = response.data.data.find(
-                                  (item) =>
-                                    item.id == parseInt(newLogin.PROVINCE_ID)
-                                );
-                                newLogin.PROVINCE_NAME = newlstProvince.name_th;
-                                newLogin.ADDRESS_FULL_NAME =
-                                  newLogin.ADDRESS +
-                                  " " +
-                                  newLogin.DISTRICT_NAME +
-                                  " " +
-                                  newLogin.SUB_DISTRICT_NAME +
-                                  " " +
-                                  newLogin.PROVINCE_NAME +
-                                  " " +
-                                  newLogin.ZIP_CODE;
-
-                                //Delivery Address
-                                //District
-                                axios
-                                  .get(API_URL.DISTRICT_API, {
-                                    params: {
-                                      province_id:
-                                        newLogin.province_id_deliveries,
-                                    },
-                                  })
-                                  .then(function (response) {
-                                    let newlstDistrict = response.data.data.find(
-                                      (item) =>
-                                        item.id ==
-                                        parseInt(
-                                          newLogin.district_id_deliveries
-                                        )
-                                    );
-                                    newLogin.DISTRICT_NAME_ORDER =
-                                      newlstDistrict.name_th;
-
-                                    //Sub-District
-                                    axios
-                                      .get(API_URL.SUB_DISTRICT_API, {
-                                        params: {
-                                          district_id:
-                                            newLogin.district_id_deliveries,
-                                        },
-                                      })
-                                      .then(function (response) {
-                                        let newlstSubDistrict = response.data.data.find(
-                                          (item) =>
-                                            item.id ==
-                                            parseInt(
-                                              newLogin.sub_district_id_deliveries
-                                            )
-                                        );
-                                        newLogin.SUB_DISTRICT_NAME_ORDER =
-                                          newlstSubDistrict.name_th;
-                                        newLogin.ZIP_CODE_ORDER =
-                                          newlstSubDistrict.zip_code;
-
-                                        //province
-                                        axios
-                                          .get(API_URL.PROVINCE_API)
-                                          .then(function (response) {
-                                            let newlstProvince = response.data.data.find(
-                                              (item) =>
-                                                item.id ==
-                                                parseInt(
-                                                  newLogin.province_id_deliveries
-                                                )
-                                            );
-                                            newLogin.PROVINCE_NAME_ORDER =
-                                              newlstProvince.name_th;
-
-                                            setObjLoginMasterHD(newLogin);
-                                            setLoggedinStatus(true);
-                                            setLoading(false);
-                                          });
-                                      });
-                                  });
-                              });
-                          });
-                      });
-                  });
-                await setLoggedinStatus(true);
-                setLoading(false);
-                ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
-              })
-              .catch(function (error) {
-                setLoggedinStatus(false);
-                setRequiredPass(true);
-                setRequiredEmail(true);
-                setLoading(false);
-                console.log("error:", error.message);
-                ToastAndroid.show(
-                  "Email or Password was Wrong",
-                  ToastAndroid.SHORT
-                );
-              });
-          }, 500);
+            .catch(function (error) {
+              setLoggedinStatus(false);
+              setRequiredPass(true);
+              setRequiredEmail(true);
+              setLoading(false);
+              console.log("error:", error.message);
+              ToastAndroid.show(
+                "Email or Password was Wrong",
+                ToastAndroid.SHORT
+              );
+            });
         } else {
           setLoading(false);
           setLoggedinStatus(false);
@@ -1038,7 +1029,7 @@ function SignIn(props) {
                         color: "#0646c7",
                       }}
                     >
-                      5
+                      {objLoginMasterHD.ORDER_COMPLETED}
                     </Text>
                   </Block>
                   <Block style={styles.orderHeader}>
@@ -1050,7 +1041,7 @@ function SignIn(props) {
                         textAlign: "center",
                       }}
                     >
-                      คำสั่งซื้อสำเร็จ
+                      ยกเลิกคำสั่งซื้อ
                     </Text>
                     <Text
                       style={{
@@ -1061,7 +1052,7 @@ function SignIn(props) {
                         color: "#6e6e6e",
                       }}
                     >
-                      0
+                      {objLoginMasterHD.ORDER_CANCELLED}
                     </Text>
                   </Block>
                 </Block>
@@ -1321,7 +1312,7 @@ function SignIn(props) {
                     color: "#0646c7",
                   }}
                 >
-                  5
+                  {objLoginMasterHD.ORDER_COMPLETED}
                 </Text>
               </Block>
               <Block style={styles.orderHeader}>
@@ -1333,7 +1324,7 @@ function SignIn(props) {
                     textAlign: "center",
                   }}
                 >
-                  คำสั่งซื้อสำเร็จ
+                  ยกเลิกคำสั่งซื้อ
                 </Text>
                 <Text
                   style={{
@@ -1344,7 +1335,7 @@ function SignIn(props) {
                     color: "#6e6e6e",
                   }}
                 >
-                  0
+                  {objLoginMasterHD.ORDER_CANCELLED}
                 </Text>
               </Block>
             </Block>

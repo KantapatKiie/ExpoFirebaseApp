@@ -59,6 +59,9 @@ const initialState = {
     sub_district_id_deliveries: 1,
     postcode_deliveries: "1",
     telephone_deliveries: "1",
+
+    ORDER_COMPLETED: 0,
+    ORDER_CANCELLED: 0,
   },
   listTrLoginHD: [],
 };

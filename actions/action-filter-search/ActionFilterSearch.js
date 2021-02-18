@@ -15,7 +15,7 @@ const actionTypes = {
 const initialState = {
   objFilterSearch: {
     SEARCH_ORDER: "",
-    STATUS_ORDER: "payment"
+    STATUS_ORDER: "payment",
   },
   // listTrFilterSearch: [],
   // disabledInput: false,
