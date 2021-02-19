@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {  useEffect } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -10,88 +10,128 @@ import {
   ToastAndroid,
   TextInput,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import { connect, useSelector } from "react-redux";
 import * as ActionContact from "../../actions/action-contact/ActionContact";
 import { Button } from "react-native-elements";
-import { Icon } from "../../components";
 import { formatTr } from "../../i18n/I18nProvider";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { Block, Input } from "galio-framework";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import DropDownPicker from "react-native-dropdown-picker";
 import WangdekInfo from "../../components/WangdekInfo";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+const token = getToken();
 
 function Contact(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
   const { objContactHD } = useSelector((state) => ({
     objContactHD: state.actionContact.objContactHD,
   }));
 
   useEffect(() => {
-    setObjSearch({
-      FULL_NAME: "",
-      EMAIL: "",
-      PHONE: "",
-      COMMENT: "",
-    });
+    props.clearObjContactHD();
   }, []);
 
-  const [objSearch, setObjSearch] = useState({
-    FULL_NAME: "",
-    EMAIL: "",
-    PHONE: "",
-    COMMENT: "",
-  });
-
-  const showToastConfirm = () => {
-    ToastAndroid.show("ส่งแบบฟอริ์มเรียบร้อย", ToastAndroid.SHORT);
-  };
-  const showToastCancel = () => {
-    setObjSearch("");
-    ToastAndroid.show("ยกเลิกการส่งแบบฟอริ์ม", ToastAndroid.SHORT);
-  };
-
-  const [objTopic, setObjTopic] = useState();
   const itemTopic = [
     {
-      label: "USA",
-      value: "usa",
-      //   icon: () => <Icons name="home" size={18} color="black" />,
+      label: "สินค้า",
+      value: "1",
       hidden: true,
     },
     {
-      label: "UK",
-      value: "uk",
-      //   icon: () => <Icons name="home" size={18} color="black" />,
+      label: "การชำระเงิน",
+      value: "2",
+    },
+    {
+      label: "อื่นๆ",
+      value: "3",
     },
   ];
   const onChangeTopic = (item) => {
-    setObjTopic(item);
+    let newObj = Object.assign({}, objContactHD);
+    newObj.subject = item.value;
+    props.setObjContactHD(newObj);
   };
-
   const onChangeName = (e) => {
-    let newObj = Object.assign({}, objSearch);
-    newObj.FULL_NAME = e.nativeEvent.text;
-    setObjSearch(newObj);
+    let newObj = Object.assign({}, objContactHD);
+    newObj.full_name = e.nativeEvent.text;
+    props.setObjContactHD(newObj);
+  };
+  const handleClearFullname = () => {
+    let newObj = Object.assign({}, objContactHD);
+    newObj.full_name = "";
+    props.setObjContactHD(newObj);
   };
   const onChangeEmail = (e) => {
-    let newObj = Object.assign({}, objSearch);
-    newObj.EMAIL = e.nativeEvent.text;
-    setObjSearch(newObj);
+    let newObj = Object.assign({}, objContactHD);
+    newObj.email = e.nativeEvent.text;
+    props.setObjContactHD(newObj);
+  };
+  const handleClearEmail = () => {
+    let newObj = Object.assign({}, objContactHD);
+    newObj.email = "";
+    props.setObjContactHD(newObj);
   };
   const onChangePhone = (e) => {
-    let newObj = Object.assign({}, objSearch);
-    newObj.PHONE = e.nativeEvent.text;
-    setObjSearch(newObj);
+    let newObj = Object.assign({}, objContactHD);
+    newObj.telephone = e.nativeEvent.text;
+    props.setObjContactHD(newObj);
+  };
+  const handleClearPhone = () => {
+    let newObj = Object.assign({}, objContactHD);
+    newObj.telephone = "";
+    console.log(newObj);
+    props.setObjContactHD(newObj);
   };
   const onChangeComment = (e) => {
-    let newObj = Object.assign({}, objSearch);
-    newObj.COMMENT = e.nativeEvent.text;
-    setObjSearch(newObj);
+    let newObj = Object.assign({}, objContactHD);
+    newObj.detail = e.nativeEvent.text;
+    props.setObjContactHD(newObj);
   };
-  const handleClearObj = () => {
-    setObjSearch("");
+
+  //Send Topic
+  const sendTopicContactUs = async () => {
+    await axios({
+      method: "POST",
+      url: API_URL.CONTACT_US_HD_API,
+      headers: {
+        Accept: "*/*",
+        Authorization: "Bearer " + (await token),
+        "Content-Type": "application/json",
+      },
+      data: {
+        subject: objContactHD.subject,
+        full_name: objContactHD.full_name,
+        email: objContactHD.email,
+        telephone: objContactHD.telephone,
+        detail: objContactHD.detail,
+      },
+    })
+      .then(function (response) {
+        console.log(response.data);
+        ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+      })
+      .catch(function (error) {
+        console.log(error);
+        ToastAndroid.show(error.response.data.data, ToastAndroid.SHORT);
+      });
+  };
+  const unsendTopicContactUs = () => {
+    props.clearObjContactHD();
+    ToastAndroid.show("ยกเลิกการส่งแบบฟอริ์ม", ToastAndroid.SHORT);
   };
 
   return (
@@ -285,7 +325,7 @@ function Contact(props) {
             </Block>
           </ImageBackground>
         </Block>
-        {/* Insert data */}
+        {/* Topic */}
         <Block
           style={{
             padding: 15,
@@ -330,11 +370,10 @@ function Contact(props) {
               textAlign: "left",
               color: "#000",
             }}
-            //   defaultValue={this.state.country}
             onChangeItem={onChangeTopic}
           />
         </Block>
-        {/* Data */}
+        {/* Key Data */}
         <Block style={{ backgroundColor: "white" }}>
           <Block flex style={{ paddingTop: 15 }}>
             <Text
@@ -353,9 +392,9 @@ function Contact(props) {
               style={styles.search}
               placeholder="Text..."
               onChange={onChangeName}
-              value={objSearch.FULL_NAME}
+              value={objContactHD.full_name}
               iconContent={
-                <TouchableOpacity onPress={handleClearObj}>
+                <TouchableOpacity onPress={handleClearFullname}>
                   <Icons name="close" size={20} color="black" />
                 </TouchableOpacity>
               }
@@ -378,9 +417,9 @@ function Contact(props) {
               style={styles.search}
               placeholder="Text..."
               onChange={onChangeEmail}
-              value={objSearch.EMAIL}
+              value={objContactHD.email}
               iconContent={
-                <TouchableOpacity onPress={handleClearObj}>
+                <TouchableOpacity onPress={handleClearEmail}>
                   <Icons name="close" size={20} color="black" />
                 </TouchableOpacity>
               }
@@ -403,9 +442,9 @@ function Contact(props) {
               style={styles.search}
               placeholder="Text..."
               onChange={onChangePhone}
-              value={objSearch.PHONE}
+              value={objContactHD.telephone}
               iconContent={
-                <TouchableOpacity onPress={handleClearObj}>
+                <TouchableOpacity onPress={handleClearPhone}>
                   <Icons name="close" size={20} color="black" />
                 </TouchableOpacity>
               }
@@ -425,7 +464,7 @@ function Contact(props) {
             <TextInput
               style={styles.searchMutiLine}
               onChange={onChangeComment}
-              value={objSearch.COMMENT}
+              value={objContactHD.detail}
               multiline={true}
             />
           </Block>
@@ -445,7 +484,7 @@ function Contact(props) {
             type="solid"
             containerStyle={styles.blockButton1}
             buttonStyle={styles.buttonStyle1}
-            onPress={() => showToastCancel()}
+            onPress={unsendTopicContactUs}
           />
           <Button
             titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
@@ -453,8 +492,7 @@ function Contact(props) {
             type="solid"
             containerStyle={styles.blockButton2}
             buttonStyle={styles.buttonStyle2}
-            onPress={() => showToastConfirm()}
-            //   onPress={() => props.navigation.navigate("Flash Sale")}
+            onPress={sendTopicContactUs}
           />
         </Block>
         {/* Info */}
@@ -491,13 +529,13 @@ const styles = StyleSheet.create({
   },
   search: {
     height: 40,
-    width: width - 25,
+    width: width - 35,
     alignSelf: "center",
     borderRadius: 5,
   },
   searchMutiLine: {
     height: 40,
-    width: width - 25,
+    width: width - 35,
     alignSelf: "center",
     backgroundColor: "white",
     height: 100,

@@ -5,43 +5,63 @@ import {
   StatusBar,
   Dimensions,
   TouchableOpacity,
-  TouchableHighlight,
+  ToastAndroid,
   ScrollView,
+  Share,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
+import { formatTr } from "../../i18n/I18nProvider";
 import { Block, Button, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import { actions as ActionProduct } from "../../actions/action-product/ActionProduct";
 import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
 import WangdekInfo from "../../components/WangdekInfo";
 import ReadMore from "react-native-read-more-text";
-import NumericInput from "react-native-numeric-input";
+import NumericInput from "rn-numeric-input";
 import { LinearGradient } from "expo-linear-gradient";
 import { ProgressBar, Colors } from "react-native-paper";
 import CountDown from "react-native-countdown-component";
 import commaNumber from "comma-number";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+const token = getToken();
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
+
+const defaultSocialsMedia = [
+  {
+    id: 1,
+    name: "facebook",
+    url: "https://www.facebook.com/xxx",
+    image: "/storage/24/fb-share.png",
+  },
+  {
+    id: 2,
+    name: "line",
+    url: "#",
+    image: "/storage/25/line-share.png",
+  },
+];
 
 function ProductDetail(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
   const { objProductActivity } = useSelector((state) => ({
     objProductActivity: state.actionProduct.objProductActivity,
   }));
-  const { objCartBasket } = useSelector((state) => ({
-    objCartBasket: state.actionCart.objCartBasket,
-  }));
 
-  useEffect(() => {}, []);
-
-  const [progressValue, setProgressValue] = useState(0.7);
-
-  const [favotite, setFavorite] = useState(false);
-  const onClickFavorite = () => {
-    if (favotite === false) {
-      setFavorite(true);
-    } else {
-      setFavorite(false);
-    }
-  };
+  useEffect(() => {
+    loadDataSocialsMedia();
+  }, []);
 
   // ReadMore
   const renderTruncatedFooter = (handlePress) => {
@@ -75,29 +95,129 @@ function ProductDetail(props) {
     );
   };
 
-  //onChangeCount
-  const onChangeValue = (value) => {
+  const onClickFavorite = async () => {
+    let newFavorite = Object.assign({}, objProductActivity);
+    if (objProductActivity.product_favorite == 0) {
+      newFavorite.product_favorite = 1;
+    } else {
+      newFavorite.product_favorite = 0;
+    }
+    props.setObjProductActivity(newFavorite);
+    await axios
+      .put(
+        API_URL.FAVORITE_VIEW_LIST_API + "/" + objProductActivity.product_id,
+        {
+          headers: {
+            Accept: "*/*",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then(function (response) {
+        console.log(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const onChangeCountProduct = (value) => {
     let newObj = Object.assign({}, objProductActivity);
-    newObj.COUNT = value;
+    newObj.quantity = value;
     props.setObjProductActivity(newObj);
   };
-  const onclickAddProduct = () => {
-    let newObjCart = Object.assign({}, objCartBasket);
-    newObjCart.CART_ID = "CRTID001";
-    newObjCart.TITLE = objProductActivity.TITLE;
-    newObjCart.DETAIL = objProductActivity.DETAIL;
-    newObjCart.IMAGE = objProductActivity.IMAGE;
-    newObjCart.PRICE = objProductActivity.PRICE;
-    newObjCart.COUNT = objProductActivity.COUNT;
-    newObjCart.TOTAL_PRICE = objProductActivity.TOTAL_PRICE;
 
-    props.setObjCartBasket(newObjCart);
-    AsyncStorage["sessionCartBefore"] = newObjCart;
-    props.navigation.navigate("Cart");
+  const addProductToCarts = async () => {
+    await axios({
+      method: "POST",
+      url: API_URL.ADD_CART_ORDER_LISTVIEW_API,
+      headers: {
+        Accept: "*/*",
+        Authorization: "Bearer " + (await token),
+        "Content-Type": "application/json",
+      },
+      data: {
+        flash_sale_events_id:
+          objProductActivity.flash_sale_events_id == 0
+            ? ""
+            : objProductActivity.flash_sale_events_id,
+        flash_sales_id:
+          objProductActivity.flash_sales_id == 0
+            ? ""
+            : objProductActivity.flash_sales_id,
+        product_id: objProductActivity.product_id,
+        product_quantity: objProductActivity.quantity,
+      },
+    })
+      .then(function (response) {
+        ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        // props.navigation.navigate("Cart");
+        // AsyncStorage["sessionCartBefore"] = newObjCart;
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const buyProductToCart = async () => {
+    await axios({
+      method: "POST",
+      url: API_URL.ADD_CART_ORDER_LISTVIEW_API,
+      headers: {
+        Accept: "*/*",
+        Authorization: "Bearer " + (await token),
+        "Content-Type": "application/json",
+        "X-localization": locale,
+      },
+      data: {
+        flash_sale_events_id: objProductActivity.flash_sale_events_id,
+        flash_sales_id: objProductActivity.flash_sales_id,
+        product_id: objProductActivity.product_id,
+        product_quantity: objProductActivity.quantity,
+      },
+    })
+      .then(function (response) {
+        ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
 
-  console.log(props);
-
+  const [dataSocials, setDataSocials] = useState(defaultSocialsMedia);
+  const loadDataSocialsMedia = async () => {
+    await axios
+      .get(API_URL.SOCIALS_LIST_HD_API, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      })
+      .then(async (response) => {
+        setDataSocials(response.data.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+  const shareLinkSocials = (item) => {
+    Share.share(
+      {
+        title: "Share message website",
+        message: "Message",
+        url: item.url,
+      },
+      {
+        dialogTitle: "Share website",
+        tintColor: "black",
+      }
+    )
+      .then(function (response) {
+        ToastAndroid.show(response.data, ToastAndroid.SHORT);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -112,7 +232,7 @@ function ProductDetail(props) {
           >
             <Image
               source={{
-                uri: objProductActivity.IMAGE,
+                uri: rootImage + objProductActivity.IMAGE,
               }}
               style={{
                 height: 320,
@@ -120,6 +240,7 @@ function ProductDetail(props) {
               }}
             />
           </Block>
+
           {/* Flashsale Type */}
           {objProductActivity.FLASHSALE ? (
             <LinearGradient
@@ -154,7 +275,7 @@ function ProductDetail(props) {
                     <Block style={linerStyle.BlockTime}>
                       <CountDown
                         size={22}
-                        until={60000}
+                        until={objProductActivity.timeEnds}
                         digitStyle={{
                           backgroundColor: "#ff4545",
                           height: 30,
@@ -198,11 +319,15 @@ function ProductDetail(props) {
                     marginLeft: 18,
                   }}
                 >
-                  ขายแล้ว 250 ชิ้น
+                  ขายแล้ว {objProductActivity.product_sold} ชิ้น
                 </Text>
                 <ProgressBar
-                  progress={progressValue}
-                  color={progressValue === 1 ? Colors.red800 : "#00b1ba"}
+                  progress={objProductActivity.progressPercent}
+                  color={
+                    objProductActivity.progressPercent === 1
+                      ? Colors.red800
+                      : "#00b1ba"
+                  }
                   style={{
                     borderRadius: 20,
                     height: 10,
@@ -214,14 +339,16 @@ function ProductDetail(props) {
               </Block>
             </LinearGradient>
           ) : null}
+
           {/* Title */}
           <Block row style={styles.blockTitle}>
             <Text style={styles.titleProduct}>{objProductActivity.TITLE}</Text>
+            {/* Favorite */}
             <Block style={styles.blockFavorite}>
               <TouchableOpacity onPress={onClickFavorite}>
                 <Image
                   source={
-                    favotite
+                    objProductActivity.product_favorite
                       ? require("../../assets/icons/I-heart.png")
                       : require("../../assets/icons/I-heart-o.png")
                   }
@@ -245,35 +372,51 @@ function ProductDetail(props) {
               </TouchableOpacity>
             </Block>
           </Block>
+
           {/* Detail */}
           <Block style={{ margin: 10 }}>
             <Text style={styles.detailText}>
-              รหัสสินค้า : {objProductActivity.TITLE}
+              รหัสสินค้า : {objProductActivity.product_id}
             </Text>
             <Text style={styles.detailText}>
-              ยี่ห้อ : {objProductActivity.TITLE}
+              ยี่ห้อ : {objProductActivity.product_brand}
             </Text>
             <Text style={styles.detailText}>
-              มีสินค้าทั้งหมด : {objProductActivity.TITLE}
+              มีสินค้าทั้งหมด : {objProductActivity.product_stock}
             </Text>
           </Block>
-          <Block row style={{ margin: 15, alignSelf: "flex-end" }}>
-            <Text style={styles.detailPrice1}>ราคา : </Text>
-            <Text style={styles.detailPrice2}>
-              ฿{commaNumber(objProductActivity.PRICE)}
-            </Text>
+          <Block row style={{ margin: 15, alignSelf: "flex-start" }}>
+            <Block
+              style={{ alignSelf: "flex-start", width: "45%", marginLeft: 5 }}
+            >
+              <Text style={styles.detailFullprice}>
+                ฿
+                {commaNumber(
+                  parseFloat(objProductActivity.product_full_price).toFixed(2)
+                )}
+              </Text>
+            </Block>
+            <Block row style={{ alignSelf: "flex-start", width: "50%" }}>
+              <Text style={styles.detailPrice1}>ราคา : </Text>
+              <Text style={styles.detailPrice2}>
+                ฿{commaNumber(parseFloat(objProductActivity.PRICE).toFixed(2))}
+              </Text>
+            </Block>
           </Block>
+
           {/* Count */}
           <Block row style={{ margin: 10 }}>
             <Text style={styles.detailText}>จำนวน : </Text>
             <NumericInput
-              value={objProductActivity.COUNT}
-              onChange={(value) => onChangeValue(value)}
-              totalWidth={125}
-              totalHeight={32}
+              initValue={parseInt(objProductActivity.quantity)}
+              value={parseInt(objProductActivity.quantity)}
+              onChange={(value) => onChangeCountProduct(value)}
+              totalWidth={128}
+              totalHeight={35}
               iconSize={18}
+              minValue={0}
+              maxValue={objProductActivity.stock}
               step={1}
-              valueType="real"
               type="plus-minus"
               rounded={false}
               textColor="black"
@@ -284,7 +427,8 @@ function ProductDetail(props) {
               containerStyle={{ marginLeft: 20, fontFamily: "kanitRegular" }}
             />
           </Block>
-          {/* Share Facebook&Line */}
+
+          {/* Share Socials */}
           <Block
             row
             style={{
@@ -304,34 +448,33 @@ function ProductDetail(props) {
             >
               แชร์ :
             </Text>
-            <TouchableOpacity>
-              <Image
-                source={require("../../assets/images/fb-share.png")}
-                style={{
-                  width: 30,
-                  height: 30,
-                  marginLeft: 10,
-                }}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Image
-                source={require("../../assets/images/line-share.png")}
-                style={{
-                  width: 30,
-                  height: 30,
-                  marginLeft: 10,
-                }}
-              />
-            </TouchableOpacity>
+
+            {dataSocials !== null
+              ? dataSocials.map((item) => (
+                  <TouchableOpacity
+                    onPress={() => shareLinkSocials(item)}
+                    key={item.id}
+                  >
+                    <Image
+                      source={{ uri: rootImage + item.image }}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        marginLeft: 12,
+                      }}
+                    />
+                  </TouchableOpacity>
+                ))
+              : null}
           </Block>
+
           {/* Button */}
           <Block style={styles.padded}>
             <Button
               shadowless
               style={styles.button1}
               color={"black"}
-              onPress={onclickAddProduct}
+              onPress={addProductToCarts}
             >
               <Text
                 style={{
@@ -347,7 +490,7 @@ function ProductDetail(props) {
               shadowless
               style={styles.button2}
               color={"black"}
-              onPress={onclickAddProduct}
+              onPress={buyProductToCart}
             >
               <Text
                 style={{
@@ -390,6 +533,7 @@ const mapActions = {
   setListTrCartBasket: ActionCart.setListTrCartBasket,
   pushListTrCartBasket: ActionCart.pushListTrCartBasket,
 };
+
 export default connect(null, mapActions)(ProductDetail);
 
 const styles = StyleSheet.create({
@@ -445,6 +589,15 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 27,
     fontFamily: "kanitRegular",
+  },
+  detailFullprice: {
+    color: "#8f8f8f",
+    fontSize: 18,
+    fontFamily: "kanitRegular",
+    marginTop: 8,
+    textDecorationLine: "line-through",
+    textDecorationStyle: "solid",
+    textDecorationColor: "red",
   },
   blockFavorite: {
     backgroundColor: "#d1d1d1",
@@ -509,25 +662,5 @@ const linerStyle = StyleSheet.create({
     alignItems: "flex-start",
     alignSelf: "flex-start",
     width: width / 1.6,
-  },
-});
-
-const timeStyle = StyleSheet.create({
-  timeText: {
-    fontWeight: "800",
-    fontSize: 22,
-    color: "white",
-    marginBottom: 5,
-    textAlign: "center",
-    fontFamily: "kanitRegular",
-  },
-  timeTextArrow: {
-    fontWeight: "500",
-    fontSize: 22,
-    color: "white",
-    paddingLeft: 10,
-    paddingRight: 1.5,
-    marginTop: 2.5,
-    fontFamily: "kanitRegular",
   },
 });

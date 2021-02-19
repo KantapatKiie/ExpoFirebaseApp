@@ -10,7 +10,7 @@ import { connect, useSelector } from "react-redux";
 import { Block, Text, theme } from "galio-framework";
 import { useSafeArea } from "react-native-safe-area-context";
 import { Icon, Drawer as DrawerCustomItem } from "../components/";
-import { Images, materialTheme } from "../constants/";
+import { materialTheme } from "../constants/";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import * as ActionLogin from "../actions/action-actives/ActionLogin";
 import { setToken } from "../store/mock/token";

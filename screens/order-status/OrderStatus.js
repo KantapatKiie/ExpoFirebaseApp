@@ -4,18 +4,31 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  SectionList,
   Dimensions,
+  SafeAreaView,
+  FlatList,
+  RefreshControl,
+  ToastAndroid,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import * as ActionOrderStatus from "../../actions/action-order-status/ActionOrderStatus.js";
-import { Block, Text, theme, Input } from "galio-framework";
+import { Block, Text } from "galio-framework";
 import WangdekInfo from "../../components/WangdekInfo";
 import { formatTr } from "../../i18n/I18nProvider";
 import { Button } from "react-native-elements";
 import StepIndicator from "react-native-step-indicator";
-import product from "../../constants/products"
+import ModalLoading from "../../components/ModalLoading";
+import { API_URL } from "../../config/config.app";
+import commaNumber from "comma-number";
+import { getToken } from "../../store/mock/token";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+const token = getToken();
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 const firstIndicatorStyles = {
   stepIndicatorSize: 50,
@@ -32,20 +45,61 @@ const firstIndicatorStyles = {
   stepIndicatorCurrentColor: "#ff8400", //Current point
 };
 
-function OrderStatus(props) {
-  const { objOrderStatus } = useSelector((state) => ({
-    objOrderStatus: state.actionOrderStatus.objOrderStatus,
-  }));
+const cartListProductDetail = [
+  {
+    id: 13,
+    product_id: 4,
+    product_name_th: "เสื้อผ้า 002",
+    product_name_en: "Clothing 002",
+    image: "/storage/4/images.jfif",
+    quantity: 1,
+    amount_full: "0.00",
+    amount: "1.00",
+  },
+];
 
-  useEffect(() => {
-    // setStateObj(products);
+function OrderStatus(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  const { objOrderStatus, statusOrder, logistics_list } = useSelector(
+    (state) => ({
+      objOrderStatus: state.actionOrderStatus.objOrderStatus,
+      statusOrder: state.actionOrderStatus.statusOrder,
+      logistics_list: state.actionOrderStatus.logistics_list,
+    })
+  );
+
+  const [loading, setLoading] = useState(null);
+  const [refreshingPage, setRefreshingPage] = useState(false);
+  const onRefreshPageNow = React.useCallback(() => {
+    const wait = (timeout) => {
+      return new Promise((resolve) => setTimeout(resolve, timeout));
+    };
+    setRefreshingPage(true);
+    wait(1000).then(() => {
+      loadingCartDetails();
+      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      setRefreshingPage(false);
+    });
   }, []);
 
-  //   Step Indicators
-  const [currentPosition, setCurrentPosition] = useState(0);
-  const onStepPress = (position) => {
-    setCurrentPosition(position);
-  };
+  let status = statusOrder.status_th;
+  let TotalAmounts =
+    parseFloat(objOrderStatus.total_amount) +
+    parseFloat(objOrderStatus.delivery_charge) -
+    parseFloat(objOrderStatus.discount) +
+    parseFloat(objOrderStatus.vat);
+
+  useEffect(() => {
+    loadingCartDetails();
+  }, []);
+
+  // Step Indicators
+  const [currentPosition, setCurrentPosition] = useState(objOrderStatus.status);
   const getStepIndicatorIconConfig = ({ position }) => {
     const iconConfig = {
       name: "feed",
@@ -92,23 +146,22 @@ function OrderStatus(props) {
     />
   );
 
-  let status = "payment";
   const renderStatus = () => {
-    if (status == "payment") {
+    if (status == "ชำระเงินแล้ว") {
       return (
         <Image
           source={require("../../assets/images/order-filter/status1-icon.png")}
           style={styles.iconStatus}
         />
       );
-    } else if (status == "waitpay") {
+    } else if (status == "รอการชำระเงิน") {
       return (
         <Image
           source={require("../../assets/images/order-filter/status2-icon.png")}
           style={styles.iconStatus}
         />
       );
-    } else if (status == "waitcheck") {
+    } else if (status == "รอการตรวจสอบ") {
       return (
         <Image
           source={require("../../assets/images/order-filter/status3-icon.png")}
@@ -119,18 +172,34 @@ function OrderStatus(props) {
     return null;
   };
 
-  const renderProdctOrderList = () => {
+  const [cartList, setCartList] = useState(cartListProductDetail);
+  const loadingCartDetails = async () => {
+    setLoading(false);
+    setCartList("");
+    await axios
+      .get(API_URL.HISTORY_ORDER_DETAIL_LIST_API + objOrderStatus.code, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(function (response) {
+        setLoading(true);
+        setCartList(response.data.data.orders.carts_list);
+      })
+      .catch(function (error) {
+        console.log(error);
+        setLoading(true);
+      });
+    setLoading(true);
+  };
+  const renderDetailStatus = ({ item }) => {
     return (
-      <Block
-        style={{
-          marginTop: 15,
-          width: width,
-          height: "12%",
-        }}
-      >
-        <Block row style={{ margin: 15 }}>
+      <Block style={{ height: 140, margin: 15 }} key={item.id}>
+        <Block row>
           <Image
-            source={require("../../assets/images/bg-p.jpg")}
+            source={{ uri: rootImage + item.product_image }}
             style={{ width: 100, height: 100 }}
           />
           <Block style={{ marginLeft: 15 }}>
@@ -141,7 +210,7 @@ function OrderStatus(props) {
                 fontSize: 18,
               }}
             >
-              My Mini Mixxie!'s Beach
+              {item.product_name_th}
             </Text>
             <Block row style={{ marginTop: "24%" }}>
               <Text
@@ -161,7 +230,7 @@ function OrderStatus(props) {
                   marginLeft: "40%",
                 }}
               >
-                1
+                {item.quantity}
               </Text>
             </Block>
           </Block>
@@ -171,559 +240,647 @@ function OrderStatus(props) {
             style={{
               color: "black",
               fontFamily: "kanitRegular",
-              fontSize: 25,
+              fontSize: 24,
             }}
           >
-            ฿2,500
+            {"฿ " + commaNumber(item.amount_full)}
           </Text>
           <Text
             style={{
               color: "black",
               fontFamily: "kanitRegular",
-              fontSize: 25,
-              marginLeft: "50%"
+              fontSize: 24,
+              marginLeft: "45%",
             }}
           >
-            ฿2,500
+            {"฿ " + commaNumber(item.amount)}
           </Text>
         </Block>
       </Block>
     );
   };
 
+  const handleCancelOrder = async () => {
+    await axios
+      .put(API_URL.CANCEL_ORDER_HD_API + item.code, {
+        headers: {
+          Accept: "*/*",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(function (response) {
+        // console.log(response.data);
+        ToastAndroid.show(item.code + " is cancel", ToastAndroid.SHORT);
+      })
+      .catch(function (error) {
+        console.log("error :", error);
+      });
+  };
+
   return (
     <>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Title */}
-        <TouchableOpacity
-          onPress={() => props.navigation.navigate("History Order")}
-        >
-          <Block
-            row
-            style={{
-              paddingTop: 20,
-              paddingLeft: 20,
-              paddingBottom: 20,
-              backgroundColor: "white",
-            }}
-          >
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-              }}
-            >
-              {"<  "}สถานะการสั่งสินค้า
-            </Text>
-          </Block>
-        </TouchableOpacity>
-
-        {/* Step Indicator */}
-        <Block style={{ margin: 20 }}>
-          <Block row>
-            <Image
-              style={{ width: 40, height: 40, marginLeft: 27 }}
-              source={require("../../assets/images/order-filter/status4-icon.png")}
+      <SafeAreaView style={{ flex: 1 }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={ORDER_STATUS_LIST}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshingPage}
+              onRefresh={onRefreshPageNow}
             />
-            <Image
-              style={
-                currentPosition === 0
-                  ? styles2.textImage2_op
-                  : styles2.textImage2
-              }
-              source={require("../../assets/images/order-filter/status5-icon.png")}
-            />
-            <Image
-              style={
-                currentPosition === 0 || currentPosition === 1
-                  ? styles2.textImage3_op
-                  : styles2.textImage3
-              }
-              source={require("../../assets/images/order-filter/status6-icon.png")}
-            />
-            <Image
-              style={
-                currentPosition === 0 ||
-                currentPosition === 1 ||
-                currentPosition === 2
-                  ? styles2.textImage4_op
-                  : styles2.textImage4
-              }
-              source={require("../../assets/images/order-filter/status7-icon.png")}
-            />
-          </Block>
-          <Block row>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 13,
-                marginLeft: 18,
-              }}
-            >
-              สั่งซื้อสินค้า
-            </Text>
-            <Text
-              style={
-                currentPosition === 0
-                  ? styles2.textBottom2_op
-                  : styles2.textBottom2
-              }
-            >
-              ชำระเงิน
-            </Text>
-            <Block style={{ alignSelf: "center" }}>
-              <Text
-                style={
-                  currentPosition === 0 || currentPosition === 1
-                    ? styles2.textBottom3_op
-                    : styles2.textBottom3
-                }
+          }
+          renderSectionHeader={() => (
+            <>
+              {/* Title */}
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate("History Order")}
               >
-                กำลังจัด
-              </Text>
-              <Text
-                style={
-                  currentPosition === 0 || currentPosition === 1
-                    ? styles2.textBottom3_op
-                    : styles2.textBottom3
-                }
-              >
-                เตรียมสินค้า
-              </Text>
-            </Block>
-            <Text
-              style={
-                currentPosition === 0 ||
-                currentPosition === 1 ||
-                currentPosition === 2
-                  ? styles2.textBottom4_op
-                  : styles2.textBottom4
-              }
-            >
-              จัดส่งสินค้า
-            </Text>
-          </Block>
-          {/* Indicator */}
-          <Block style={{ marginTop: 20 }}>
-            <StepIndicator
-              customStyles={firstIndicatorStyles}
-              renderStepIndicator={renderStepIndicators}
-              currentPosition={currentPosition}
-              stepCount={4}
-              onPress={onStepPress}
-            />
-          </Block>
-        </Block>
-
-        {/* Data */}
-        <Block
-          style={{
-            marginTop: 15,
-            backgroundColor: "white",
-            width: width,
-            height: "14%",
-          }}
-        >
-          <Block style={{ margin: 15 }}>
-            <Text
-              style={{
-                color: "#13d688",
-                fontFamily: "kanitRegular",
-                fontSize: 25,
-              }}
-            >
-              ข้อมูลการสั่งซื้อ
-            </Text>
-          </Block>
-          <Block row>
-            <Block style={{ marginLeft: 15 }}>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                }}
-              >
-                หมายเลขการสั่งซื้อ :
-              </Text>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                  marginTop: 12,
-                }}
-              >
-                วันที่สั่งสินค้า :
-              </Text>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                  marginTop: 12,
-                }}
-              >
-                สภานะ :
-              </Text>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                  marginTop: 12,
-                }}
-              >
-                การชำระเงิน :
-              </Text>
-            </Block>
-            <Block style={{ marginLeft: "24%" }}>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                  textAlign: "right",
-                }}
-              >
-                UCM789456123
-              </Text>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                  marginTop: 12,
-                  textAlign: "right",
-                }}
-              >
-                8 ก.พ. 2564
-              </Text>
-              <Block row>
-                {renderStatus()}
-                <Text
+                <Block
+                  row
                   style={{
-                    color: "#00c278",
-                    fontFamily: "kanitRegular",
-                    fontSize: 18,
-                    marginTop: 12,
+                    paddingTop: 20,
+                    paddingLeft: 20,
+                    paddingBottom: 20,
+                    backgroundColor: "white",
                   }}
                 >
-                  {"  "}ชำระเงินแล้ว
-                </Text>
+                  <Text
+                    style={{
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      fontSize: 18,
+                    }}
+                  >
+                    {"<  "}สถานะการสั่งสินค้า
+                  </Text>
+                </Block>
+              </TouchableOpacity>
+
+              {/* Step Indicator */}
+              <Block style={{ margin: 20 }}>
+                <Block row>
+                  <Image
+                    style={{ width: 40, height: 40, marginLeft: 27 }}
+                    source={require("../../assets/images/order-filter/status4-icon.png")}
+                  />
+                  <Image
+                    style={
+                      currentPosition === 0
+                        ? styles2.textImage2_op
+                        : styles2.textImage2
+                    }
+                    source={require("../../assets/images/order-filter/status5-icon.png")}
+                  />
+                  <Image
+                    style={
+                      currentPosition === 0 || currentPosition === 1
+                        ? styles2.textImage3_op
+                        : styles2.textImage3
+                    }
+                    source={require("../../assets/images/order-filter/status6-icon.png")}
+                  />
+                  <Image
+                    style={
+                      currentPosition === 0 ||
+                      currentPosition === 1 ||
+                      currentPosition === 2
+                        ? styles2.textImage4_op
+                        : styles2.textImage4
+                    }
+                    source={require("../../assets/images/order-filter/status7-icon.png")}
+                  />
+                </Block>
+                <Block row>
+                  <Text
+                    style={{
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      fontSize: 13,
+                      marginLeft: 18,
+                    }}
+                  >
+                    สั่งซื้อสินค้า
+                  </Text>
+                  <Text
+                    style={
+                      currentPosition === 0
+                        ? styles2.textBottom2_op
+                        : styles2.textBottom2
+                    }
+                  >
+                    ชำระเงิน
+                  </Text>
+                  <Block style={{ alignSelf: "center" }}>
+                    <Text
+                      style={
+                        currentPosition === 0 || currentPosition === 1
+                          ? styles2.textBottom3_op
+                          : styles2.textBottom3
+                      }
+                    >
+                      กำลังจัด
+                    </Text>
+                    <Text
+                      style={
+                        currentPosition === 0 || currentPosition === 1
+                          ? styles2.textBottom3_op
+                          : styles2.textBottom3
+                      }
+                    >
+                      เตรียมสินค้า
+                    </Text>
+                  </Block>
+                  <Text
+                    style={
+                      currentPosition === 0 ||
+                      currentPosition === 1 ||
+                      currentPosition === 2
+                        ? styles2.textBottom4_op
+                        : styles2.textBottom4
+                    }
+                  >
+                    จัดส่งสินค้า
+                  </Text>
+                </Block>
+                {/* Indicator */}
+                <Block style={{ marginTop: 20 }}>
+                  <StepIndicator
+                    customStyles={firstIndicatorStyles}
+                    renderStepIndicator={renderStepIndicators}
+                    currentPosition={currentPosition}
+                    stepCount={4}
+                  />
+                </Block>
               </Block>
-              <Text
+
+              {/* Data */}
+              <Block
                 style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                  marginTop: 14,
-                  textAlign: "right",
+                  marginTop: 5,
+                  marginBottom: 5,
+                  backgroundColor: "white",
+                  width: width,
+                  height: 225,
                 }}
               >
-                เครดิตการ์ด
-              </Text>
-            </Block>
-          </Block>
-        </Block>
+                <Block style={{ margin: 15 }}>
+                  <Text
+                    style={{
+                      color: "#13d688",
+                      fontFamily: "kanitRegular",
+                      fontSize: 25,
+                    }}
+                  >
+                    ข้อมูลการสั่งซื้อ
+                  </Text>
+                </Block>
+                <Block row style={{ width: width }}>
+                  <Block style={{ marginLeft: 15 }}>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                      }}
+                    >
+                      หมายเลขการสั่งซื้อ :
+                    </Text>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                        marginTop: 12,
+                      }}
+                    >
+                      วันที่สั่งสินค้า :
+                    </Text>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                        marginTop: 12,
+                      }}
+                    >
+                      สภานะ :
+                    </Text>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                        marginTop: 12,
+                      }}
+                    >
+                      การชำระเงิน :
+                    </Text>
+                  </Block>
+                  <Block flex style={{ marginRight: 10 }}>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                        textAlign: "right",
+                      }}
+                    >
+                      {objOrderStatus.code}
+                    </Text>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                        marginTop: 12,
+                        textAlign: "right",
+                      }}
+                    >
+                      {moment(objOrderStatus.created_at).format("DD MMM YYYY")}
+                    </Text>
+                    <Block row style={{ alignSelf: "flex-end" }}>
+                      <Block style={{ marginLeft: 17 }}>{renderStatus()}</Block>
+                      <Block style={{ marginLeft: 5 }}>
+                        <Text
+                          style={
+                            statusOrder.status_th == "ชำระเงินแล้ว"
+                              ? styles.textStatusPayment
+                              : statusOrder.status_th == "รอการชำระเงิน"
+                              ? styles.textStatusWaitPayment
+                              : styles.textStatusWaitCheck
+                          }
+                        >
+                          {locale == "th"
+                            ? statusOrder.status_th
+                            : statusOrder.status_en}
+                        </Text>
+                      </Block>
+                    </Block>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                        marginTop: 15,
+                        textAlign: "right",
+                      }}
+                    >
+                      {objOrderStatus.payment_type}
+                    </Text>
+                  </Block>
+                </Block>
+              </Block>
 
-        {/* Order Product */}
-        {renderProdctOrderList()}
-
-        {/* EMS */}
-        <Block
-          style={{
-            backgroundColor: "white",
-            width: width,
-            height: "25%",
-            borderBottomWidth: 1,
-            borderBottomColor: "#e0e0e0",
-          }}
-        >
-          <Block style={{ margin: 25 }}>
-            <Block>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitBold",
-                  fontSize: 20,
-                }}
-              >
-                ช่องทางการจัดส่ง
-              </Text>
-              <Image
-                source={require("../../assets/images/bank_ems/ep-EMS.jpg")}
-                style={{ width: 170, height: 50, margin: 10 }}
+              {/* Order List */}
+              <FlatList
+                data={cartList}
+                style={styles.containers}
+                renderItem={renderDetailStatus}
+                keyExtractor={(item) => item.id.toString()}
               />
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                }}
-              >
-                EMS - ไปรษณีย์ด่วนพิเศษ
-              </Text>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                }}
-              >
-                ระยะเวลาในการส่ง : 3 - 5 วัน
-              </Text>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitRegular",
-                  fontSize: 18,
-                }}
-              >
-                อัตราค่าบริการ : 50 บาท
-              </Text>
-            </Block>
-            <Block>
-              <Text
-                style={{
-                  color: "black",
-                  fontFamily: "kanitBold",
-                  fontSize: 20,
-                  marginTop: 15,
-                }}
-              >
-                ที่อยู่ในการจัดส่ง
-              </Text>
-              <Block row style={{ marginTop: 10 }}>
-                <Block>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    ชื่อ :
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    เบอร์โทร :
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    ที่อยู่ :
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    แขวง/ตำบล :
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    เขต/อำเภอ :
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    จังหวัด :
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    รหัสไปรษณีย์ :
-                  </Text>
+
+              {/* EMS */}
+              {logistics_list.map((item) => (
+                <Block
+                  key={item.id}
+                  style={{
+                    backgroundColor: "white",
+                    width: width,
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#e0e0e0",
+                  }}
+                >
+                  <Block style={{ margin: 25 }}>
+                    <Block>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitBold",
+                          fontSize: 20,
+                        }}
+                      >
+                        ช่องทางการจัดส่ง
+                      </Text>
+                      <Image
+                        source={{ uri: rootImage + item.image }}
+                        style={{ width: 170, height: 50, margin: 10 }}
+                      />
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 18,
+                        }}
+                      >
+                        {item.name_en + " - " + item.name_th}
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 18,
+                        }}
+                      >
+                        ระยะเวลาในการส่ง : {item.period}
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 18,
+                        }}
+                      >
+                        อัตราค่าบริการ :{" "}
+                        {commaNumber(objOrderStatus.delivery_charge)} บาท
+                      </Text>
+                    </Block>
+                  </Block>
                 </Block>
-                <Block style={{ marginLeft: 25 }}>
+              ))}
+
+              {/* Address Delivery */}
+              <Block
+                style={{
+                  backgroundColor: "white",
+                  width: width,
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#e0e0e0",
+                }}
+              >
+                <Block style={{ margin: 25 }}>
+                  <Text
+                    style={{
+                      color: "black",
+                      fontFamily: "kanitBold",
+                      fontSize: 20,
+                      marginTop: 15,
+                    }}
+                  >
+                    ที่อยู่ในการจัดส่ง
+                  </Text>
+                  <Block row style={{ marginTop: 10 }}>
+                    <Block>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        ชื่อ :
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        เบอร์โทร :
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        ที่อยู่ :
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        แขวง/ตำบล :
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        เขต/อำเภอ :
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        จังหวัด :
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        รหัสไปรษณีย์ :
+                      </Text>
+                    </Block>
+                    <Block style={{ marginLeft: 25 }}>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        {objOrderStatus.fullname}
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        {objOrderStatus.telephone}
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        {objOrderStatus.address}
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        {locale == "th"
+                          ? objOrderStatus.sub_district_name_th
+                          : objOrderStatus.sub_district_name_en}
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        {locale == "th"
+                          ? objOrderStatus.district_name_th
+                          : objOrderStatus.district_name_en}
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        {locale == "th"
+                          ? objOrderStatus.province_name_th
+                          : objOrderStatus.province_name_en}
+                      </Text>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitRegular",
+                          fontSize: 16,
+                        }}
+                      >
+                        {objOrderStatus.postcode}
+                      </Text>
+                    </Block>
+                  </Block>
+                </Block>
+              </Block>
+
+              {/* All Price */}
+              <Block
+                style={{
+                  backgroundColor: "white",
+                  width: width,
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#e0e0e0",
+                }}
+              >
+                <Block style={{ margin: 25 }}>
                   <Text
                     style={{
                       color: "black",
                       fontFamily: "kanitRegular",
-                      fontSize: 16,
+                      fontSize: 18,
+                      textAlign: "right",
                     }}
                   >
-                    ชื่อ
+                    ยอดรวมค่าสินค้า : ฿{" "}
+                    {commaNumber(objOrderStatus.total_amount)}
                   </Text>
                   <Text
                     style={{
                       color: "black",
                       fontFamily: "kanitRegular",
-                      fontSize: 16,
+                      fontSize: 18,
+                      textAlign: "right",
+                      marginTop: 12,
                     }}
                   >
-                    เบอร์โทร
+                    ค่าจัดส่ง : ฿{" "}
+                    {commaNumber(
+                      parseFloat(objOrderStatus.delivery_charge).toFixed(2)
+                    )}
+                  </Text>
+                  <Text
+                    style={{
+                      color: "red",
+                      fontFamily: "kanitRegular",
+                      fontSize: 18,
+                      textAlign: "right",
+                      marginTop: 12,
+                    }}
+                  >
+                    ส่วนลด : ฿ -{commaNumber(objOrderStatus.discount)}
+                  </Text>
+                  <Text
+                    style={{
+                      color: "red",
+                      fontFamily: "kanitRegular",
+                      fontSize: 18,
+                      textAlign: "right",
+                      marginTop: 12,
+                    }}
+                  >
+                    ส่วนลดโปรโมชั่น : ฿ -
+                    {commaNumber(objOrderStatus.discount_promotion)}
                   </Text>
                   <Text
                     style={{
                       color: "black",
                       fontFamily: "kanitRegular",
-                      fontSize: 16,
+                      fontSize: 18,
+                      textAlign: "right",
+                      marginTop: 12,
                     }}
                   >
-                    ที่อยู่
+                    ภาษี : ฿ {commaNumber(objOrderStatus.vat)}
                   </Text>
                   <Text
                     style={{
                       color: "black",
                       fontFamily: "kanitRegular",
-                      fontSize: 16,
+                      fontSize: 23,
+                      textAlign: "right",
+                      marginTop: 12,
                     }}
                   >
-                    แขวง/ตำบล
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    เขต/อำเภอ
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    จังหวัด
-                  </Text>
-                  <Text
-                    style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 16,
-                    }}
-                  >
-                    รหัสไปรษณีย์
+                    ยอดรวมทั้งสิ้น : ฿ {commaNumber(TotalAmounts)}
                   </Text>
                 </Block>
               </Block>
-            </Block>
-          </Block>
-        </Block>
 
-        {/* All Price */}
-        <Block
-          style={{
-            backgroundColor: "white",
-            width: width,
-            borderBottomWidth: 1,
-            borderBottomColor: "#e0e0e0",
+              {/* Button */}
+              <Block
+                row
+                style={{
+                  paddingTop: 40,
+                  paddingBottom: 40,
+                  alignSelf: "center",
+                  backgroundColor: "white",
+                  width: width,
+                }}
+              >
+                <Button
+                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                  title={"ดาวน์โหลดใบเสร็จ"}
+                  type="solid"
+                  containerStyle={styles.blockButton1}
+                  buttonStyle={styles.buttonStyle1}
+                  // onPress={() => props.navigation.navigate("Flash Sale")}
+                />
+                <Button
+                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                  title={"ยกเลิกคำสั่งซื้อ"}
+                  type="solid"
+                  containerStyle={styles.blockButton2}
+                  buttonStyle={styles.buttonStyle2}
+                  onPress={() => handleCancelOrder(item)}
+                />
+              </Block>
+            </>
+          )}
+          renderSectionFooter={() => <>{<WangdekInfo />}</>}
+          renderItem={() => {
+            return null;
           }}
-        >
-          <Block style={{margin:25}}>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                textAlign: "right",
-              }}
-            >
-              ยอดรวมค่าสินค้า : ฿6,700.00
-            </Text>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                textAlign: "right",
-                marginTop: 12
-              }}
-            >
-              ค่าจัดส่ง : ฿50.00
-            </Text>
-            <Text
-              style={{
-                color: "red",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                textAlign: "right",
-                marginTop: 12
-              }}
-            >
-              ส่วนลด : -฿50.00
-            </Text>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                textAlign: "right",
-                marginTop: 12
-              }}
-            >
-              ภาษี 7% : ฿65.80
-            </Text>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 23,
-                textAlign: "right",
-                marginTop: 12
-              }}
-            >
-              ยอดรวมทั้งสิ้น : ฿13,990.00
-            </Text>
-          </Block>
-        </Block>
+        />
+      </SafeAreaView>
 
-        {/* Button */}
-        <Block
-          row
-          style={{ paddingTop: 40, paddingBottom: 40, alignSelf: "center", backgroundColor:"white" , width:width}}
-        >
-          <Button
-            titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-            title={"ดาวน์โหลดใบเสร็จ"}
-            type="solid"
-            onPress={() => props.navigation.navigate("Flash Sale")}
-            containerStyle={styles.blockButton1}
-            buttonStyle={styles.buttonStyle1}
-          />
-          <Button
-            titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-            title={"ยกเลิกคำสั่งซื้อ"}
-            type="solid"
-            containerStyle={styles.blockButton2}
-            buttonStyle={styles.buttonStyle2}
-            onPress={() => showToast()}
-          />
-        </Block>
-        
-        <WangdekInfo />
-      </ScrollView>
+      <ModalLoading loading={!loading} />
     </>
   );
 }
@@ -731,6 +888,10 @@ function OrderStatus(props) {
 export default connect(null, ActionOrderStatus.actions)(OrderStatus);
 
 const styles = StyleSheet.create({
+  containers: {
+    flex: 1,
+    marginVertical: 20,
+  },
   blockButton1: {
     flexDirection: "row",
     paddingLeft: 15,
@@ -742,7 +903,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0c66ed",
     borderRadius: 20,
     width: 170,
-    alignSelf: "center",
+    alignSelf: "flex-end",
   },
   buttonStyle2: {
     backgroundColor: "#ff4545",
@@ -750,9 +911,33 @@ const styles = StyleSheet.create({
     width: 170,
     alignSelf: "center",
   },
-  iconStatus:{
-    width: 20, height: 20,marginTop:15
-  }
+  iconStatus: {
+    width: 20,
+    height: 20,
+    marginTop: 15,
+  },
+  containersFL: {
+    flex: 1,
+    marginVertical: 20,
+  },
+  textStatusPayment: {
+    color: "#00c278",
+    fontFamily: "kanitRegular",
+    fontSize: 18,
+    marginTop: 12,
+  },
+  textStatusWaitPayment: {
+    color: "#8a8a8a",
+    fontFamily: "kanitRegular",
+    fontSize: 18,
+    marginTop: 12,
+  },
+  textStatusWaitCheck: {
+    color: "#f5d225",
+    fontFamily: "kanitRegular",
+    fontSize: 18,
+    marginTop: 12,
+  },
 });
 
 const styles2 = StyleSheet.create({
@@ -830,3 +1015,16 @@ const styles2 = StyleSheet.create({
     marginLeft: 25,
   },
 });
+
+const ORDER_STATUS_LIST = [
+  {
+    title: "Mock",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
+    ],
+  },
+];

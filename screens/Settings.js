@@ -4,7 +4,7 @@ import {
   View,
   Dimensions,
 } from "react-native";
-import { Block, Text, theme, Icon } from "galio-framework";
+import { Block, Text, theme } from "galio-framework";
 import { connect } from "react-redux";
 import * as i18n from "../store/ducks/i18n";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -13,11 +13,8 @@ import { formatTr } from "../i18n/I18nProvider";
 const { width } = Dimensions.get("screen");
 
 function Settings(props) {
-  const [state, setState] = useState({});
-  const toggleSwitch = (switchNumber) =>
-    setState({ [switchNumber]: !state[switchNumber] });
-
-  const [language, setLanguage] = useState("th-TH");
+  const { lang } = props;
+  const [language, setLanguage] = useState(lang);
   const itemLanguage = [
     {
       label: "Thai",
@@ -44,12 +41,12 @@ function Settings(props) {
         <Text
           bold
           center
-          size={theme.SIZES.BASE}
+          size={18}
           style={{ paddingBottom: 5, fontFamily: "kanitRegular" }}
         >
           Language Settings
         </Text>
-        <Text center muted size={13} style={{ fontFamily: "kanitRegular" }}>
+        <Text center muted size={14} style={{ fontFamily: "kanitRegular" }}>
           Please select your language
         </Text>
       </Block>
@@ -58,11 +55,11 @@ function Settings(props) {
         containerStyle={{ height: 40, width: width - 20, marginTop:10,alignSelf:"center" }}
         style={{ backgroundColor: "#fafafa"}}
         itemStyle={{
-          justifyContent: "flex-start",
+          justifyContent: "center",
         }}
         dropDownStyle={{ backgroundColor: "#fafafa" }}
         placeholderStyle={{
-          textAlign: "left",
+          textAlign: "center",
           color: "gray",
           fontFamily: "kanitRegular",
         }}
@@ -79,7 +76,7 @@ function Settings(props) {
           borderRadius: 20,
           color: "white",
         }}
-        defaultValue={language}
+        // defaultValue={lang}
         onChangeItem={onChangeLanguage}
       />
     </View>

@@ -5,27 +5,50 @@ import {
   CheckBox,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  SafeAreaView,
+  SectionList,
   Dimensions,
+  FlatList,
+  ToastAndroid,
 } from "react-native";
-import * as ActionFilterSearch from "../../actions/action-filter-search/ActionFilterSearch.js";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
+import { actions as ActionFilterSearch } from "../../actions/action-filter-search/ActionFilterSearch.js";
+import { actions as ActionProductType } from "../../actions/action-product-type/ActionProductType";
 import { Block, Text } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
 import { Button } from "react-native-elements";
 import { Searchbar } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
-import RangeSlider, { Slider } from 'react-native-range-slider-expo';
+import RangeSlider from "react-native-range-slider-expo";
+import ModalLoading from "../../components/ModalLoading";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("window");
+let token = getToken();
 
 function FilterSearch(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  const [loading, setLoading] = useState(null);
   const { objFilterSearch } = useSelector((state) => ({
     objFilterSearch: state.actionFilterSearch.objFilterSearch,
   }));
+  const { objProductType } = useSelector((state) => ({
+    objProductType: state.actionProductType.objProductType,
+  }));
 
   useEffect(() => {
-    setShowType(false);
+    getProductType();
   }, []);
 
   const onChangeSearch = (e) => {
@@ -49,336 +72,498 @@ function FilterSearch(props) {
     setFilterSearch(item.value);
   };
 
-  // Filter Function
-  const [isSelectedType, setSelectionType] = useState(false);
+  // CheckedTypes
   const [showType, setShowType] = useState(false);
-  const onChangeTypeFilter = () => {
+  const [listProductType, setListProductType] = useState(null);
+  const [listProductBrands, setListProductBrands] = useState(null);
+  async function getProductType() {
+    await axios({
+      method: "GET",
+      url: API_URL.CATEGORY_PRODUCT_LISTVIEW_API,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Connection: "keep-alive",
+        "Accept-Encoding": "gzip, deflate",
+      },
+    })
+      .then(async (resType) => {
+        let newlstType = await resType.data.data;
+        setListProductType(newlstType);
+
+        await axios({
+          method: "GET",
+          url: API_URL.BRANDS_PRODUCT_LISTVIEW_API,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Connection: "keep-alive",
+          },
+        }).then(async (resBrands) => {
+          let newlstBrands = await resBrands.data.data;
+          setListProductBrands(newlstBrands);
+        });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+  const onShowTypeFilter = () => {
     if (showType === false) {
       setShowType(true);
     } else {
       setShowType(false);
     }
   };
-  const renderCheckboxType = () => {
+  const renderCheckboxType = ({ item }) => {
+    const onCheckItemType = (item) => {
+      let oldlst = listProductType.filter((key) => key.id != item.id);
+      let newlst = listProductType.filter((key) => key.id == item.id);
+
+      if (newlst[0].image !== "") {
+        newlst[0].image = "";
+      } else {
+        newlst[0].image = "ImageMockup";
+      }
+      let newStateObj = newlst.concat(oldlst).sort(function (a, b) {
+        return a.id - b.id;
+      });
+
+      setListProductType(newStateObj);
+    };
     return (
-      <>
-        <Block row style={{ margin: 15, marginTop: 25 ,borderBottomWidth:1, borderBottomColor:"#e0e0e0"}}>
-          <Block flex style={{ width: "85%" }}>
-            <Text
-              style={{
-                color: "black",
-                fontSize: 18,
-                fontFamily: "kanitRegular",
-              }}
-            >
-              ประเภทสินค้า
-            </Text>
-            {showType ? (
-              <Block row>
-                <CheckBox
-                  value={isSelectedType}
-                  onValueChange={setSelectionType}
-                />
-                <Text
-                  style={{
-                    color: "#707070",
-                    fontSize: 14,
-                    fontFamily: "kanitRegular",
-                    margin: 5,
-                  }}
-                >
-                  ของใช้และของเล่นเด็ก
-                </Text>
-              </Block>
-            ) : null}
-          </Block>
-          <Block style={{ width: "15%" }}>
-            <TouchableOpacity onPress={onChangeTypeFilter}>
-              <Block
-                style={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  backgroundColor: "#02db88",
-                  alignSelf: "flex-end",
-                }}
-              >
-                <Image
-                  source={
-                    showType
-                      ? require("../../assets/icons/arrow_up.png")
-                      : require("../../assets/icons/arrow_down.png")
-                  }
-                  style={{ alignSelf: "center", marginTop: 1 }}
-                />
-              </Block>
-            </TouchableOpacity>
-            {showType ? (
-              <Text
-                style={{
-                  color: "#0290d6",
-                  fontSize: 14,
-                  fontFamily: "kanitRegular",
-                  marginTop: 10,
-                  textAlign: "right",
-                }}
-              >
-                (199)
-              </Text>
-            ) : null}
-          </Block>
+      <Block row style={{ marginTop: 10 }} key={item.id}>
+        <CheckBox
+          value={item.image == "" ? true : false}
+          onValueChange={() => onCheckItemType(item)}
+        />
+        <Block style={{ width: "72%" }}>
+          <Text
+            style={{
+              color: "#707070",
+              fontSize: 14,
+              fontFamily: "kanitRegular",
+              margin: 5,
+            }}
+          >
+            {locale == "th" ? item.name_th : item.name_en}
+          </Text>
         </Block>
-      </>
+        <Block style={{ width: "22%" }}>
+          <Text
+            style={{
+              color: "#0290d6",
+              fontSize: 14,
+              fontFamily: "kanitRegular",
+              marginTop: 5,
+              textAlign: "center",
+            }}
+          >
+            {item.stocks}
+          </Text>
+        </Block>
+      </Block>
     );
   };
-  const [isSelectedBrand, setSelectionBrand] = useState(false);
+  // Checked Brands
   const [showBrand, setShowBrand] = useState(false);
-  const onChangeBrandFilter = () => {
+  const onShowBrandFilter = () => {
     if (showBrand === false) {
       setShowBrand(true);
     } else {
       setShowBrand(false);
     }
   };
-  const renderCheckboxBrand = () => {
+  const renderCheckboxBrand = ({ item }) => {
+    const onCheckItemBrands = (item) => {
+      let oldlst = listProductBrands.filter((key) => key.id != item.id);
+      let newlst = listProductBrands.filter((key) => key.id == item.id);
+
+      if (newlst[0].image !== "") {
+        newlst[0].image = "";
+      } else {
+        newlst[0].image = "ImageMockup";
+      }
+      let newStateObj = newlst.concat(oldlst).sort(function (a, b) {
+        return a.id - b.id;
+      });
+
+      setListProductBrands(newStateObj);
+    };
     return (
-      <>
-        <Block row style={{ margin: 15, marginTop: 25 ,borderBottomWidth:1, borderBottomColor:"#e0e0e0"}}>
-          <Block flex style={{ width: "85%" }}>
-            <Text
-              style={{
-                color: "black",
-                fontSize: 18,
-                fontFamily: "kanitRegular",
-              }}
-            >
-              แบรนด์
-            </Text>
-            {showBrand ? (
-              <Block row>
-                <CheckBox
-                  value={isSelectedBrand}
-                  onValueChange={setSelectionBrand}
-                />
-                <Text
-                  style={{
-                    color: "#707070",
-                    fontSize: 14,
-                    fontFamily: "kanitRegular",
-                    margin: 5,
-                  }}
-                >
-                  Barbie
-                </Text>
-              </Block>
-            ) : null}
-          </Block>
-          <Block style={{ width: "15%" }}>
-            <TouchableOpacity onPress={onChangeBrandFilter}>
-              <Block
-                style={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  backgroundColor: "#02db88",
-                  alignSelf: "flex-end",
-                }}
-              >
-                <Image
-                  source={
-                    showBrand
-                      ? require("../../assets/icons/arrow_up.png")
-                      : require("../../assets/icons/arrow_down.png")
-                  }
-                  style={{ alignSelf: "center", marginTop: 1 }}
-                />
-              </Block>
-            </TouchableOpacity>
-            {showBrand ? (
-              <Text
-                style={{
-                  color: "#0290d6",
-                  fontSize: 14,
-                  fontFamily: "kanitRegular",
-                  marginTop: 10,
-                  textAlign: "right",
-                }}
-              >
-                (99)
-              </Text>
-            ) : null}
-          </Block>
+      <Block row style={{ marginTop: 10 }} key={item.id}>
+        <CheckBox
+          value={item.image == "" ? true : false}
+          onValueChange={() => onCheckItemBrands(item)}
+        />
+        <Block style={{ width: "72%" }}>
+          <Text
+            style={{
+              color: "#707070",
+              fontSize: 14,
+              fontFamily: "kanitRegular",
+              margin: 5,
+            }}
+          >
+            {locale == "th" ? item.name_th : item.name_en}
+          </Text>
         </Block>
-      </>
+        <Block style={{ width: "22%" }}>
+          <Text
+            style={{
+              color: "#0290d6",
+              fontSize: 14,
+              fontFamily: "kanitRegular",
+              marginTop: 5,
+              textAlign: "center",
+            }}
+          >
+            {item.stocks}
+          </Text>
+        </Block>
+      </Block>
     );
   };
 
-  //   Range Price
+  // Range Price
   const [fromValue, setFromValue] = useState(0);
   const [toValue, setToValue] = useState(0);
 
+  async function onSearchProductFilter() {
+    let newListTypes = listProductType.reduce(
+      (a, b) => (b.image !== "" && a.push(b.id), a),
+      []
+    );
+    let newListBrands = listProductBrands.reduce(
+      (a, b) => (b.image !== "" && a.push(b.id), a),
+      []
+    );
+    setLoading(true);
+    await axios({
+      method: "POST",
+      url: API_URL.PRODUCT_FILTHER_SEARCH_HD_API,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        page: "1",
+        keyword: objFilterSearch.SEARCH_ORDER,
+        category_selected: newListTypes,
+        brand_selected: newListBrands,
+        min_price: fromValue,
+        max_price: toValue.toString(),
+        sort: 1,
+      },
+    })
+      .then(function (response) {
+        setLoading(false);
+        let newObj = Object.assign({}, objProductType);
+        newObj.TABS_TYPE = true;
+        props.setObjProductType(newObj);
+        props.setListTrProductType(response.data.data);
+        props.navigation.navigate("Product Type");
+      })
+      .catch((error) => {
+        console.log("error", error);
+        setLoading(false);
+      });
+    setLoading(false);
+  }
+
   return (
     <>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={{ backgroundColor: "white" }}
-      >
-        {/* Title */}
-        <TouchableOpacity onPress={() => props.navigation.navigate("Home")}>
-          <Block
-            row
-            style={{
-              paddingTop: 20,
-              paddingLeft: 20,
-              paddingBottom: 20,
-              backgroundColor: "white",
-            }}
-          >
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-              }}
-            >
-              {"<  "}กรองสินค้า
-            </Text>
-          </Block>
-        </TouchableOpacity>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={FILTER_LIST}
+          renderSectionHeader={() => (
+            <>
+              {/* Title */}
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate("Flash Sale")}
+              >
+                <Block
+                  row
+                  style={{
+                    paddingTop: 20,
+                    paddingLeft: 20,
+                    paddingBottom: 20,
+                    backgroundColor: "white",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      fontSize: 18,
+                    }}
+                  >
+                    {"<  "}กรองสินค้า
+                  </Text>
+                </Block>
+              </TouchableOpacity>
 
-        {/* Filter */}
-        <Searchbar
-          placeholder="ค้นหาคำสั่งซื้อ"
-          value={objFilterSearch.SEARCH_ORDER}
-          onChange={onChangeSearch}
-          style={styles.search}
-          inputStyle={{
-            color: "#707070",
-            fontSize: 15,
-            fontFamily: "kanitRegular",
+              {/* Search & Filter */}
+              <Block>
+                <Searchbar
+                  placeholder="ค้นหาคำสั่งซื้อ"
+                  value={objFilterSearch.SEARCH_ORDER}
+                  onChange={onChangeSearch}
+                  style={styles.search}
+                  inputStyle={{
+                    color: "#707070",
+                    fontSize: 15,
+                    fontFamily: "kanitRegular",
+                  }}
+                />
+                <DropDownPicker
+                  items={itemFilter}
+                  containerStyle={{
+                    height: 40,
+                    width: width - 23,
+                    alignSelf: "center",
+                  }}
+                  style={{ backgroundColor: "#f0f0f0" }}
+                  itemStyle={{
+                    justifyContent: "flex-start",
+                  }}
+                  dropDownStyle={{ backgroundColor: "#f0f0f0" }}
+                  labelStyle={{
+                    textAlign: "left",
+                    color: "#707070",
+                    fontSize: 15,
+                    fontFamily: "kanitRegular",
+                  }}
+                  arrowColor={"white"}
+                  arrowSize={18}
+                  arrowStyle={{
+                    backgroundColor: "#02d483",
+                    borderRadius: 20,
+                    color: "white",
+                  }}
+                  defaultValue={filterSearch}
+                  onChangeItem={onChangeFilter}
+                />
+              </Block>
+
+              {/* Checkbox Type */}
+              <Block
+                style={{
+                  margin: 15,
+                  marginTop: 25,
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#e0e0e0",
+                }}
+              >
+                <Block row>
+                  <Block style={{ width: "85%" }}>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontSize: 18,
+                        fontFamily: "kanitRegular",
+                      }}
+                    >
+                      ประเภทสินค้า
+                    </Text>
+                  </Block>
+                  <TouchableOpacity
+                    onPress={onShowTypeFilter}
+                    style={{ width: "13.2%", marginTop: 2 }}
+                  >
+                    <Block
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: 10,
+                        backgroundColor: "#02db88",
+                        alignSelf: "flex-end",
+                      }}
+                    >
+                      <Image
+                        source={
+                          showType
+                            ? require("../../assets/icons/arrow_up.png")
+                            : require("../../assets/icons/arrow_down.png")
+                        }
+                        style={{ alignSelf: "center", marginTop: 1 }}
+                      />
+                    </Block>
+                  </TouchableOpacity>
+                </Block>
+                {showType ? (
+                  <FlatList
+                    data={listProductType}
+                    renderItem={renderCheckboxType}
+                    numColumns={1}
+                    keyExtractor={(item) => item.id.toString()}
+                    listKey={(item) => item.id}
+                  />
+                ) : null}
+              </Block>
+
+              {/* Checkbox Brands */}
+              <Block
+                style={{
+                  margin: 15,
+                  marginTop: 25,
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#e0e0e0",
+                }}
+              >
+                <Block row>
+                  <Block style={{ width: "85%" }}>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontSize: 18,
+                        fontFamily: "kanitRegular",
+                      }}
+                    >
+                      แบรนด์
+                    </Text>
+                  </Block>
+                  <TouchableOpacity
+                    onPress={onShowBrandFilter}
+                    style={{ width: "13.2%", marginTop: 2 }}
+                  >
+                    <Block
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: 10,
+                        backgroundColor: "#02db88",
+                        alignSelf: "flex-end",
+                      }}
+                    >
+                      <Image
+                        source={
+                          showType
+                            ? require("../../assets/icons/arrow_up.png")
+                            : require("../../assets/icons/arrow_down.png")
+                        }
+                        style={{ alignSelf: "center", marginTop: 1 }}
+                      />
+                    </Block>
+                  </TouchableOpacity>
+                </Block>
+                {showBrand ? (
+                  <FlatList
+                    data={listProductBrands}
+                    renderItem={renderCheckboxBrand}
+                    numColumns={1}
+                    keyExtractor={(item) => item.id.toString()}
+                    listKey={(item) => item.id}
+                  />
+                ) : null}
+              </Block>
+
+              {/* Price */}
+              <Block
+                style={{
+                  margin: 15,
+                  marginTop: 25,
+                  height: 140,
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#e0e0e0",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "black",
+                    fontSize: 18,
+                    fontFamily: "kanitRegular",
+                  }}
+                >
+                  ราคา
+                </Text>
+                <Block row style={{ marginTop: 10 }}>
+                  <Block style={{ marginLeft: "15%" }}>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontSize: 15,
+                        fontFamily: "kanitRegular",
+                        textAlign: "center",
+                      }}
+                    >
+                      {fromValue}
+                    </Text>
+                  </Block>
+                  <Block style={{ marginLeft: "25%" }}>
+                    <Text
+                      style={{
+                        color: "#00a2ff",
+                        fontSize: 15,
+                        fontFamily: "kanitRegular",
+                        textAlign: "center",
+                      }}
+                    >
+                      -
+                    </Text>
+                  </Block>
+                  <Block style={{ marginLeft: "25%" }}>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontSize: 15,
+                        fontFamily: "kanitRegular",
+                        textAlign: "center",
+                      }}
+                    >
+                      {toValue}
+                    </Text>
+                  </Block>
+                </Block>
+                <RangeSlider
+                  min={0}
+                  max={5000}
+                  fromValueOnChange={(value) => setFromValue(value)}
+                  toValueOnChange={(value) => setToValue(value)}
+                  initialFromValue={500}
+                  initialToValue={4500}
+                  showValueLabels={true}
+                  showRangeLabels={false}
+                  inRangeBarColor={"#00a2ff"}
+                  outOfRangeBarColor={"#dbdbdb"}
+                  styleSize={17}
+                />
+              </Block>
+
+              {/* Search */}
+              <Block style={{ marginBottom: 25 }}>
+                <Button
+                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                  title={"ค้นหา"}
+                  type="solid"
+                  buttonStyle={styles.buttonSearch}
+                  onPress={onSearchProductFilter}
+                />
+              </Block>
+            </>
+          )}
+          renderSectionFooter={() => <>{<WangdekInfo />}</>}
+          renderItem={() => {
+            return null;
           }}
         />
-        <DropDownPicker
-          items={itemFilter}
-          containerStyle={{
-            height: 40,
-            width: width - 23,
-            alignSelf: "center"
-          }}
-          style={{ backgroundColor: "#f0f0f0" }}
-          itemStyle={{
-            justifyContent: "flex-start",
-          }}
-          dropDownStyle={{ backgroundColor: "#f0f0f0" }}
-          labelStyle={{
-            textAlign: "left",
-            color: "#707070",
-            fontSize: 15,
-            fontFamily: "kanitRegular",
-          }}
-          arrowColor={"white"}
-          arrowSize={18}
-          arrowStyle={{
-            backgroundColor: "#02d483",
-            borderRadius: 20,
-            color: "white",
-          }}
-          defaultValue={filterSearch}
-          onChangeItem={onChangeFilter}
-        />
-
-        {/* Checkbox */}
-        {renderCheckboxType()}
-        {renderCheckboxBrand()}
-
-        {/* Scroll Price */}
-        <Block
-          style={{
-            margin: 15,
-            marginTop: 25,
-            height: 140,
-            borderBottomWidth: 1,
-            borderBottomColor: "#e0e0e0",
-          }}
-        >
-          <Text
-            style={{
-              color: "black",
-              fontSize: 18,
-              fontFamily: "kanitRegular",
-            }}
-          >
-            ราคา
-          </Text>
-          <Block row style={{ marginTop: 10 }}>
-            <Block style={{ marginLeft: "15%" }}>
-              <Text
-                style={{
-                  color: "black",
-                  fontSize: 15,
-                  fontFamily: "kanitRegular",
-                  textAlign: "center",
-                }}
-              >
-                {fromValue}
-              </Text>
-            </Block>
-            <Block style={{ marginLeft: "25%" }}>
-              <Text
-                style={{
-                  color: "#00a2ff",
-                  fontSize: 15,
-                  fontFamily: "kanitRegular",
-                  textAlign: "center",
-                }}
-              >
-                -
-              </Text>
-            </Block>
-            <Block style={{ marginLeft: "25%" }}>
-              <Text
-                style={{
-                  color: "black",
-                  fontSize: 15,
-                  fontFamily: "kanitRegular",
-                  textAlign: "center",
-                }}
-              >
-                {toValue}
-              </Text>
-            </Block>
-          </Block>
-          <RangeSlider
-            min={0}
-            max={20000}
-            fromValueOnChange={(value) => setFromValue(value)}
-            toValueOnChange={(value) => setToValue(value)}
-            initialFromValue={5000}
-            initialToValue={15000}
-            showValueLabels={true}
-            showRangeLabels={false}
-            inRangeBarColor={"#00a2ff"}
-            outOfRangeBarColor={"#dbdbdb"}
-            styleSize={12}
-          />
-        </Block>
-
-        {/* Search */}
-        <Block style={{ marginBottom: 25 }}>
-          <Button
-            titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-            title={"ค้นหา"}
-            type="solid"
-            buttonStyle={styles.buttonSearch}
-          />
-        </Block>
-        <WangdekInfo />
-      </ScrollView>
+      </SafeAreaView>
+      <ModalLoading loading={loading} />
     </>
   );
 }
 
-export default connect(null, ActionFilterSearch.actions)(FilterSearch);
+const mapActions = {
+  setObjFilterSearch: ActionFilterSearch.setObjFilterSearch,
+  clearObjFilterSearch: ActionFilterSearch.clearObjFilterSearch,
+
+  setObjProductType: ActionProductType.setObjProductType,
+  clearObjProductType: ActionProductType.clearObjProductType,
+  setListTrProductType: ActionProductType.setListTrProductType,
+  pushListTrProductType: ActionProductType.pushListTrProductType,
+};
+
+export default connect(null, mapActions)(FilterSearch);
 
 const styles = StyleSheet.create({
   container: {
@@ -423,3 +608,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
+
+const FILTER_LIST = [
+  {
+    title: "Mock",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
+    ],
+  },
+];

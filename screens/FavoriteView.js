@@ -3,28 +3,32 @@ import { connect, useSelector } from "react-redux";
 import {
   FlatList,
   Image,
+  RefreshControl,
+  SectionList,
+  SafeAreaView,
   ImageBackground,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   Dimensions,
   ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import * as ActionFavoriteView from "../actions/action-favorite-view/ActionFavoriteView";
 import { Block, Text, theme } from "galio-framework";
 import { formatTr } from "../i18n/I18nProvider";
 import WangdekInfo from "../components/WangdekInfo";
-import { SafeAreaView } from "react-native";
 import { API_URL } from "../config/config.app";
 import commaNumber from "comma-number";
 import { getToken } from "../store/mock/token";
 import ModalLoading from "../components/ModalLoading";
 
-const token = getToken();
 const { width } = Dimensions.get("screen");
-const rootImage = "http://10.0.1.37:8080";
+const token = getToken();
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 const defaultListFavorite = [
   {
@@ -41,13 +45,28 @@ const defaultListFavorite = [
 ];
 
 function FavoriteView(props) {
-  const { objFavoriteView } = useSelector((state) => ({
-    objFavoriteView: state.actionFavoriteView.objFavoriteView,
-  }));
   const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  var LOAD_MORE = formatTr("LOAD_MORE").toString();
+  const [loading, setLoading] = useState(null);
+  const [refreshingPage, setRefreshingPage] = useState(false);
+  const onRefreshPageNow = React.useCallback(() => {
+    const wait = (timeout) => {
+      return new Promise((resolve) => setTimeout(resolve, timeout));
+    };
+    setRefreshingPage(true);
+    wait(1000).then(() => {
+      loadListFavorite();
+      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      setRefreshingPage(false);
+    });
+  }, []);
 
   useEffect(() => {
-    setNumList(2);
     loadListFavorite();
   }, []);
 
@@ -56,12 +75,10 @@ function FavoriteView(props) {
   //List Favorite View
   const [numColumns] = useState(2);
   const [numList, setNumList] = useState(2);
-  const [loading, setLoading] = useState(null);
   const loadListFavorite = async () => {
-    setStateObj("");
     setLoading(false);
     await axios
-      .get(API_URL.FAVORITE_VIRE_LIST_API, {
+      .get(API_URL.FAVORITE_VIEW_LIST_API, {
         headers: {
           Accept: "application/json",
           Authorization: "Bearer " + (await token),
@@ -79,12 +96,13 @@ function FavoriteView(props) {
         console.log(error);
         setLoading(true);
       });
+    setLoading(true);
   };
   const loadMoreListProduct = async () => {
     setLoading(false);
     setNumList(numList + 1);
     await axios
-      .get(API_URL.FAVORITE_VIRE_LIST_API, {
+      .get(API_URL.FAVORITE_VIEW_LIST_API, {
         headers: {
           Accept: "application/json",
           Authorization: "Bearer " + (await token),
@@ -98,7 +116,6 @@ function FavoriteView(props) {
         const newConcatState = stateObj.concat(
           response.data.data.product_lists
         );
-        console.log(newConcatState);
         setStateObj(newConcatState);
         setLoading(true);
       })
@@ -106,7 +123,7 @@ function FavoriteView(props) {
         console.log(error);
       });
   };
-  const renderProduct = ({ item }) => {
+  const renderFavoriteProducts = ({ item }) => {
     //Favorite Click
     const onFavoriteProduct = async (key, favorite) => {
       let newObjOld = stateObj.filter((item) => item.id != key);
@@ -126,7 +143,7 @@ function FavoriteView(props) {
       });
       setStateObj(newStateObj);
       axios
-        .put(API_URL.FAVORITE_VIRE_LIST_API + "/" + key, {
+        .put(API_URL.FAVORITE_VIEW_LIST_API + "/" + key, {
           headers: {
             Accept: "*/*",
             Authorization: "Bearer " + (await token),
@@ -134,7 +151,7 @@ function FavoriteView(props) {
           },
         })
         .then(function (response) {
-          console.log(response.data);
+          // console.log(response.data);
         })
         .catch(function (error) {
           console.log(error);
@@ -173,7 +190,9 @@ function FavoriteView(props) {
           onPress={() => props.navigation.navigate("Products")}
         >
           <Block flex space="between" style={styles.productDescription}>
-            <Block style={{ borderBottomWidth: 0.5, borderBottomColor:"#e0e0e0" }}>
+            <Block
+              style={{ borderBottomWidth: 0.5, borderBottomColor: "#e0e0e0" }}
+            >
               <Text
                 style={{
                   color: "black",
@@ -193,7 +212,7 @@ function FavoriteView(props) {
               }}
             >
               ราคา : {"฿"}
-              {commaNumber(item.price)}
+              {commaNumber(parseFloat(item.price).toFixed(2))}
             </Text>
           </Block>
         </TouchableOpacity>
@@ -203,57 +222,72 @@ function FavoriteView(props) {
 
   return (
     <>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={{ backgroundColor: "white" }}
-      >
-        {/* Title */}
-        <TouchableOpacity onPress={() => props.navigation.navigate("Sign In")}>
-          <Block
-            row
-            style={{
-              paddingTop: 20,
-              paddingLeft: 20,
-              paddingBottom: 20,
-              backgroundColor: "white",
-              borderBottomWidth: 1,
-              borderBottomColor: "#e0e0e0",
-            }}
-          >
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-              }}
-            >
-              {"<  "}รายการโปรด
-            </Text>
-          </Block>
-        </TouchableOpacity>
-        {/* ListItem */}
-        <SafeAreaView>
-          <FlatList
-            data={stateObj}
-            style={styles.containers}
-            renderItem={renderProduct}
-            numColumns={numColumns}
-          />
-          <TouchableOpacity
-            onPress={loadMoreListProduct}
-            style={{ marginBottom: 30 }}
-          >
-            <Text
-              style={styles.loadMoreText}
-              size={14}
-              color={theme.COLORS.PRIMARY}
-            >
-              {formatTr("LOAD_MORE") + " >"}
-            </Text>
-          </TouchableOpacity>
-        </SafeAreaView>
-        <WangdekInfo />
-      </ScrollView>
+      <SafeAreaView style={{ flex: 1 }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={FAVORITE_LIST}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshingPage}
+              onRefresh={onRefreshPageNow}
+            />
+          }
+          renderSectionHeader={() => (
+            <>
+              {/* Title */}
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate("Sign In")}
+              >
+                <Block
+                  row
+                  style={{
+                    paddingTop: 20,
+                    paddingLeft: 20,
+                    paddingBottom: 20,
+                    backgroundColor: "white",
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#e0e0e0",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      fontSize: 18,
+                    }}
+                  >
+                    {"<  "}รายการโปรด
+                  </Text>
+                </Block>
+              </TouchableOpacity>
+              {/* ListItem */}
+              <FlatList
+                data={stateObj}
+                style={styles.containers}
+                renderItem={renderFavoriteProducts}
+                numColumns={numColumns}
+                keyExtractor={(item) => item.id.toString()}
+              />
+              <TouchableOpacity
+                onPress={loadMoreListProduct}
+                style={{ marginBottom: 30 }}
+              >
+                <Text
+                  style={styles.loadMoreText}
+                  size={14}
+                  color={theme.COLORS.PRIMARY}
+                >
+                  {LOAD_MORE + " >"}
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
+          renderSectionFooter={() => <>{<WangdekInfo />}</>}
+          renderItem={() => {
+            return null;
+          }}
+        />
+      </SafeAreaView>
       <ModalLoading loading={!loading} />
     </>
   );
@@ -273,7 +307,6 @@ const styles = StyleSheet.create({
   },
   textContainerBlock1: {
     padding: 9,
-    flexWrap: "wrap",
   },
   imageProduct: {
     resizeMode: "cover",
@@ -318,3 +351,16 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
 });
+
+const FAVORITE_LIST = [
+  {
+    title: "Mock",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
+    ],
+  },
+];

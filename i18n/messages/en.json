@@ -1,7 +1,12 @@
 {
-  "hello1": "Hellolo1",
-  "hello2": "Hellolololololo2",
-  "hello3": "Hellololololololololo3",
+  "SUNDAY": "Sunday",
+  "MONDAY": "Monday",
+  "TUESDAY": "Tuesday",
+  "WEDNESDAY" : "Wednesday",
+  "THURSDAY": "thursday",
+  "FRIDAY": "Friday",
+  "SATURDAY": "Saturday",
+  "SHARE_TEXT" : "Share : ",
   "VIEW_ALL": "View all",
   "GOOD_PRODUCT": "Best selling products",
   "POPULAR_PRODUCT": "Popular products",
@@ -22,5 +27,7 @@
   "GUIDE_TEXT2": "คุณสามารถตรวจสอบรายการสินค้า และแก้ไขรายการสั่งซื้อสินค้าได้ในหน้า ตะกน้าสินค้า หลังจากนั้น คลิกปุ่ม ดำเนินการต่อ เพื่อไปยังหน้าเลือกช่องทางและที่อยู่ในการจัดส่งสินค้า",
   "GUIDE_TEXT3": "คุณสามารถเลือกบริการการจัดส่งสินค้า และเลือกที่อยู่ในการจัดส่งหรือแก้ไขที่อยู่จัดส่งได้ ในขั้นตอนนี้ หากต้องการกลับไปแก้ไขรายการสินค้า สามารถคลิกที่ปุ่ม ซื้อสินค้าเพิ่มเพื่อกลับไปยังหน้า ตะกร้าสินค้าได้ แต่หากต้องการยืนยันการสั่งซื้อสินค้าแล้วให้คลิกที่ปุ่ม ดำเนินการต่อ เพื่อไปยังหน้าเลือกช่องทางการชำระเงิน",
   "GUIDE_TEXT4": "คุณสามารถเลือกช่องทางการชำระเงินได้ 2 วิธี คือ การโอนเข้าบัญชีธนาคาร และการชำระเงินผ่านบัตรเครดิต/เดบิต",
-  "GUIDE_TEXT5": "เมื่อคุณได้ทำการโอนเงินผ่านบัญชีธนาคาร สามารถแจ้งการชำระเงินของคุณได้ที่หน้าเว็บไซต์ โดยคลิกที่เมนู แจ้งชำระเงิน คุณจะต้องกรอกรายละเอียด หมายเลขสั่งซื้อ รายละเอียดส่วนบุคคลของธนาคารที่ทำการโอนเข้า และภาพสลิปหลักฐานการโปน เมื่อกรอกข้อมูลครบถ้วนแล้วให้คลิปที่ปุ่ม แจ้งชำระเงิน เพื่อส่งข้อมูลให้เจ้าหน้าที่ทำการตรวจสอบและจัดส่งสินค้าให้คุณตามรายการที่สั่งซื้อไว้"
+  "GUIDE_TEXT5": "เมื่อคุณได้ทำการโอนเงินผ่านบัญชีธนาคาร สามารถแจ้งการชำระเงินของคุณได้ที่หน้าเว็บไซต์ โดยคลิกที่เมนู แจ้งชำระเงิน คุณจะต้องกรอกรายละเอียด หมายเลขสั่งซื้อ รายละเอียดส่วนบุคคลของธนาคารที่ทำการโอนเข้า และภาพสลิปหลักฐานการโปน เมื่อกรอกข้อมูลครบถ้วนแล้วให้คลิปที่ปุ่ม แจ้งชำระเงิน เพื่อส่งข้อมูลให้เจ้าหน้าที่ทำการตรวจสอบและจัดส่งสินค้าให้คุณตามรายการที่สั่งซื้อไว้",
+  "TERM_CONDITIONS_TEXT1": "       Wangdek Co. Ltd and its affiliates (collectively, Wangdek, we, us, and our) respect your privacy. Please read the following to learn more about our Privacy Policy (this Policy). This Policy applies to Huawei websites, products, and services that display or provide links to this Policy. This Policy describes how Huawei processes your personal data, but it may not address all possible data processing scenarios. Huawei may inform you of product- or service-specific data collection through supplementary policies or notices provided before collection.",
+  "PRIVACY_TEXT1": "       Wangdek Co. Ltd and its affiliates (collectively, Wangdek, we, us, and our) respect your privacy. Please read the following to learn more about our Privacy Policy (this Policy). This Policy applies to Huawei websites, products, and services that display or provide links to this Policy. This Policy describes how Huawei processes your personal data, but it may not address all possible data processing scenarios. Huawei may inform you of product- or service-specific data collection through supplementary policies or notices provided before collection."
 }

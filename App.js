@@ -9,22 +9,19 @@ import { Provider } from "react-redux";
 import { rootReducer } from "./store/rootDuck";
 import * as Font from "expo-font";
 import AppLoading from "expo-app-loading";
-import { getToken, setToken } from "./store/mock/token";
 
 //SET STATE (store)
 const store = createStore(rootReducer);
-
 export default class App extends React.Component {
   constructor(props) {
     super(props);
+    this._loadingFont = this._loadingFont.bind(this);
     this.state = {
       loadingFont: true,
     };
-    this._loadingFont = this._loadingFont.bind(this);
   }
-  componentDidMount() {
-    this._loadingFont();
-    // setToken("");
+  async componentDidMount() {
+    await this._loadingFont();
   }
   async _loadingFont() {
     await Font.loadAsync({
@@ -35,6 +32,7 @@ export default class App extends React.Component {
     });
     this.setState({ loadingFont: false });
   }
+  
   render() {
     const { loadingFont } = this.state;
     if (loadingFont) {
@@ -54,3 +52,10 @@ export default class App extends React.Component {
     );
   }
 }
+
+// //Check curlirize axios
+// import axios from "axios";
+// import curlirize from 'axios-curlirize';
+// curlirize(axios);
+
+

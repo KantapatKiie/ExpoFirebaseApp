@@ -7,159 +7,337 @@ import {
   Modal,
   TouchableHighlight,
   View,
-  SafeAreaView,
-  SectionList,
   Image,
   FlatList,
+  SafeAreaView
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { Block, NavBar, Input, Text, theme } from "galio-framework";
-import Icon from "./Icon";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
+import { Block, NavBar, Text, theme } from "galio-framework";
 import materialTheme from "../constants/Theme";
 import Icons from "react-native-vector-icons/MaterialIcons";
-import { Feather } from "@expo/vector-icons";
-// import { API_URL } from "../config/config.app";
+import { API_URL } from "../config/config.app";
+import { getToken } from "../store/mock/token";
+import { connect, useSelector } from "react-redux";
+import { actions as ActionProductType } from "../actions/action-product-type/ActionProductType";
+import ModalLoading from "../components/ModalLoading";
+import SvgUri from "expo-svg-uri";
 
-const { height, width } = Dimensions.get("window");
-
-const ModalNotification = ({ style, navigation }) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  return (
-    <>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Coming soon!</Text>
-            <TouchableHighlight
-              style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
-              onPress={() => {
-                setModalVisible(!modalVisible);
-              }}
-            >
-              <Text style={styles.textStyle}>Close</Text>
-            </TouchableHighlight>
-          </View>
-        </View>
-      </Modal>
-
-      <TouchableOpacity
-        style={[styles.button, style]}
-        onPress={() => navigation.navigate("Notifications")}
-        // onPress={() => { setModalVisible(true);}}
-      >
-        <Icons name="notifications" color={"#383838"} size={20} />
-        <Block middle style={styles.notify} />
-      </TouchableOpacity>
-    </>
-  );
-};
-const ModalSearch = ({ style, navigation }) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  return (
-    <>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Coming soon!</Text>
-            <TouchableHighlight
-              style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
-              onPress={() => {
-                setModalVisible(!modalVisible);
-              }}
-            >
-              <Text style={styles.textStyle}>Close</Text>
-            </TouchableHighlight>
-          </View>
-        </View>
-      </Modal>
-
-      <TouchableOpacity
-        style={[styles.button, style]}
-        onPress={() => navigation.navigate("Filter Search")}
-      >
-        <Icons name="search" color={"#383838"} size={20} />
-        {/* <Feather name="search" size={20} /> */}
-
-        {/* <Block middle style={styles.notify} /> */}
-      </TouchableOpacity>
-    </>
-  );
-};
-const ModalFavorite = ({ style, navigation }) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  return (
-    <>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Coming soon!</Text>
-            <TouchableHighlight
-              style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
-              onPress={() => {
-                setModalVisible(!modalVisible);
-              }}
-            >
-              <Text style={styles.textStyle}>Close</Text>
-            </TouchableHighlight>
-          </View>
-        </View>
-      </Modal>
-
-      <TouchableOpacity
-        style={[styles.button, style]}
-        onPress={() => navigation.navigate("Favorite View")}
-        // onPress={() => { setModalVisible(true);}}
-      >
-        <Icons name="favorite" color={"#383838"} size={20} />
-        {/* <Block middle style={styles.notify} /> */}
-      </TouchableOpacity>
-    </>
-  );
-};
-const BasketButton = ({ style, navigation }) => {
-  return (
-    <>
-      <TouchableOpacity
-        style={[styles.button, style]}
-        onPress={() => navigation.navigate("Cart")}
-      >
-        {/* <Icons name="shopping_cart" color={"black"} size={20} /> */}
-        <Image
-          source={require("../assets/icons/cart.png")}
-          style={{ width: 20, height: 20 }}
-        />
-        <Block middle style={styles.notify} />
-      </TouchableOpacity>
-    </>
-  );
-};
+const { width } = Dimensions.get("window");
+let token = getToken();
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 function Header(props) {
-  const [objSearch, setObjSearch] = useState({
-    SEARCH_NO: "",
-  });
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  const [loading, setLoading] = useState(null);
+  const { objProductType } = useSelector((state) => ({
+    objProductType: state.actionProductType.objProductType,
+  }));
 
+  useEffect(() => {
+    loadDataBrandsTypes();
+    loadCountCart();
+  }, []);
+
+  //Count _Cart_&_Notifications_
+  const [countCart, setCountCart] = useState(0);
+  const [countNews, setCountNews] = useState(0);
+  async function loadCountCart() {
+    if ((await token) !== null && (await token) !== undefined) {
+      setTimeout(async () => {
+        await axios({
+          method: "GET",
+          url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
+          timeout: 2500,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + (await token),
+          },
+        })
+          .then(async (response) => {
+            await setCountCart(response.data.data.result);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      }, 500);
+    }
+  }
+
+  //Menu Bar
+  const [listProductType, setListProductType] = useState(null);
+  const [listProductBrands, setListProductBrands] = useState(null);
+  async function loadDataBrandsTypes() {
+    await axios({
+      method: "GET",
+      url: API_URL.CATEGORY_PRODUCT_LISTVIEW_API,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Connection: "keep-alive",
+        "X-CSRF-TOKEN": "",
+        "Accept-Encoding": "gzip, deflate",
+      },
+    })
+      .then(async (resType) => {
+        let newlstType = await resType.data.data;
+        setListProductType(newlstType);
+
+        await axios({
+          method: "GET",
+          url: API_URL.BRANDS_PRODUCT_LISTVIEW_API,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Connection: "keep-alive",
+          },
+        })
+          .then(async (resBrands) => {
+            let newlstBrands = await resBrands.data.data;
+            setListProductBrands(newlstBrands);
+          })
+          .catch(function (error) {
+            console.log(error.response);
+          });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+  const ListTypeProduct = ({ item }) => {
+    const categoryProductType = async (item) => {
+      setLoading(true);
+      await axios
+        .get(API_URL.CATEGORY_PRODUCT_SEARCH_API + item.id, {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: 1,
+          },
+        })
+        .then((response) => {
+          let newObj = Object.assign({}, objProductType);
+          newObj.TABS_TYPE = true;
+          newObj.PRODUCT_TYPE = "TYPES";
+          newObj.ITEM_ID = item.id;
+          newObj.ITEM_NAME = locale == "th" ? item.name_th : item.name_en;
+          props.setObjProductType(newObj);
+          props.setListTrProductType(response.data.data);
+          setLoading(false);
+          props.navigation.navigate("Product Type");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+      setLoading(false);
+    };
+    console.log(rootImage + item.image);
+    return (
+      <Block style={styles2.itemType}>
+        <TouchableOpacity onPress={() => categoryProductType(item)}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={{ width: 74, height: 64 }}
+          />
+          {/* <SvgUri
+            width={200}
+            height={200}
+            source={{ uri: rootImage + item.image }}
+          /> */}
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+  const ListProductBrands = ({ item }) => {
+    const categoryProductBrands = async (item) => {
+      setLoading(true);
+      await axios
+        .get(API_URL.BRANDS_PRODUCT_LISTVIEW_API + item.id + "/products", {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: 1,
+          },
+        })
+        .then(function (response) {
+          let newObj = Object.assign({}, objProductType);
+          newObj.TABS_TYPE = true;
+          newObj.PRODUCT_TYPE = "BRANDS";
+          newObj.ITEM_ID = item.id;
+          newObj.ITEM_NAME = locale == "th" ? item.name_th : item.name_en;
+          props.setObjProductType(newObj);
+          props.setListTrProductType(response.data.data);
+          setLoading(false);
+          props.navigation.navigate("Product Type");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+      setLoading(false);
+    };
+    return (
+      <Block style={styles2.itemBrand}>
+        <TouchableOpacity
+          shadowless
+          onPress={() => categoryProductBrands(item)}
+        >
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={{ width: 75, height: 35 }}
+          />
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+
+  const ModalNotification = ({ style, navigation }) => {
+    const [modalVisible, setModalVisible] = useState(false);
+    return (
+      <>
+        <Modal
+          animationType="none"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Coming soon!</Text>
+              <TouchableHighlight
+                style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                onPress={() => {
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>Close</Text>
+              </TouchableHighlight>
+            </View>
+          </View>
+        </Modal>
+
+        <TouchableOpacity
+          style={[styles.button, style]}
+          onPress={() => navigation.navigate("Notifications")}
+          // onPress={() => { setModalVisible(true);}}
+        >
+          <Icons name="notifications" color={"#383838"} size={20} />
+          {countNews > 0 ? <Block middle style={styles.notify} /> : null}
+        </TouchableOpacity>
+      </>
+    );
+  };
+  const ModalSearch = ({ style, navigation }) => {
+    const [modalVisible, setModalVisible] = useState(false);
+    return (
+      <>
+        <Modal
+          animationType="none"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Coming soon!</Text>
+              <TouchableHighlight
+                style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                onPress={() => {
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>Close</Text>
+              </TouchableHighlight>
+            </View>
+          </View>
+        </Modal>
+
+        <TouchableOpacity
+          style={[styles.button, style]}
+          onPress={() => navigation.navigate("Filter Search")}
+        >
+          <Icons name="search" color={"#383838"} size={20} />
+          {/* <Feather name="search" size={20} /> */}
+
+          {/* <Block middle style={styles.notify} /> */}
+        </TouchableOpacity>
+      </>
+    );
+  };
+  const ModalFavorite = ({ style, navigation }) => {
+    const [modalVisible, setModalVisible] = useState(false);
+    return (
+      <>
+        <Modal
+          animationType="none"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Coming soon!</Text>
+              <TouchableHighlight
+                style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                onPress={() => {
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>Close</Text>
+              </TouchableHighlight>
+            </View>
+          </View>
+        </Modal>
+
+        <TouchableOpacity
+          style={[styles.button, style]}
+          onPress={() => navigation.navigate("Favorite View")}
+          // onPress={() => { setModalVisible(true);}}
+        >
+          <Icons name="favorite" color={"#383838"} size={20} />
+          {/* <Block middle style={styles.notify} /> */}
+        </TouchableOpacity>
+      </>
+    );
+  };
+  const BasketButton = ({ style, navigation }) => {
+    return (
+      <>
+        <TouchableOpacity
+          style={[styles.button, style]}
+          onPress={() => navigation.navigate("Cart")}
+        >
+          <Image
+            source={require("../assets/icons/cart.png")}
+            style={{ width: 20, height: 20 }}
+          />
+          {countCart > 0 ? <Block middle style={styles.notify} /> : null}
+        </TouchableOpacity>
+      </>
+    );
+  };
+
+  //render Navbar
   const renderLogo = () => {
     return (
       <Block flex center>
@@ -720,6 +898,45 @@ function Header(props) {
             isWhite={white}
           />,
         ];
+      case "Flashsale Product":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Term Conditions":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Privacy Policy":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
 
       default:
         break;
@@ -1245,159 +1462,106 @@ function Header(props) {
             isWhite={white}
           />,
         ];
+      case "Flashsale Product":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Term Conditions":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Privacy Policy":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
 
       default:
         break;
     }
   };
 
-  //renderFucntion Tabs
-  const ListTypeProduct = ({ item }) => {
-    return (
-      <Block style={styles2.item}>
-        <TouchableOpacity
-          shadowless
-          onPress={() => props.navigation.navigate("Product Type", item)}
-        >
-          <Image source={item.icon} />
-        </TouchableOpacity>
-      </Block>
-    );
-  };
-  const renderTabs = () => {
-    return (
-      <Block style={styles2.container1}>
-        <StatusBar style="auto" />
-        <SafeAreaView style={{ flex: 1 }}>
-          <SectionList
-            contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 0 }}
-            stickySectionHeadersEnabled={false}
-            sections={sectionProductType}
-            scrollEnabled={false}
-            renderSectionHeader={({ section }) => (
-              <>
-                {section.horizontal ? (
-                  <>
-                    <FlatList
-                      horizontal
-                      data={section.data}
-                      renderItem={({ item }) => <ListTypeProduct item={item} />}
-                      showsHorizontalScrollIndicator={false}
-                      showsVerticalScrollIndicator={false}
-                    />
-                  </>
-                ) : null}
-              </>
-            )}
-            renderItem={({ item, section }) => {
-              if (section.horizontal) {
-                return null;
-              }
-              return <ListItem item={item} />;
-            }}
-          />
-        </SafeAreaView>
-      </Block>
-    );
-  };
-  const ListBrandProduct = ({ item }) => {
-    return (
-      <Block style={styles2.item}>
-        <TouchableOpacity
-          shadowless
-          onPress={() => props.navigation.navigate("Product Type", item)}
-        >
-          <Image source={item.icon} style={styles2.itemPhoto} />
-        </TouchableOpacity>
-      </Block>
-    );
-  };
-  const renderTabViews = () => {
-    return (
-      <Block style={styles2.container2}>
-        <SafeAreaView style={{ flex: 1 }}>
-          <SectionList
-            contentContainerStyle={{ paddingHorizontal: 0 }}
-            stickySectionHeadersEnabled={false}
-            sections={sectionBrand}
-            scrollEnabled={false}
-            renderSectionHeader={({ section }) => (
-              <>
-                {section.horizontal ? (
-                  <FlatList
-                    horizontal
-                    data={section.data}
-                    renderItem={({ item }) => <ListBrandProduct item={item} />}
-                    showsHorizontalScrollIndicator={false}
-                    showsVerticalScrollIndicator={false}
-                  />
-                ) : null}
-              </>
-            )}
-            renderItem={({ item, section }) => {
-              if (section.horizontal) {
-                return null;
-              }
-              return <ListItem item={item} />;
-            }}
-          />
-        </SafeAreaView>
-      </Block>
-    );
-  };
-  const { search, tabs } = props;
-  const renderHeader = () => {
-    if (search || tabs) {
-      return (
-        <Block center>
-          {/* {search ? renderSearch() : null} */}
-          {tabs ? renderTabs() : null}
-          {tabs ? renderTabViews() : null}
-        </Block>
-      );
-    }
-    return null;
-  };
-
-  const { back, title, transparent } = props;
-  const noShadow = ["Search", "Categories", "Profile"].includes(title);
-  const headerStyles = [
-    !noShadow ? styles.shadow : null,
-    transparent ? { backgroundColor: "rgba(0,0,0,0)" } : null,
-  ];
-
   return (
     <>
-      <Block style={headerStyles}>
+      <SafeAreaView>
         <NavBar
-          back={back}
           title={renderLogo()}
           style={styles.navbar}
-          transparent={transparent}
-          rightStyle={{ alignItems: "center" }}
-          leftStyle={{ alignItems: "center", flexDirection: "row" }}
-          titleStyle={[styles.title]}
+          rightStyle={styles.navbarLeftRight}
+          leftStyle={styles.navbarLeftRight}
           left={renderLeft()}
           right={renderRight()}
         />
-        {renderHeader()}
-      </Block>
+        {/* List Bars */}
+        <Block>
+          <Block style={styles2.container1}>
+            <FlatList
+              horizontal={true}
+              data={listProductType}
+              renderItem={({ item }) => <ListTypeProduct item={item} />}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+              keyExtractor={(item) => item.id.toString()}
+              listKey={(item) => item.id}
+            />
+          </Block>
+          <Block style={styles2.container2}>
+            <FlatList
+              horizontal
+              data={listProductBrands}
+              renderItem={({ item }) => <ListProductBrands item={item} />}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+              keyExtractor={(item) => item.id.toString()}
+              listKey={(item) => item.id}
+            />
+          </Block>
+        </Block>
+      </SafeAreaView>
+      <ModalLoading loading={loading} />
     </>
   );
 }
 
-export default withNavigation(Header);
+const mapActions = {
+  setObjProductType: ActionProductType.setObjProductType,
+  clearObjProductType: ActionProductType.clearObjProductType,
+  setListTrProductType: ActionProductType.setListTrProductType,
+  pushListTrProductType: ActionProductType.pushListTrProductType,
+};
+
+export default withNavigation(connect(null, mapActions)(Header));
 
 const styles = StyleSheet.create({
   button: {
     padding: 12,
     position: "relative",
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: "bold",
-    alignItems: "center",
-    color: "black",
   },
   navbar: {
     paddingVertical: 0,
@@ -1461,6 +1625,10 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     fontSize: 13,
   },
+  navbarLeftRight: {
+    alignItems: "center",
+    flexDirection: "row",
+  },
   // Modal CSS
   centeredView: {
     flex: 2,
@@ -1498,17 +1666,18 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-
 const styles2 = StyleSheet.create({
   container1: {
     backgroundColor: "#f5f5f5",
-    height: 92,
+    height: 80,
     padding: 0,
   },
   container2: {
     backgroundColor: "white",
-    height: 45,
+    height: 42,
     padding: 0,
+    shadowColor: "#e0e0e0",
+    elevation: 0.5,
   },
   sectionHeader: {
     fontWeight: "800",
@@ -1517,9 +1686,13 @@ const styles2 = StyleSheet.create({
     marginTop: 20,
     marginBottom: 5,
   },
-  item: {
-    margin: 5,
-    height: 92,
+  itemType: {
+    margin: 8,
+    height: 65,
+  },
+  itemBrand: {
+    margin: 4,
+    height: 72,
   },
   itemPhoto: {
     width: 90,
@@ -1535,92 +1708,3 @@ const styles2 = StyleSheet.create({
     width: 50,
   },
 });
-
-const sectionProductType = [
-  {
-    // title: "Title Text",
-    horizontal: true,
-    data: [
-      {
-        key: "1",
-        icon: require("../assets/iconMain/icon-01.png"),
-      },
-      {
-        key: "2",
-        icon: require("../assets/iconMain/icon-02.png"),
-      },
-      {
-        key: "3",
-        icon: require("../assets/iconMain/icon-03.png"),
-      },
-      {
-        key: "4",
-        icon: require("../assets/iconMain/icon-04.png"),
-      },
-      {
-        key: "5",
-        icon: require("../assets/iconMain/icon-05.png"),
-      },
-      {
-        key: "6",
-        icon: require("../assets/iconMain/icon-06.png"),
-      },
-      {
-        key: "7",
-        icon: require("../assets/iconMain/icon-07.png"),
-      },
-      {
-        key: "8",
-        icon: require("../assets/iconMain/icon-08.png"),
-      },
-    ],
-  },
-];
-const sectionBrand = [
-  {
-    // title: "Title Text",
-    horizontal: true,
-    data: [
-      {
-        key: "1",
-        icon: require("../assets/iconBrand/brand-01.png"),
-      },
-      {
-        key: "2",
-        icon: require("../assets/iconBrand/brand-02.png"),
-      },
-      {
-        key: "3",
-        icon: require("../assets/iconBrand/brand-03.png"),
-      },
-      {
-        key: "4",
-        icon: require("../assets/iconBrand/brand-04.png"),
-      },
-      {
-        key: "5",
-        icon: require("../assets/iconBrand/brand-05.png"),
-      },
-      {
-        key: "6",
-        icon: require("../assets/iconBrand/brand-06.png"),
-      },
-      {
-        key: "7",
-        icon: require("../assets/iconBrand/brand-07.png"),
-      },
-      {
-        key: "8",
-        icon: require("../assets/iconBrand/brand-08.png"),
-      },
-      {
-        key: "9",
-        icon: require("../assets/iconBrand/brand-09.png"),
-      },
-      {
-        key: "10",
-        icon: require("../assets/iconBrand/brand-10.png"),
-      },
-    ],
-  },
-];

@@ -21,7 +21,7 @@ const initialState = {
     COUNT: 1,
     TOTAL_PRICE: 0,
   },
-  // listTrPromotions: [],
+  listTrPromotions: [],
   // disabledInput: false,
   // editable: false,
 };

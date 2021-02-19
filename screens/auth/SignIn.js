@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { connect } from "react-redux";
+import { connect, useSelector } from "react-redux";
 import {
   StyleSheet,
   Text,
@@ -17,8 +17,10 @@ import {
 import axios from "axios";
 import moment from "moment";
 import ModalLoading from "../../components/ModalLoading";
-import { getToken, setToken } from "../../store/mock/token";
+import { getToken, setToken, removeToken } from "../../store/mock/token";
+import { actions as ActionLogin } from "../../actions/action-actives/ActionLogin";
 import { actions as ActionEditProfile } from "../../actions/action-actives/ActionEditProfile";
+import { actions as ActionOrder } from "../../actions/action-order-status/ActionOrder";
 import { Block } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import * as Facebook from "expo-facebook";
@@ -28,6 +30,7 @@ import { API_URL } from "../../config/config.app";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 if (
   Platform.OS === "android" &&
@@ -39,6 +42,7 @@ if (
 const defalutLoginMasterHD = {
   EMAIL: "",
   PASSWORD: "",
+  IMAGE: "",
   TOKEN: "",
   ID: 0,
   GUEST: 0,
@@ -87,31 +91,24 @@ const defalutLoginMasterHD = {
 
 function SignIn(props) {
   // IsLogIn Complete View
-  const [isLoggedin, setLoggedinStatus] = useState(false);
+  const [isLoggedin, setLoggedinStatus] = useState(token._W ? true : false);
+
   const [objLoginMasterHD, setObjLoginMasterHD] = useState(
     defalutLoginMasterHD
   );
+  const [stateObj, setStateObj] = useState({
+    email: "",
+    password: "",
+  });
 
   useEffect(() => {
     setRequiredEmail(false);
     setRequiredPass(false);
     setLoading(false);
-    (async () => {
-      if (Platform.OS !== "web") {
-        const {
-          status,
-        } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== "granted") {
-          alert("Sorry, we need camera roll permissions to make this work!");
-        }
-      }
-    })();
+    if (token._W) {
+      onLoadGetUserInfo();
+    }
   }, []);
-
-  const [stateObj, setStateObj] = useState({
-    email: "",
-    password: "",
-  });
 
   const onChangeEmail = (e) => {
     let newObj = Object.assign({}, stateObj);
@@ -128,9 +125,205 @@ function SignIn(props) {
   const [loading, setLoading] = useState(false);
   const [requiredEmail, setRequiredEmail] = useState(false);
   const [requiredPass, setRequiredPass] = useState(false);
+  const [imagePicker, setImagePicker] = useState(null);
+  const [loadImageUser, setLoadImageUser] = useState(null);
+  async function onLoadGetUserInfo() {
+    let newLogin = Object.assign({}, objLoginMasterHD);
+    await axios
+      .get(API_URL.USER_INFO_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+        },
+      })
+      .then(async (response) => {
+        newLogin.FIRST_NAME = response.data.data.first_name;
+        newLogin.LAST_NAME = response.data.data.last_name;
+        newLogin.TELEPHONE = response.data.data.profile.telephone;
+        newLogin.EMAIL = response.data.data.email;
+        newLogin.ADDRESS = response.data.data.profile.address;
+        newLogin.PROVINCE_ID = response.data.data.profile.province_id;
+        newLogin.DISTRICT_ID = response.data.data.profile.district_id;
+        newLogin.SUB_DISTRICT_ID = response.data.data.profile.sub_district_id;
+        newLogin.IMAGE = await response.data.data.image;
+        newLogin.ORDER_COMPLETED = response.data.data.order_completed;
+        newLogin.ORDER_CANCELLED = response.data.data.order_cancelled;
+        setLoadImageUser(newLogin.IMAGE);
 
+        //#region get EditProfile
+        newLogin.profile_id = response.data.data.profile.id;
+        newLogin.sex = response.data.data.profile.sex;
+        newLogin.birthday = response.data.data.profile.birthday;
+        newLogin.telephone = response.data.data.profile.telephone;
+        newLogin.address = response.data.data.profile.address;
+        newLogin.province_id = response.data.data.profile.province_id;
+        newLogin.district_id = response.data.data.profile.district_id;
+        newLogin.sub_district_id = response.data.data.profile.sub_district_id;
+        newLogin.postcode = response.data.data.profile.postcode;
+        newLogin.receive_info = response.data.data.profile.receive_info;
+
+        newLogin.address_deliveries_id =
+          response.data.data.address_deliveries[0].id;
+        newLogin.address_deliveries =
+          response.data.data.address_deliveries[0].address;
+        newLogin.province_id_deliveries =
+          response.data.data.address_deliveries[0].province_id;
+        newLogin.district_id_deliveries =
+          response.data.data.address_deliveries[0].district_id;
+        newLogin.sub_district_id_deliveries =
+          response.data.data.address_deliveries[0].sub_district_id;
+        newLogin.postcode_deliveries =
+          response.data.data.address_deliveries[0].postcode;
+        newLogin.telephone_deliveries =
+          response.data.data.address_deliveries[0].telephone;
+        //#endregion
+
+        //getAddress User & Delivery
+        await axios
+          .get(API_URL.DISTRICT_API, {
+            params: {
+              province_id: newLogin.PROVINCE_ID,
+            },
+          })
+          .then(async (response) => {
+            let newlstDistrict = response.data.data.find(
+              (item) => item.id == parseInt(newLogin.DISTRICT_ID)
+            );
+            newLogin.DISTRICT_NAME = newlstDistrict.name_th;
+
+            await axios
+              .get(API_URL.SUB_DISTRICT_API, {
+                params: {
+                  district_id: newLogin.DISTRICT_ID,
+                },
+              })
+              .then(async (response) => {
+                let newlstSubDistrict = response.data.data.find(
+                  (item) => item.id == parseInt(newLogin.SUB_DISTRICT_ID)
+                );
+                newLogin.SUB_DISTRICT_NAME = newlstSubDistrict.name_th;
+                newLogin.ZIP_CODE = newlstSubDistrict.zip_code;
+
+                await axios.get(API_URL.PROVINCE_API).then(function (response) {
+                  let newlstProvince = response.data.data.find(
+                    (item) => item.id == parseInt(newLogin.PROVINCE_ID)
+                  );
+                  newLogin.PROVINCE_NAME = newlstProvince.name_th;
+                  newLogin.ADDRESS_FULL_NAME =
+                    newLogin.ADDRESS +
+                    " " +
+                    newLogin.DISTRICT_NAME +
+                    " " +
+                    newLogin.SUB_DISTRICT_NAME +
+                    " " +
+                    newLogin.PROVINCE_NAME +
+                    " " +
+                    newLogin.ZIP_CODE;
+
+                  //Delivery Address
+                  //District
+                  axios
+                    .get(API_URL.DISTRICT_API, {
+                      params: {
+                        province_id: newLogin.province_id_deliveries,
+                      },
+                    })
+                    .then(function (response) {
+                      let newlstDistrict = response.data.data.find(
+                        (item) =>
+                          item.id == parseInt(newLogin.district_id_deliveries)
+                      );
+                      newLogin.DISTRICT_NAME_ORDER = newlstDistrict.name_th;
+
+                      //Sub-District
+                      axios
+                        .get(API_URL.SUB_DISTRICT_API, {
+                          params: {
+                            district_id: newLogin.district_id_deliveries,
+                          },
+                        })
+                        .then(function (response) {
+                          let newlstSubDistrict = response.data.data.find(
+                            (item) =>
+                              item.id ==
+                              parseInt(newLogin.sub_district_id_deliveries)
+                          );
+                          newLogin.SUB_DISTRICT_NAME_ORDER =
+                            newlstSubDistrict.name_th;
+                          newLogin.ZIP_CODE_ORDER = newlstSubDistrict.zip_code;
+
+                          //province
+                          axios
+                            .get(API_URL.PROVINCE_API)
+                            .then(function (response) {
+                              let newlstProvince = response.data.data.find(
+                                (item) =>
+                                  item.id ==
+                                  parseInt(newLogin.province_id_deliveries)
+                              );
+                              newLogin.PROVINCE_NAME_ORDER =
+                                newlstProvince.name_th;
+
+                              setObjLoginMasterHD(newLogin);
+                              setLoggedinStatus(true);
+                            });
+                        });
+                    });
+                });
+              });
+          });
+        setLoggedinStatus(true);
+        ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+      });
+    setLoading(false);
+    setLoggedinStatus(true);
+  }
+  // Image Picker Profile
+  const pickImageUpload = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: false,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (result.cancelled) {
+      return;
+    }
+
+    setImagePicker(result.uri);
+    setLoadImageUser(null);
+
+    // ImagePicker saves the taken photo to disk and returns a local URI to it
+    let localUri = result.uri;
+    let filename = localUri.split("/").pop();
+
+    // Infer the type of the image
+    let match = /\.(\w+)$/.exec(filename);
+    let type = match ? `image/${match[1]}` : `image`;
+
+    // Upload the image using the fetch and FormData APIs
+    let formData = new FormData();
+    formData.append("avatar", { uri: localUri, name: filename, type });
+
+    await fetch(API_URL.IMAGE_PROFILE_UPLOAD_API, {
+      method: "POST",
+      body: formData,
+      headers: {
+        "content-type": "multipart/form-data",
+        Authorization: "Bearer " + (await token),
+      },
+    })
+      .then((response) => {
+        ToastAndroid.show("Upload success!", ToastAndroid.SHORT);
+      })
+      .catch((error) => {
+        console.log("upload error", error);
+        ToastAndroid.show("Upload failed!", ToastAndroid.SHORT);
+      });
+  };
   // Login
   const LoginAccount = () => {
+    removeToken();
     setLoading(true);
     let newLogin = Object.assign({}, objLoginMasterHD);
     const reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -140,222 +333,221 @@ function SignIn(props) {
         setRequiredPass(false);
         if (reg.test(stateObj.email) === true) {
           setRequiredEmail(false);
-          setTimeout(() => {
-            setLoading(true);
-            axios({
-              method: "POST",
-              url: API_URL.LOGIN_API,
-              params: {
-                email: stateObj.email,
-                password: stateObj.password,
-              },
+          setLoading(true);
+          axios({
+            method: "POST",
+            url: API_URL.LOGIN_API,
+            params: {
+              email: stateObj.email,
+              password: stateObj.password,
+            },
+          })
+            .then(async (response) => {
+              newLogin.EMAIL = response.data.data.user[0].email;
+              newLogin.PASSWORD = stateObj.password;
+              newLogin.ID = response.data.data.user[0].id;
+              newLogin.FIRST_NAME = response.data.data.user[0].first_name;
+              newLogin.LAST_NAME = response.data.data.user[0].last_name;
+              newLogin.IMAGE = response.data.data.user[0].image;
+              newLogin.ORDER_COMPLETED = response.data.data.order_completed;
+              newLogin.ORDER_CANCELLED = response.data.data.order_cancelled;
+
+              setLoadImageUser(newLogin.IMAGE);
+
+              let tokenGenerate = await response.data.data.token;
+              newLogin.TOKEN = await response.data.data.token;
+              await setToken(tokenGenerate);
+
+              //get UserInfo
+              await axios
+                .get(API_URL.USER_INFO_API, {
+                  headers: {
+                    Accept: "application/json",
+                    Authorization: "Bearer " + (await tokenGenerate),
+                  },
+                })
+                .then(async (response) => {
+                  newLogin.FIRST_NAME = response.data.data.first_name;
+                  newLogin.LAST_NAME = response.data.data.last_name;
+                  newLogin.TELEPHONE = await response.data.data.profile
+                    .telephone;
+                  newLogin.EMAIL = response.data.data.email;
+                  newLogin.ADDRESS = response.data.data.profile.address;
+                  newLogin.PROVINCE_ID = response.data.data.profile.province_id;
+                  newLogin.DISTRICT_ID = response.data.data.profile.district_id;
+                  newLogin.SUB_DISTRICT_ID =
+                    response.data.data.profile.sub_district_id;
+
+                  //get EditProfile
+                  newLogin.profile_id = response.data.data.profile.id;
+                  newLogin.sex = response.data.data.profile.sex;
+                  newLogin.birthday = response.data.data.profile.birthday;
+                  newLogin.telephone = response.data.data.profile.telephone;
+                  newLogin.address = response.data.data.profile.address;
+                  newLogin.province_id = response.data.data.profile.province_id;
+                  newLogin.district_id = response.data.data.profile.district_id;
+                  newLogin.sub_district_id =
+                    response.data.data.profile.sub_district_id;
+                  newLogin.postcode = response.data.data.profile.postcode;
+                  newLogin.receive_info =
+                    response.data.data.profile.receive_info;
+
+                  newLogin.address_deliveries_id =
+                    response.data.data.address_deliveries[0].id;
+                  newLogin.address_deliveries =
+                    response.data.data.address_deliveries[0].address;
+                  newLogin.province_id_deliveries =
+                    response.data.data.address_deliveries[0].province_id;
+                  newLogin.district_id_deliveries =
+                    response.data.data.address_deliveries[0].district_id;
+                  newLogin.sub_district_id_deliveries =
+                    response.data.data.address_deliveries[0].sub_district_id;
+                  newLogin.postcode_deliveries =
+                    response.data.data.address_deliveries[0].postcode;
+                  newLogin.telephone_deliveries =
+                    response.data.data.address_deliveries[0].telephone;
+
+                  //getAddress User & Delivery
+                  axios
+                    .get(API_URL.DISTRICT_API, {
+                      params: {
+                        province_id: newLogin.PROVINCE_ID,
+                      },
+                    })
+                    .then(function (response) {
+                      let newlstDistrict = response.data.data.find(
+                        (item) => item.id == parseInt(newLogin.DISTRICT_ID)
+                      );
+                      newLogin.DISTRICT_NAME = newlstDistrict.name_th;
+
+                      axios
+                        .get(API_URL.SUB_DISTRICT_API, {
+                          params: {
+                            district_id: newLogin.DISTRICT_ID,
+                          },
+                        })
+                        .then(function (response) {
+                          let newlstSubDistrict = response.data.data.find(
+                            (item) =>
+                              item.id == parseInt(newLogin.SUB_DISTRICT_ID)
+                          );
+                          newLogin.SUB_DISTRICT_NAME =
+                            newlstSubDistrict.name_th;
+                          newLogin.ZIP_CODE = newlstSubDistrict.zip_code;
+
+                          axios
+                            .get(API_URL.PROVINCE_API)
+                            .then(function (response) {
+                              let newlstProvince = response.data.data.find(
+                                (item) =>
+                                  item.id == parseInt(newLogin.PROVINCE_ID)
+                              );
+                              newLogin.PROVINCE_NAME = newlstProvince.name_th;
+                              newLogin.ADDRESS_FULL_NAME =
+                                newLogin.ADDRESS +
+                                " " +
+                                newLogin.DISTRICT_NAME +
+                                " " +
+                                newLogin.SUB_DISTRICT_NAME +
+                                " " +
+                                newLogin.PROVINCE_NAME +
+                                " " +
+                                newLogin.ZIP_CODE;
+
+                              //Delivery Address
+                              //District
+                              axios
+                                .get(API_URL.DISTRICT_API, {
+                                  params: {
+                                    province_id:
+                                      newLogin.province_id_deliveries,
+                                  },
+                                })
+                                .then(function (response) {
+                                  let newlstDistrict = response.data.data.find(
+                                    (item) =>
+                                      item.id ==
+                                      parseInt(newLogin.district_id_deliveries)
+                                  );
+                                  newLogin.DISTRICT_NAME_ORDER =
+                                    newlstDistrict.name_th;
+
+                                  //Sub-District
+                                  axios
+                                    .get(API_URL.SUB_DISTRICT_API, {
+                                      params: {
+                                        district_id:
+                                          newLogin.district_id_deliveries,
+                                      },
+                                    })
+                                    .then(function (response) {
+                                      let newlstSubDistrict = response.data.data.find(
+                                        (item) =>
+                                          item.id ==
+                                          parseInt(
+                                            newLogin.sub_district_id_deliveries
+                                          )
+                                      );
+                                      newLogin.SUB_DISTRICT_NAME_ORDER =
+                                        newlstSubDistrict.name_th;
+                                      newLogin.ZIP_CODE_ORDER =
+                                        newlstSubDistrict.zip_code;
+
+                                      //province
+                                      axios
+                                        .get(API_URL.PROVINCE_API)
+                                        .then(function (response) {
+                                          let newlstProvince = response.data.data.find(
+                                            (item) =>
+                                              item.id ==
+                                              parseInt(
+                                                newLogin.province_id_deliveries
+                                              )
+                                          );
+                                          newLogin.PROVINCE_NAME_ORDER =
+                                            newlstProvince.name_th;
+
+                                          setObjLoginMasterHD(newLogin);
+                                          setLoggedinStatus(true);
+                                          setLoading(false);
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+              await setLoggedinStatus(true);
+              setLoading(false);
+              ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
             })
-              .then(async (response) => {
-                newLogin.EMAIL = stateObj.email;
-                newLogin.PASSWORD = stateObj.email;
-                newLogin.TOKEN = response.data.data.token;
-                newLogin.ID = response.data.data.user.id;
-                newLogin.GUEST = response.data.data.user.guest;
-                newLogin.FIRST_NAME = response.data.data.user.first_name;
-                newLogin.LAST_NAME = response.data.data.user.last_name;
-                newLogin.ACTIVE = response.data.data.user.active;
-                newLogin.EMAIL_VERIFIED_AT =
-                  response.data.data.user.email_verified_at;
-                newLogin.CREATE_AT = response.data.data.user.created_at;
-                newLogin.UPDATED_AT = response.data.data.user.updated_at;
-                newLogin.CREATE_BY = response.data.data.user.created_by;
-                newLogin.UPDATED_BY = response.data.data.user.updated_by;
-                newLogin.DELETED_AT = response.data.data.user.deleted_at;
-                await setToken(response.data.data.token);
-
-                //get UserInfo
-                axios
-                  .get(API_URL.USER_INFO_API, {
-                    headers: {
-                      Accept: "application/json",
-                      Authorization: "Bearer " + (await token),
-                    },
-                  })
-                  .then(function (response) {
-                    newLogin.TELEPHONE = response.data.data.profile.telephone;
-                    newLogin.ADDRESS = response.data.data.profile.address;
-                    newLogin.PROVINCE_ID =
-                      response.data.data.profile.province_id;
-                    newLogin.DISTRICT_ID =
-                      response.data.data.profile.district_id;
-                    newLogin.SUB_DISTRICT_ID =
-                      response.data.data.profile.sub_district_id;
-
-                    //get EditProfile
-                    newLogin.profile_id = response.data.data.profile.id;
-                    newLogin.sex = response.data.data.profile.sex;
-                    newLogin.birthday = response.data.data.profile.birthday;
-                    newLogin.telephone = response.data.data.profile.telephone;
-                    newLogin.address = response.data.data.profile.address;
-                    newLogin.province_id =
-                      response.data.data.profile.province_id;
-                    newLogin.district_id =
-                      response.data.data.profile.district_id;
-                    newLogin.sub_district_id =
-                      response.data.data.profile.sub_district_id;
-                    newLogin.postcode = response.data.data.profile.postcode;
-                    newLogin.receive_info =
-                      response.data.data.profile.receive_info;
-
-                    newLogin.address_deliveries_id =
-                      response.data.data.address_deliveries[0].id;
-                    newLogin.address_deliveries =
-                      response.data.data.address_deliveries[0].address;
-                    newLogin.province_id_deliveries =
-                      response.data.data.address_deliveries[0].province_id;
-                    newLogin.district_id_deliveries =
-                      response.data.data.address_deliveries[0].district_id;
-                    newLogin.sub_district_id_deliveries =
-                      response.data.data.address_deliveries[0].sub_district_id;
-                    newLogin.postcode_deliveries =
-                      response.data.data.address_deliveries[0].postcode;
-                    newLogin.telephone_deliveries =
-                      response.data.data.address_deliveries[0].telephone;
-
-                    //getAddress User & Delivery
-                    axios
-                      .get(API_URL.DISTRICT_API, {
-                        params: {
-                          province_id: newLogin.PROVINCE_ID,
-                        },
-                      })
-                      .then(function (response) {
-                        let newlstDistrict = response.data.data.find(
-                          (item) => item.id == parseInt(newLogin.DISTRICT_ID)
-                        );
-                        newLogin.DISTRICT_NAME = newlstDistrict.name_th;
-
-                        axios
-                          .get(API_URL.SUB_DISTRICT_API, {
-                            params: {
-                              district_id: newLogin.DISTRICT_ID,
-                            },
-                          })
-                          .then(function (response) {
-                            let newlstSubDistrict = response.data.data.find(
-                              (item) =>
-                                item.id == parseInt(newLogin.SUB_DISTRICT_ID)
-                            );
-                            newLogin.SUB_DISTRICT_NAME =
-                              newlstSubDistrict.name_th;
-                            newLogin.ZIP_CODE = newlstSubDistrict.zip_code;
-
-                            axios
-                              .get(API_URL.PROVINCE_API)
-                              .then(function (response) {
-                                let newlstProvince = response.data.data.find(
-                                  (item) =>
-                                    item.id == parseInt(newLogin.PROVINCE_ID)
-                                );
-                                newLogin.PROVINCE_NAME = newlstProvince.name_th;
-                                newLogin.ADDRESS_FULL_NAME =
-                                  newLogin.ADDRESS +
-                                  " " +
-                                  newLogin.DISTRICT_NAME +
-                                  " " +
-                                  newLogin.SUB_DISTRICT_NAME +
-                                  " " +
-                                  newLogin.PROVINCE_NAME +
-                                  " " +
-                                  newLogin.ZIP_CODE;
-
-                                //Delivery Address
-                                //District
-                                axios
-                                  .get(API_URL.DISTRICT_API, {
-                                    params: {
-                                      province_id:
-                                        newLogin.province_id_deliveries,
-                                    },
-                                  })
-                                  .then(function (response) {
-                                    let newlstDistrict = response.data.data.find(
-                                      (item) =>
-                                        item.id ==
-                                        parseInt(
-                                          newLogin.district_id_deliveries
-                                        )
-                                    );
-                                    newLogin.DISTRICT_NAME_ORDER =
-                                      newlstDistrict.name_th;
-
-                                    //Sub-District
-                                    axios
-                                      .get(API_URL.SUB_DISTRICT_API, {
-                                        params: {
-                                          district_id:
-                                            newLogin.district_id_deliveries,
-                                        },
-                                      })
-                                      .then(function (response) {
-                                        let newlstSubDistrict = response.data.data.find(
-                                          (item) =>
-                                            item.id ==
-                                            parseInt(
-                                              newLogin.sub_district_id_deliveries
-                                            )
-                                        );
-                                        newLogin.SUB_DISTRICT_NAME_ORDER =
-                                          newlstSubDistrict.name_th;
-                                        newLogin.ZIP_CODE_ORDER =
-                                          newlstSubDistrict.zip_code;
-
-                                        //province
-                                        axios
-                                          .get(API_URL.PROVINCE_API)
-                                          .then(function (response) {
-                                            let newlstProvince = response.data.data.find(
-                                              (item) =>
-                                                item.id ==
-                                                parseInt(
-                                                  newLogin.province_id_deliveries
-                                                )
-                                            );
-                                            newLogin.PROVINCE_NAME_ORDER =
-                                              newlstProvince.name_th;
-
-                                            setObjLoginMasterHD(newLogin);
-                                            setLoggedinStatus(true);
-                                            setLoading(false);
-                                          });
-                                      });
-                                  });
-                              });
-                          });
-                      });
-                  });
-              })
-              .catch(function (error) {
-                setLoggedinStatus(false);
-                setRequiredPass(true);
-                setRequiredEmail(true);
-                setLoading(false);
-                console.log("error:", error.message);
-                ToastAndroid.show(
-                  "Email or Password was Wrong",
-                  ToastAndroid.SHORT
-                );
-              });
-          }, 800);
+            .catch(function (error) {
+              setLoggedinStatus(false);
+              setRequiredPass(true);
+              setRequiredEmail(true);
+              setLoading(false);
+              console.log("error:", error.message);
+              ToastAndroid.show(
+                "Email or Password was Wrong",
+                ToastAndroid.SHORT
+              );
+            });
         } else {
+          setLoading(false);
           setLoggedinStatus(false);
           setRequiredPass(false);
           setRequiredEmail(true);
           ToastAndroid.show("Email was Wrong", ToastAndroid.SHORT);
         }
       } else {
+        setLoading(false);
         setLoggedinStatus(false);
         setRequiredPass(true);
       }
-      setLoggedinStatus(false);
     } else {
       setRequiredEmail(true);
       setRequiredPass(true);
+      setLoading(false);
       ToastAndroid.show(
         "Please enter your email & password",
         ToastAndroid.SHORT
@@ -364,16 +556,16 @@ function SignIn(props) {
     setLoading(false);
   };
   // Logout
-  const LogoutAccount = () => {
-    setLoggedinStatus(false);
+  const LogoutAccount = async () => {
     setStateObj({
       email: "",
       password: "",
     });
-    // setUserData("");
-    setToken("");
-    ToastAndroid.show("Logout Account", ToastAndroid.SHORT);
+    await removeToken();
+    setLoggedinStatus(false);
+    ToastAndroid.show("Logout successfully", ToastAndroid.SHORT);
   };
+
   // Facbook login
   const [userData, setUserData] = useState(null);
   const facebookLogIn = async () => {
@@ -412,23 +604,7 @@ function SignIn(props) {
     }
   };
 
-  // Image Picker Profile
-  const [imagePicker, setImagePicker] = useState(null);
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-    if (!result.cancelled) {
-      setImagePicker(result.uri);
-    } else {
-      ToastAndroid.show("Not Seleted Images", ToastAndroid.SHORT);
-    }
-  };
-
-  //Change Page
+  //Edit Profile
   const onChangePageEditProfile = () => {
     let newObjList = Object.assign({}, objLoginMasterHD);
     newObjList.FIRST_NAME = objLoginMasterHD.FIRST_NAME;
@@ -469,259 +645,546 @@ function SignIn(props) {
     newObjList.ZIP_CODE_ORDER = objLoginMasterHD.postcode_deliveries;
     newObjList.PHONE_NUMBER_ORDER = newObjList.telephone;
 
-    // console.log(newObjList);
     props.setObjEditProfile(newObjList);
     props.navigation.navigate("Edit Profile");
   };
-
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {isLoggedin ? ( //Not Login
+        {!isLoggedin ? (
           <>
-            {/* Title */}
-            <Block
-              flex
-              style={{ padding: 30, backgroundColor: "white", width: width }}
-            >
-              <Text
-                style={{
-                  fontSize: 24,
-                  fontFamily: "kanitRegular",
-                  textAlign: "center",
-                }}
-              >
-                เข้าสู่ระบบ
-              </Text>
-            </Block>
-            {/* Email */}
-            <Block style={styles.container2}>
-              <Block row style={{ marginBottom: 5 }}>
-                <Text
+            {!isLoggedin || !token._W ? ( //Not Login
+              <>
+                {/* Title */}
+                <Block
+                  flex
                   style={{
-                    alignSelf: "flex-start",
-                    fontFamily: "kanitRegular",
-                    fontSize: 18,
-                    color: "black",
+                    padding: 30,
+                    backgroundColor: "white",
+                    width: width,
                   }}
                 >
-                  ชื่อบัญชี
-                </Text>
-                <Image
-                  source={require("../../assets/iconSignIn/user-icon.png")}
-                  style={{
-                    width: 25,
-                    height: 25,
-                    marginLeft: 10,
-                  }}
-                />
-              </Block>
-              <View
-                style={
-                  requiredEmail !== true
-                    ? styles.inputView
-                    : styles.inputViewRequired
-                }
-              >
-                <TextInput
-                  style={styles.inputText}
-                  placeholder={"กรอกชื่อบัญชี"}
-                  placeholderTextColor="#808080"
-                  value={stateObj.email}
-                  onChangeText={onChangeEmail}
-                />
-              </View>
-              <Block row style={{ marginBottom: 5 }}>
-                <Text
-                  style={{
-                    alignSelf: "flex-start",
-                    fontFamily: "kanitRegular",
-                    fontSize: 18,
-                  }}
-                >
-                  รหัสผ่าน
-                </Text>
-                <Image
-                  source={require("../../assets/iconSignIn/pass-icon.png")}
-                  style={{
-                    width: 25,
-                    height: 25,
-                    marginLeft: 10,
-                  }}
-                />
-              </Block>
-              <View
-                style={
-                  requiredPass !== true
-                    ? styles.inputView
-                    : styles.inputViewRequired
-                }
-              >
-                <TextInput
-                  style={styles.inputText}
-                  placeholder="กรอกรหัสผ่าน"
-                  placeholderTextColor="#808080"
-                  value={stateObj.password}
-                  onChangeText={onChangePassword}
-                  secureTextEntry={true}
-                />
-              </View>
-            </Block>
-            {/* Forget Password */}
-            <Block
-              style={{
-                width: "95%",
-                borderBottomWidth: 1,
-                borderColor: "#e0e0e0",
-                height: 50,
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  alignSelf: "flex-end",
-                }}
-                onPress={() => props.navigation.navigate("Forgot Password")}
-              >
-                <Text style={styles.forgot}>ลืมรหัสผ่าน ?</Text>
-              </TouchableOpacity>
-            </Block>
-            {/* Login */}
-            <Block
-              style={{
-                // borderBottomWidth: 1,
-                // borderBottomColor: "#e0e0e0",
-                width: "90%",
-                alignSelf: "center",
-              }}
-            >
-              <Block style={styles.loginBtn}>
-                <TouchableOpacity onPress={LoginAccount}>
                   <Text
                     style={{
-                      color: "white",
-                      fontSize: 17,
+                      fontSize: 24,
                       fontFamily: "kanitRegular",
+                      textAlign: "center",
                     }}
                   >
                     เข้าสู่ระบบ
                   </Text>
-                </TouchableOpacity>
-              </Block>
-              <Block
-                style={{
-                  borderRadius: 20,
-                  backgroundColor: "#e0e0e0",
-                  width: "15%",
-                  alignSelf: "center",
-                }}
-              >
-                <Text
+                </Block>
+                {/* Email */}
+                <Block style={styles.container2}>
+                  <Block row style={{ marginBottom: 5 }}>
+                    <Text
+                      style={{
+                        alignSelf: "flex-start",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                        color: "black",
+                      }}
+                    >
+                      ชื่อบัญชี
+                    </Text>
+                    <Image
+                      source={require("../../assets/iconSignIn/user-icon.png")}
+                      style={{
+                        width: 25,
+                        height: 25,
+                        marginLeft: 10,
+                      }}
+                    />
+                  </Block>
+                  <View
+                    style={
+                      requiredEmail !== true
+                        ? styles.inputView
+                        : styles.inputViewRequired
+                    }
+                  >
+                    <TextInput
+                      style={styles.inputText}
+                      placeholder={"กรอกชื่อบัญชี"}
+                      placeholderTextColor="#808080"
+                      value={stateObj.email}
+                      onChangeText={onChangeEmail}
+                    />
+                  </View>
+                  <Block row style={{ marginBottom: 5 }}>
+                    <Text
+                      style={{
+                        alignSelf: "flex-start",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                      }}
+                    >
+                      รหัสผ่าน
+                    </Text>
+                    <Image
+                      source={require("../../assets/iconSignIn/pass-icon.png")}
+                      style={{
+                        width: 25,
+                        height: 25,
+                        marginLeft: 10,
+                      }}
+                    />
+                  </Block>
+                  <View
+                    style={
+                      requiredPass !== true
+                        ? styles.inputView
+                        : styles.inputViewRequired
+                    }
+                  >
+                    <TextInput
+                      style={styles.inputText}
+                      placeholder="กรอกรหัสผ่าน"
+                      placeholderTextColor="#808080"
+                      value={stateObj.password}
+                      onChangeText={onChangePassword}
+                      secureTextEntry={true}
+                    />
+                  </View>
+                </Block>
+                {/* Forget Password */}
+                <Block
                   style={{
-                    textAlign: "center",
-                    fontFamily: "kanitRegular",
-                    fontSize: 12,
-                    color: "#706f6f",
-                    textAlignVertical: "center",
+                    width: "95%",
+                    borderBottomWidth: 1,
+                    borderColor: "#e0e0e0",
+                    height: 50,
                   }}
                 >
-                  หรือ
-                </Text>
-              </Block>
-            </Block>
-            {/* Facebook */}
-            <Block row style={styles.loginBtnFacebook}>
-              <Image
-                source={require("../../assets/iconSignIn/fb-icon.png")}
-                style={{
-                  width: 10,
-                  height: 20,
-                  marginRight: 20,
-                }}
-              />
-              <TouchableOpacity onPress={facebookLogIn}>
-                <Text
+                  <TouchableOpacity
+                    style={{
+                      alignSelf: "flex-end",
+                    }}
+                    onPress={() => props.navigation.navigate("Forgot Password")}
+                  >
+                    <Text style={styles.forgot}>ลืมรหัสผ่าน ?</Text>
+                  </TouchableOpacity>
+                </Block>
+                {/* Login */}
+                <Block
                   style={{
-                    color: "white",
-                    fontSize: 17,
-                    fontFamily: "kanitRegular",
+                    // borderBottomWidth: 1,
+                    // borderBottomColor: "#e0e0e0",
+                    width: "90%",
+                    alignSelf: "center",
                   }}
                 >
-                  เข้าสู่ระบบด้วย Facebook
-                </Text>
-              </TouchableOpacity>
-            </Block>
-            {/* Register */}
-            <Block
-              style={{
-                width: width,
-                backgroundColor: "#06d198",
-                paddingTop: 60,
-                paddingBottom: 5,
-              }}
-            >
-              <Image
-                source={require("../../assets/iconSignIn/regis-icon.png")}
-                style={{
-                  width: 90,
-                  height: 90,
-                  alignSelf: "center",
-                }}
-              />
-            </Block>
-            <Block
-              style={{
-                width: width,
-                backgroundColor: "#06d198",
-                paddingTop: 30,
-                paddingBottom: 40,
-                borderBottomColor: "#e0e0e0",
-                borderBottomWidth: 0.5,
-              }}
-            >
-              <Text
-                style={{
-                  color: "white",
-                  fontSize: 20,
-                  fontFamily: "kanitRegular",
-                  textAlign: "center",
-                }}
-              >
-                หากท่านยังไม่ได้เป็นสมาชิก
-              </Text>
+                  <Block style={styles.loginBtn}>
+                    <TouchableOpacity onPress={LoginAccount}>
+                      <Text
+                        style={{
+                          color: "white",
+                          fontSize: 17,
+                          fontFamily: "kanitRegular",
+                        }}
+                      >
+                        เข้าสู่ระบบ
+                      </Text>
+                    </TouchableOpacity>
+                  </Block>
+                  <Block
+                    style={{
+                      borderRadius: 20,
+                      backgroundColor: "#e0e0e0",
+                      width: "15%",
+                      alignSelf: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        textAlign: "center",
+                        fontFamily: "kanitRegular",
+                        fontSize: 12,
+                        color: "#706f6f",
+                        textAlignVertical: "center",
+                      }}
+                    >
+                      หรือ
+                    </Text>
+                  </Block>
+                </Block>
+                {/* Facebook */}
+                <Block row style={styles.loginBtnFacebook}>
+                  <Image
+                    source={require("../../assets/iconSignIn/fb-icon.png")}
+                    style={{
+                      width: 10,
+                      height: 20,
+                      marginRight: 20,
+                    }}
+                  />
+                  <TouchableOpacity onPress={facebookLogIn}>
+                    <Text
+                      style={{
+                        color: "white",
+                        fontSize: 17,
+                        fontFamily: "kanitRegular",
+                      }}
+                    >
+                      เข้าสู่ระบบด้วย Facebook
+                    </Text>
+                  </TouchableOpacity>
+                </Block>
+                {/* Register */}
+                <Block
+                  style={{
+                    width: width,
+                    backgroundColor: "#06d198",
+                    paddingTop: 60,
+                    paddingBottom: 5,
+                  }}
+                >
+                  <Image
+                    source={require("../../assets/iconSignIn/regis-icon.png")}
+                    style={{
+                      width: 90,
+                      height: 90,
+                      alignSelf: "center",
+                    }}
+                  />
+                </Block>
+                <Block
+                  style={{
+                    width: width,
+                    backgroundColor: "#06d198",
+                    paddingTop: 30,
+                    paddingBottom: 40,
+                    borderBottomColor: "#e0e0e0",
+                    borderBottomWidth: 0.5,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 20,
+                      fontFamily: "kanitRegular",
+                      textAlign: "center",
+                    }}
+                  >
+                    หากท่านยังไม่ได้เป็นสมาชิก
+                  </Text>
 
-              <Text
-                style={{
-                  color: "white",
-                  fontSize: 20,
-                  fontFamily: "kanitRegular",
-                  textAlign: "center",
-                }}
-              >
-                กรุณาสมัครสมาชิก ก่อนทำการซื้อสินค้า
-              </Text>
-            </Block>
-            <Block
-              style={{
-                width: width,
-                backgroundColor: "#06d198",
-                paddingTop: 15,
-              }}
-            >
-              <TouchableOpacity
-                style={styles.loginBtnRegister}
-                onPress={() => props.navigation.navigate("Sign Up")}
-              >
-                <Text
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 20,
+                      fontFamily: "kanitRegular",
+                      textAlign: "center",
+                    }}
+                  >
+                    กรุณาสมัครสมาชิก ก่อนทำการซื้อสินค้า
+                  </Text>
+                </Block>
+                <Block
                   style={{
-                    color: "white",
-                    fontSize: 17,
-                    fontFamily: "kanitRegular",
+                    width: width,
+                    backgroundColor: "#06d198",
+                    paddingTop: 15,
                   }}
                 >
-                  สมัครสมาชิก
-                </Text>
-              </TouchableOpacity>
-            </Block>
+                  <TouchableOpacity
+                    style={styles.loginBtnRegister}
+                    onPress={() => props.navigation.navigate("Sign Up")}
+                  >
+                    <Text
+                      style={{
+                        color: "white",
+                        fontSize: 17,
+                        fontFamily: "kanitRegular",
+                      }}
+                    >
+                      สมัครสมาชิก
+                    </Text>
+                  </TouchableOpacity>
+                </Block>
+              </>
+            ) : (
+              //Login Complete
+              <>
+                {/* Profile */}
+                <Block
+                  row
+                  style={{
+                    width: "90%",
+                    padding: 20,
+                    borderBottomWidth: 1,
+                    borderColor: "#e0e0e0",
+                    alignSelf: "center",
+                  }}
+                >
+                  <Block>
+                    <ImageBackground
+                      source={
+                        loadImageUser !== null
+                          ? { uri: rootImage + loadImageUser }
+                          : imagePicker !== null
+                          ? { uri: imagePicker }
+                          : require("../../assets/iconSignIn/profilepic.png")
+                      }
+                      style={{
+                        width: 100,
+                        height: 100,
+                        shadowColor: "black",
+                        borderWidth: 0.8,
+                        borderRadius: 50,
+                        borderColor: "#e0e0e0",
+                      }}
+                      imageStyle={{ borderRadius: 50 }}
+                    >
+                      <TouchableOpacity
+                        style={{ paddingLeft: "5%" }}
+                        onPress={pickImageUpload}
+                      >
+                        <Image
+                          source={require("../../assets/iconSignIn/upload-pic.png")}
+                          style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: 30,
+                            alignSelf: "flex-end",
+                            marginTop: 70,
+                          }}
+                        />
+                      </TouchableOpacity>
+                    </ImageBackground>
+                  </Block>
+                  <Block style={{ paddingLeft: "10%", width: "90%" }}>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                        textAlign: "left",
+                      }}
+                    >
+                      {objLoginMasterHD.FIRST_NAME +
+                        " " +
+                        objLoginMasterHD.LAST_NAME}
+                    </Text>
+                    <Text
+                      style={{
+                        color: "#4f4f4f",
+                        fontFamily: "kanitLight",
+                        fontSize: 14,
+                        textAlign: "left",
+                      }}
+                    >
+                      Address : {objLoginMasterHD.ADDRESS_FULL_NAME}
+                    </Text>
+                    <Text
+                      style={{
+                        color: "#4f4f4f",
+                        fontFamily: "kanitLight",
+                        fontSize: 14,
+                        textAlign: "left",
+                      }}
+                    >
+                      Phone : {objLoginMasterHD.TELEPHONE}
+                    </Text>
+                    <Text
+                      style={{
+                        color: "#4f4f4f",
+                        fontFamily: "kanitLight",
+                        fontSize: 14,
+                        textAlign: "left",
+                      }}
+                    >
+                      Email : {objLoginMasterHD.EMAIL}
+                    </Text>
+                  </Block>
+                </Block>
+                {/* Point Order */}
+                <Block
+                  row
+                  style={{
+                    paddingBottom: 5,
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#e0e0e0",
+                    width: "90%",
+                    alignSelf: "center",
+                  }}
+                >
+                  <Block style={styles.orderHeader}>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                        textAlign: "center",
+                      }}
+                    >
+                      คำสั่งซื้อสำเร็จ
+                    </Text>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 20,
+                        textAlign: "center",
+                        color: "#0646c7",
+                      }}
+                    >
+                      {objLoginMasterHD.ORDER_COMPLETED}
+                    </Text>
+                  </Block>
+                  <Block style={styles.orderHeader}>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                        textAlign: "center",
+                      }}
+                    >
+                      ยกเลิกคำสั่งซื้อ
+                    </Text>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 20,
+                        textAlign: "center",
+                        color: "#6e6e6e",
+                      }}
+                    >
+                      {objLoginMasterHD.ORDER_CANCELLED}
+                    </Text>
+                  </Block>
+                </Block>
+                {/* Menu List */}
+                <Block style={styles.menuListMain}>
+                  {/* Block Menu1 */}
+                  <Block row>
+                    <TouchableOpacity
+                      style={{ paddingLeft: "5%" }}
+                      onPress={onChangePageEditProfile}
+                    >
+                      <Image
+                        source={require("../../assets/iconSignIn/edit-icon.png")}
+                        style={{
+                          width: 70,
+                          height: 70,
+                          borderRadius: 35,
+                        }}
+                      />
+                      <Text style={styles.fontMenuMainList}>แก้ไขข้อมูล</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ paddingLeft: "15%" }}
+                      onPress={() => props.navigation.navigate("My Coupon")}
+                    >
+                      <Image
+                        source={require("../../assets/iconSignIn/coupon-icon.png")}
+                        style={{
+                          width: 70,
+                          height: 70,
+                          borderRadius: 35,
+                        }}
+                      />
+                      <Text style={styles.fontMenuMainList}>คูปองของฉัน</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ paddingLeft: "15%" }}
+                      onPress={() => props.navigation.navigate("Favorite View")}
+                    >
+                      <Image
+                        source={require("../../assets/iconSignIn/favorite-icon.png")}
+                        style={{
+                          width: 70,
+                          height: 70,
+                          borderRadius: 35,
+                        }}
+                      />
+                      <Text style={styles.fontMenuMainList}>รายการโปรด</Text>
+                    </TouchableOpacity>
+                  </Block>
+                  {/* Block Menu2 */}
+                  <Block row style={{ paddingTop: 25 }}>
+                    <TouchableOpacity
+                      style={{ paddingLeft: "5%" }}
+                      onPress={() => props.navigation.navigate("History Order")}
+                    >
+                      <Image
+                        source={require("../../assets/iconSignIn/history1-icon.png")}
+                        style={{
+                          width: 70,
+                          height: 70,
+                          borderRadius: 35,
+                        }}
+                      />
+                      <Text style={styles.fontMenuMainList}>ประวัติการ</Text>
+                      <Text
+                        style={{
+                          fontFamily: "kanitRegular",
+                          fontSize: 13,
+                          color: "#4f4f4f",
+                          textAlign: "center",
+                        }}
+                      >
+                        สั่งซื้อสินค้า
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ paddingLeft: "15%" }}
+                      onPress={() => props.navigation.navigate("History View")}
+                    >
+                      <Image
+                        source={require("../../assets/iconSignIn/history2-icon.png")}
+                        style={{
+                          width: 70,
+                          height: 70,
+                          borderRadius: 35,
+                        }}
+                      />
+                      <Text style={styles.fontMenuMainList}>ประวัติการ</Text>
+                      <Text
+                        style={{
+                          fontFamily: "kanitRegular",
+                          fontSize: 13,
+                          color: "#4f4f4f",
+                          textAlign: "center",
+                        }}
+                      >
+                        เข้าชม
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ paddingLeft: "15%" }}
+                      onPress={() => props.navigation.navigate("Setting")}
+                    >
+                      <Image
+                        source={require("../../assets/iconSignIn/languag-icon.png")}
+                        style={{
+                          width: 70,
+                          height: 70,
+                          borderRadius: 35,
+                        }}
+                      />
+                      <Text style={styles.fontMenuMainList}>เปลี่ยนภาษา</Text>
+                    </TouchableOpacity>
+                  </Block>
+                </Block>
+                {/* Logout */}
+                <Block row style={styles.logoutButton}>
+                  <TouchableOpacity onPress={LogoutAccount}>
+                    <Text
+                      style={{
+                        color: "white",
+                        fontSize: 17,
+                        fontFamily: "kanitRegular",
+                      }}
+                    >
+                      ออกจากระบบ
+                    </Text>
+                  </TouchableOpacity>
+                </Block>
+              </>
+            )}
           </>
         ) : (
           //Login Complete
@@ -740,19 +1203,25 @@ function SignIn(props) {
               <Block>
                 <ImageBackground
                   source={
-                    imagePicker !== null
+                    loadImageUser !== null
+                      ? { uri: rootImage + loadImageUser }
+                      : imagePicker !== null
                       ? { uri: imagePicker }
                       : require("../../assets/iconSignIn/profilepic.png")
                   }
                   style={{
                     width: 100,
                     height: 100,
+                    shadowColor: "black",
+                    borderWidth: 0.8,
+                    borderRadius: 50,
+                    borderColor: "#e0e0e0",
                   }}
                   imageStyle={{ borderRadius: 50 }}
                 >
                   <TouchableOpacity
                     style={{ paddingLeft: "5%" }}
-                    onPress={pickImage}
+                    onPress={pickImageUpload}
                   >
                     <Image
                       source={require("../../assets/iconSignIn/upload-pic.png")}
@@ -843,7 +1312,7 @@ function SignIn(props) {
                     color: "#0646c7",
                   }}
                 >
-                  5
+                  {objLoginMasterHD.ORDER_COMPLETED}
                 </Text>
               </Block>
               <Block style={styles.orderHeader}>
@@ -855,7 +1324,7 @@ function SignIn(props) {
                     textAlign: "center",
                   }}
                 >
-                  คำสั่งซื้อสำเร็จ
+                  ยกเลิกคำสั่งซื้อ
                 </Text>
                 <Text
                   style={{
@@ -866,7 +1335,7 @@ function SignIn(props) {
                     color: "#6e6e6e",
                   }}
                 >
-                  0
+                  {objLoginMasterHD.ORDER_CANCELLED}
                 </Text>
               </Block>
             </Block>
@@ -945,7 +1414,7 @@ function SignIn(props) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ paddingLeft: "15%" }}
-                  onPress={() => props.navigation.navigate("History Order")}
+                  onPress={() => props.navigation.navigate("History View")}
                 >
                   <Image
                     source={require("../../assets/iconSignIn/history2-icon.png")}
@@ -1008,15 +1477,18 @@ function SignIn(props) {
 }
 
 const mapActions = {
-  // setObjLogin: ActionLogin.setObjLogin,
-  // pushListTrLoginHD: ActionLogin.pushListTrLoginHD,
-  // setListTrLoginHD: ActionLogin.setListTrLoginHD,
-  // clearObjLogin: ActionLogin.clearObjLogin,
+  setObjLogin: ActionLogin.setObjLogin,
+  pushListTrLoginHD: ActionLogin.pushListTrLoginHD,
+  setListTrLoginHD: ActionLogin.setListTrLoginHD,
+  clearObjLogin: ActionLogin.clearObjLogin,
 
   setObjEditProfile: ActionEditProfile.setObjEditProfile,
   pushListTrEditProfileHD: ActionEditProfile.pushListTrEditProfileHD,
   setListTrEditProfileHD: ActionEditProfile.setListTrEditProfileHD,
   clearObjEditProfile: ActionEditProfile.clearObjEditProfile,
+
+  setobjOrderScreen: ActionOrder.setobjOrderScreen,
+  setObjUseAddressDelivery: ActionOrder.setObjUseAddressDelivery,
 };
 
 export default connect(null, mapActions)(SignIn);
@@ -1161,26 +1633,5 @@ const styles = StyleSheet.create({
     color: "#4f4f4f",
     textAlign: "center",
     marginTop: 10,
-  },
-});
-
-const stylesFooter = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  blockHeader: {
-    padding: 8,
-    paddingLeft: 15,
-    backgroundColor: "#486ec7",
-    flexDirection: "column",
-  },
-  blockHeaderInfo: {
-    padding: 8,
-    paddingLeft: 15,
-    backgroundColor: "#f7f7f7",
-    flexDirection: "column",
   },
 });

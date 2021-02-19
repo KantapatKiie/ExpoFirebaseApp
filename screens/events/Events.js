@@ -3,14 +3,17 @@ import {
   Image,
   StyleSheet,
   Dimensions,
-  ScrollView,
+  LogBox,
   TextInput,
   TouchableOpacity,
   SafeAreaView,
   SectionList,
   FlatList,
+  ToastAndroid,
 } from "react-native";
+import axios from "axios";
 import moment from "moment";
+import "moment-duration-format";
 import "moment/locale/th";
 import "moment/locale/en-au";
 import { Block, Text, Input } from "galio-framework";
@@ -24,31 +27,53 @@ import { Calendar } from "react-native-big-calendar";
 import { formatTr } from "../../i18n/I18nProvider";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import { Button, CheckBox } from "react-native-elements";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
+import ModalLoading from "../../components/ModalLoading";
 
-const { height, width } = Dimensions.get("screen");
+LogBox.ignoreLogs(["Setting a timer"]);
+const { width } = Dimensions.get("screen");
+let token = getToken();
 
 function Events(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  const [loading, setLoading] = useState(null);
   const { objEventsHD } = useSelector((state) => ({
     objEventsHD: state.actionEvents.objEventsHD,
   }));
-  const locale = useSelector(({ i18n }) => i18n.lang);
 
   useEffect(() => {
     props.clearObjEventsHD();
-    if (locale === "th") {
-      moment.locale("th");
-    } else {
-      moment.locale("en-au");
-    }
+    onLoadActivitiesList();
+    getDaysInMonth();
   }, []);
 
-  const [typeEvents, setTypeEvents] = useState([
+  const itemEvents = [
     {
-      label: objEventsHD.TYPE_NAME,
-      value: objEventsHD.TYPE_CODE,
+      label: "Birthday",
+      value: "1",
+      hidden: true,
     },
-  ]);
-  const onChangeEventsType = () => {};
+    {
+      label: "Workshop",
+      value: "2",
+    },
+    {
+      label: "Live stream",
+      value: "3",
+    },
+  ];
+  const onChangeEventsType = (item) => {
+    let newObj = Object.assign({}, objEventsHD);
+    newObj.TYPE_CODE = item.value;
+    newObj.TYPE_NAME = item.label;
+    props.setObjEventsHD(newObj);
+  };
 
   //#region Date & Time
   //DatePicker
@@ -64,7 +89,7 @@ function Events(props) {
     if (date === null) {
       newObj.EVENT_DATE = moment(new Date()).format();
     } else {
-      newObj.EVENT_DATE = moment(date).format("DD/MM/YYYY");
+      newObj.EVENT_DATE = moment(date).format();
     }
     props.setObjEventsHD(newObj);
     hideDatePicker();
@@ -84,7 +109,7 @@ function Events(props) {
     if (date === null) {
       newObj.EVENT_FIRST_TIME = moment(new Date()).format();
     } else {
-      newObj.EVENT_FIRST_TIME = moment(date).format("HH:mm");
+      newObj.EVENT_FIRST_TIME = moment(date).format();
     }
     props.setObjEventsHD(newObj);
     hideTime1Picker();
@@ -105,7 +130,7 @@ function Events(props) {
     if (date === null) {
       newObj.EVENT_LAST_TIME = moment(new Date()).format();
     } else {
-      newObj.EVENT_LAST_TIME = moment(date).format("HH:mm");
+      newObj.EVENT_LAST_TIME = moment(date).format();
     }
     props.setObjEventsHD(newObj);
     hideTime2Picker();
@@ -124,12 +149,12 @@ function Events(props) {
   };
   const onChangeEventsFirstName = (e) => {
     let newObj = Object.assign({}, objEventsHD);
-    newObj.FIRST_NAME = e;
+    newObj.FULL_NAME = e;
     props.setObjEventsHD(newObj);
   };
-  const onChangeEventsLastName = (e) => {
+  const onChangeEventsPhone = (e) => {
     let newObj = Object.assign({}, objEventsHD);
-    newObj.LAST_NAME = e;
+    newObj.PHONE = e;
     props.setObjEventsHD(newObj);
   };
   const onChangeEventsEmail = (e) => {
@@ -138,6 +163,87 @@ function Events(props) {
     props.setObjEventsHD(newObj);
   };
 
+  const ListEventType = ({ item }) => {
+    return (
+      <Block style={styles.itemEventType}>
+        <TouchableOpacity>
+          <Block
+            row
+            style={{
+              width: 140,
+              backgroundColor: "#bfbfbf",
+              borderRadius: 50,
+              height: 30,
+            }}
+          >
+            <Block
+              style={{
+                width: 25,
+                height: 10,
+                backgroundColor: item.color,
+                borderRadius: 3,
+                margin: 10,
+              }}
+            ></Block>
+            <Text
+              style={{
+                fontFamily: "kanitRegular",
+                fontSize: 15,
+                color: "white",
+                margin: 2,
+                marginRight: 10,
+              }}
+            >
+              {item.title}
+            </Text>
+          </Block>
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+  const [listPeriodEvent, setListPeriodEvent] = useState(null);
+  const [listDays, setListDays] = useState(null);
+  async function onLoadActivitiesList() {
+    setLoading(true);
+    await axios
+      .get(API_URL.ACTIVITIES_LIST_HD_API, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(function (response) {
+        let newEvents = response.data.data.filter(
+          (eve) =>
+            eve.operate_date ==
+            moment(objEventsHD.EVENT_MONTH).format("YYYY-MM-") + 1
+        );
+        setListPeriodEvent(newEvents);
+        setLoading(false);
+      })
+      .catch(function (error) {
+        console.log(error);
+        setLoading(false);
+      });
+    setLoading(false);
+  }
+  const getDaysInMonth = () => {
+    var getDays = new Date(
+      moment(objEventsHD.EVENT_MONTH).format("YYYY"),
+      moment(objEventsHD.EVENT_MONTH).format("MM"),
+      0
+    ).getDate();
+    var getDaysList = [];
+    var days = 0;
+    var act = false;
+    for (var i = 0; i < getDays; i++) {
+      days += 1;
+      act = days == 1 ? true : false;
+      getDaysList.push({ key: days, active: act });
+    }
+    setListDays(getDaysList);
+  };
   const previousMonth = () => {
     let newObj = Object.assign({}, objEventsHD);
     let oldDate = objEventsHD.EVENT_MONTH;
@@ -145,6 +251,8 @@ function Events(props) {
     newObj.EVENT_MONTH = oldDate;
 
     props.setObjEventsHD(newObj);
+    getDaysInMonth();
+    onLoadActivitiesList();
   };
   const nextMonth = () => {
     let newObj = Object.assign({}, objEventsHD);
@@ -153,328 +261,390 @@ function Events(props) {
     newObj.EVENT_MONTH = oldDate;
 
     props.setObjEventsHD(newObj);
+    getDaysInMonth();
+    onLoadActivitiesList();
   };
 
-  const ListEventType = ({ item }) => {
+  const ListDateOfMonths = ({ item }) => {
+    const onChageDateEvents = async (item) => {
+      const newListEvents = await listDays.filter((val) => {
+        val.active = false;
+        if (val.key == item.key) val.active = true;
+        return val;
+      });
+      setListDays(newListEvents);
+      await axios
+        .get(API_URL.ACTIVITIES_LIST_HD_API, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: 1,
+          },
+        })
+        .then(function (response) {
+          let newEvents = response.data.data.filter(
+            (eve) =>
+              eve.operate_date ==
+              moment(objEventsHD.EVENT_MONTH).format("YYYY-MM-") + item.key
+          );
+          setListPeriodEvent(newEvents);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    };
     return (
-      <Block style={styles.itemEventType}>
-        <TouchableOpacity>
-            <Block row style={{width: 140, backgroundColor:"#bfbfbf", borderRadius:50, height:30}}>
-                <Block style={{width:25, height:10, backgroundColor:item.color,borderRadius:3,margin:10}}>
-                
-                    
-                </Block>
-                <Text style={{fontFamily:"kanitRegular", fontSize:15, color:"white",margin:2, marginRight:10}}>{item.title}</Text>
-
-
-            </Block>
-        </TouchableOpacity>
-      </Block>
+      <TouchableOpacity
+        style={styles.itemDateEvents}
+        onPress={() => onChageDateEvents(item)}
+      >
+        <Block
+          row
+          style={item.active ? styles.activeDays : styles.unActiveDays}
+        >
+          <Block
+            style={
+              item.key > 9
+                ? { alignSelf: "center", marginLeft: 9 }
+                : { alignSelf: "center", marginLeft: 15 }
+            }
+          >
+            <Text style={item.active ? styles.textDays : styles.untextDays}>
+              {item.key}
+            </Text>
+          </Block>
+        </Block>
+      </TouchableOpacity>
     );
   };
 
-  const [viewEvents, setViewEvents] = useState(false);
-  const events = [
-    {
-      title: "Meeting",
-      start: new Date(2021, 0, 30, 10, 0, 0),
-      end: new Date(2021, 0, 30, 12, 30, 0),
-    },
-    {
-      title: "Coffe Time",
-      start: new Date(2021, 0, 29, 11, 30, 0),
-      end: new Date(2021, 0, 29, 12, 30, 0),
-    },
-    {
-      title: "Tea Time",
-      start: new Date(2021, 0, 29, 11, 15, 0),
-      end: new Date(2021, 0, 29, 12, 30, 0),
-    },
-  ];
-  console.log(events);
+  const onRegistrationEvents = async () => {
+    await axios({
+      method: "POST",
+      url: API_URL.ACTIVITIES_LIST_HD_API,
+      headers: {
+        Accept: "*/*",
+        Authorization: "Bearer " + (await token),
+        "Content-Type": "application/json",
+      },
+      data: {
+        type: objEventsHD.TYPE_CODE,
+        title: objEventsHD.EVENT_NAME,
+
+        day: moment(objEventsHD.EVENT_DATE).format("DD"),
+        month: moment(objEventsHD.EVENT_DATE).format("MM"),
+        year: moment(objEventsHD.EVENT_DATE).format("YYYY"),
+
+        start_time: moment(objEventsHD.EVENT_FIRST_TIME).format("HH:mm:ss"),
+        end_time: moment(objEventsHD.EVENT_LAST_TIME).format("HH:mm:ss"),
+
+        participant: objEventsHD.PEOPLE,
+        full_name: objEventsHD.FULL_NAME,
+        telephone: objEventsHD.PHONE,
+        email: objEventsHD.EMAIL,
+      },
+    })
+      .then(function (response) {
+        ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+      })
+      .catch(function (error) {
+        console.log(error);
+        ToastAndroid.show(error.response.data.data, ToastAndroid.SHORT);
+      });
+  };
+
   return (
     <>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        scrollEnabled={!viewEvents}
-      >
-        {/* Title */}
-        <LinearGradient
-          colors={["#00cef2", "#00c4b7", "#00d184"]}
-          style={linerStyle.linearGradient}
-        >
-          <Block style={styles.blockTitle1}>
-            <Text style={styles.fontTitle}>ปฏิทินกิจกรรม</Text>
-          </Block>
-          <Block row style={styles.blockTitle2}>
-            <Block row style={{ width: "80%" }}>
-              <Text style={styles.fontTitle}>
-                เดือน{moment(objEventsHD.EVENT_MONTH).format("MMMM")}
-              </Text>
-              <Text style={styles.fontTitle}>
-                {parseInt(moment(objEventsHD.EVENT_MONTH).format("YYYY")) + 543}
-              </Text>
-            </Block>
-            <TouchableOpacity onPress={previousMonth}>
-              <Image
-                source={require("../../assets/icons/arrow_left.png")}
-                style={{ marginTop: 20 }}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={nextMonth}>
-              <Image
-                source={require("../../assets/icons/arrow_right.png")}
-                style={{ marginTop: 20 }}
-              />
-            </TouchableOpacity>
-          </Block>
-        </LinearGradient>
-
-        {/* Type Event */}
-        <Block>
-          <Block style={styles.containerEventType}>
-            <SafeAreaView style={{ flex: 1 }}>
-              <SectionList
-                contentContainerStyle={{
-                  paddingHorizontal: 0,
-                  paddingVertical: 0,
-                }}
-                stickySectionHeadersEnabled={false}
-                sections={EVENTS_TYPE}
-                scrollEnabled={false}
-                renderSectionHeader={({ section }) => (
-                  <>
-                    {section.horizontal ? (
-                      <>
-                        <FlatList
-                          horizontal
-                          data={section.data}
-                          renderItem={({ item }) => (
-                            <ListEventType item={item} />
-                          )}
-                          showsHorizontalScrollIndicator={false}
-                          showsVerticalScrollIndicator={false}
-                        />
-                      </>
-                    ) : null}
-                  </>
-                )}
-                renderItem={({ item, section }) => {
-                  if (section.horizontal) {
-                    return null;
-                  }
-                  return <ListItem item={item} />;
-                }}
-              />
-            </SafeAreaView>
-          </Block>
-        </Block>
-
-        {/* Time Events */}
-        <Block row style={{ backgroundColor: "#9864d0" }}>
-          <CheckBox
-            containerStyle={{ margin: 5 }}
-            checked={viewEvents}
-            onPress={() => setViewEvents(!viewEvents)}
-            checkedColor="#71D58E"
-          />
-          <Text
-            style={{
-              fontFamily: "kanitRegular",
-              color: "white",
-              fontSize: 15,
-              marginTop: 16,
-            }}
-          >
-            Lock Calendar
-          </Text>
-        </Block>
-        <Block>
-          <Calendar
-            events={events}
-            height={400}
-            style={{ color: "black" }}
-            mode="3days"
-            showTime={true}
-            // eventCellStyle={{backgroundColor:events[0].color}}
-            style={{fontFamily:"kanitRegular"}}
-          />
-        </Block>
-
-        {/* Block Register */}
-        <Block style={styles.blockRegisterBG}>
-          {/* Block1 */}
-          <Block>
-            <Block style={styles.blockTitle1}>
-              <Text style={styles.fontTitle2}>ลงทะเบียนจองพื้นที่</Text>
-            </Block>
-            <Block>
-              <Text style={styles.fontDescription}>เลือกประเภทกินกจจรม :</Text>
-              <DropDownPicker
-                items={typeEvents}
-                containerStyle={{
-                  height: 35,
-                  width: width - 40,
-                  alignSelf: "center",
-                  marginTop: 7,
-                }}
-                style={{ backgroundColor: "#f0f0f0" }}
-                itemStyle={{
-                  justifyContent: "flex-start",
-                }}
-                dropDownStyle={{ backgroundColor: "#f0f0f0" }}
-                placeholderStyle={{
-                  textAlign: "left",
-                  color: "gray",
-                  fontFamily: "kanitRegular",
-                }}
-                placeholder={"- โปรดเลือก -"}
-                labelStyle={{
-                  textAlign: "left",
-                  color: "#000",
-                  fontFamily: "kanitRegular",
-                }}
-                arrowColor={"white"}
-                arrowSize={18}
-                arrowStyle={{
-                  backgroundColor: "#02d483",
-                  borderRadius: 20,
-                  color: "white",
-                }}
-                onChangeItem={onChangeEventsType}
-              />
-            </Block>
-            <Block>
-              <Text style={styles.fontDescription}>ชื่องานกิจกรรม :</Text>
-              <Block style={styles.inputView}>
-                <TextInput
-                  style={styles.inputText}
-                  placeholder={"ชื่องาน.."}
-                  placeholderTextColor="#808080"
-                  value={objEventsHD.EVENT_NAME}
-                  onChangeText={onChangeEventsName}
-                />
-              </Block>
-            </Block>
-            <Block>
-              <Text style={styles.fontDescription}>วันที่กิจกรรม :</Text>
-              <Input
-                right
-                color="black"
-                style={styles.DateTime1}
-                value={objEventsHD.EVENT_DATE}
-                iconContent={
-                  <TouchableOpacity onPress={showDatePicker}>
-                    <Icons name="calendar-range" size={20} color="#02d483" />
+      <SafeAreaView style={{ flex: 1 }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={EVENTS_LIST}
+          renderSectionHeader={() => (
+            <>
+              {/* Title */}
+              <LinearGradient
+                colors={["#00cef2", "#00c4b7", "#00d184"]}
+                style={linerStyle.linearGradient}
+              >
+                <Block style={styles.blockTitle1}>
+                  <Text style={styles.fontTitle}>ปฏิทินกิจกรรม</Text>
+                </Block>
+                <Block row style={styles.blockTitle2}>
+                  <Block row style={{ width: "80%" }}>
+                    <Text style={styles.fontTitle}>
+                      เดือน{moment(objEventsHD.EVENT_MONTH).format("MMMM")}
+                    </Text>
+                    <Text style={styles.fontTitle}>
+                      {parseInt(
+                        moment(objEventsHD.EVENT_MONTH).format("YYYY")
+                      ) + 543}
+                    </Text>
+                  </Block>
+                  <TouchableOpacity onPress={previousMonth}>
+                    <Image
+                      source={require("../../assets/icons/arrow_left.png")}
+                      style={{ marginTop: 20 }}
+                    />
                   </TouchableOpacity>
-                }
+                  <TouchableOpacity onPress={nextMonth}>
+                    <Image
+                      source={require("../../assets/icons/arrow_right.png")}
+                      style={{ marginTop: 20 }}
+                    />
+                  </TouchableOpacity>
+                </Block>
+              </LinearGradient>
+
+              {/* Type Event */}
+              <Block style={styles.containerEventType}>
+                <FlatList
+                  horizontal={true}
+                  data={EVENTS_TYPE[0].data}
+                  renderItem={({ item }) => <ListEventType item={item} />}
+                  showsHorizontalScrollIndicator={false}
+                  showsVerticalScrollIndicator={false}
+                />
+              </Block>
+
+              {/* Time Events */}
+              <FlatList
+                horizontal={true}
+                data={listDays}
+                renderItem={({ item }) => <ListDateOfMonths item={item} />}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                keyExtractor={(item) => item.key.toString()}
+                listKey={(item) => item.key}
               />
-            </Block>
-            {/* Time */}
-            <Block row>
-              <Block>
-                <Text style={styles.fontDescription}>ตั้งแต่เวลา :</Text>
-                <Input
-                  right
-                  color="black"
-                  style={styles.DateTime2}
-                  value={objEventsHD.EVENT_FIRST_TIME}
-                  iconContent={
-                    <TouchableOpacity onPress={showTime1Picker}>
-                      <Icons name="clock" size={20} color="#02d483" />
-                    </TouchableOpacity>
-                  }
-                />
+              {/* Time Period */}
+              <Block style={{ backgroundColor: "white" }}>
+                {listPeriodEvent ? (
+                  <>
+                    {listPeriodEvent.map((item) => (
+                      <Block
+                        style={{
+                          backgroundColor:
+                            item.type == 3
+                              ? "#ff6600"
+                              : item.type == 1
+                              ? "#ff5cad"
+                              : "#ffa600",
+                          width: width - 20,
+                          height: 50,
+                          margin: 10,
+                          borderRadius: 5,
+                        }}
+                        key={item.title}
+                      >
+                        <Text style={styles.fontTimeEvents}>
+                          {item.start_time + " - " + item.end_time}
+                        </Text>
+                      </Block>
+                    ))}
+                  </>
+                ) : null}
               </Block>
-              <Block>
-                <Text style={styles.fontDescription}>ถึงเวลา :</Text>
-                <Input
-                  right
-                  color="black"
-                  style={styles.DateTime2}
-                  value={objEventsHD.EVENT_LAST_TIME}
-                  iconContent={
-                    <TouchableOpacity onPress={showTime2Picker}>
-                      <Icons name="clock" size={20} color="#02d483" />
-                    </TouchableOpacity>
-                  }
-                />
-              </Block>
-            </Block>
-            <Block>
-              <Text style={styles.fontDescription}>จำนวนผู้เข้าร่วม :</Text>
-              <Block style={styles.inputView}>
-                <TextInput
-                  style={styles.inputText}
-                  value={objEventsHD.PEOPLE}
-                  onChangeText={onChangeEventsPeople}
-                  keyboardType="numeric"
-                />
-              </Block>
-            </Block>
-          </Block>
 
-          <Block style={styles.block1Ends} />
-          {/* Block2 */}
-          <Block>
-            <Block style={styles.blockTitle2Ends}>
-              <Text style={styles.fontTitle2}>ข้อมูลผู้จอง</Text>
-            </Block>
-            <Block>
-              <Text style={styles.fontDescription}>ชื่อ-นามสกุล :</Text>
-              <Block style={styles.inputView}>
-                <TextInput
-                  style={styles.inputText}
-                  placeholder={"ชื่อ.."}
-                  placeholderTextColor="#808080"
-                  value={objEventsHD.FIRST_NAME}
-                  onChangeText={onChangeEventsFirstName}
-                />
-              </Block>
-            </Block>
-            <Block>
-              <Text style={styles.fontDescription}>เบอร์ติดต่อ :</Text>
-              <Block style={styles.inputView}>
-                <TextInput
-                  style={styles.inputText}
-                  placeholder={"นามสกุล.."}
-                  placeholderTextColor="#808080"
-                  value={objEventsHD.LAST_NAME}
-                  onChangeText={onChangeEventsLastName}
-                  keyboardType="phone-pad"
-                />
-              </Block>
-            </Block>
-            <Block>
-              <Text style={styles.fontDescription}>อีเมล :</Text>
-              <Block style={styles.inputView}>
-                <TextInput
-                  style={styles.inputText}
-                  placeholder={"อีเมล.."}
-                  placeholderTextColor="#808080"
-                  value={objEventsHD.EMAIL}
-                  onChangeText={onChangeEventsEmail}
-                  keyboardType="email-address"
-                />
-              </Block>
-            </Block>
-          </Block>
+              {/* Register Events */}
+              <Block style={styles.blockRegisterBG}>
+                {/* Block1 */}
+                <Block>
+                  <Block style={styles.blockTitle1}>
+                    <Text style={styles.fontTitle2}>ลงทะเบียนจองพื้นที่</Text>
+                  </Block>
+                  <Block>
+                    <Text style={styles.fontDescription}>
+                      เลือกประเภทกิจกจจรม :
+                    </Text>
+                    <DropDownPicker
+                      items={itemEvents}
+                      containerStyle={{
+                        height: 35,
+                        width: width - 40,
+                        alignSelf: "center",
+                        marginTop: 7,
+                      }}
+                      style={{ backgroundColor: "#f0f0f0" }}
+                      itemStyle={{
+                        justifyContent: "flex-start",
+                      }}
+                      dropDownStyle={{ backgroundColor: "#f0f0f0" }}
+                      placeholderStyle={{
+                        textAlign: "left",
+                        color: "gray",
+                        fontFamily: "kanitRegular",
+                      }}
+                      placeholder={"- โปรดเลือก -"}
+                      labelStyle={{
+                        textAlign: "left",
+                        color: "#000",
+                        fontFamily: "kanitRegular",
+                      }}
+                      arrowColor={"white"}
+                      arrowSize={18}
+                      arrowStyle={{
+                        backgroundColor: "#02d483",
+                        borderRadius: 20,
+                        color: "white",
+                      }}
+                      onChangeItem={onChangeEventsType}
+                    />
+                  </Block>
+                  <Block>
+                    <Text style={styles.fontDescription}>ชื่องานกิจกรรม :</Text>
+                    <Block style={styles.inputView}>
+                      <TextInput
+                        style={styles.inputText}
+                        placeholder={"ชื่องาน.."}
+                        placeholderTextColor="#808080"
+                        value={objEventsHD.EVENT_NAME}
+                        onChangeText={onChangeEventsName}
+                      />
+                    </Block>
+                  </Block>
+                  <Block>
+                    <Text style={styles.fontDescription}>วันที่กิจกรรม :</Text>
+                    <Input
+                      right
+                      color="black"
+                      style={styles.DateTime1}
+                      value={moment(objEventsHD.EVENT_DATE).format(
+                        "DD/MM/YYYY"
+                      )}
+                      iconContent={
+                        <TouchableOpacity onPress={showDatePicker}>
+                          <Icons
+                            name="calendar-range"
+                            size={20}
+                            color="#02d483"
+                          />
+                        </TouchableOpacity>
+                      }
+                    />
+                  </Block>
+                  {/* Time */}
+                  <Block row>
+                    <Block>
+                      <Text style={styles.fontDescription}>ตั้งแต่เวลา :</Text>
+                      <Input
+                        right
+                        color="black"
+                        style={styles.DateTime2}
+                        value={moment(objEventsHD.EVENT_FIRST_TIME).format(
+                          "HH:mm"
+                        )}
+                        iconContent={
+                          <TouchableOpacity onPress={showTime1Picker}>
+                            <Icons name="clock" size={20} color="#02d483" />
+                          </TouchableOpacity>
+                        }
+                      />
+                    </Block>
+                    <Block>
+                      <Text style={styles.fontDescription}>ถึงเวลา :</Text>
+                      <Input
+                        right
+                        color="black"
+                        style={styles.DateTime2}
+                        value={moment(objEventsHD.EVENT_LAST_TIME).format(
+                          "HH:mm"
+                        )}
+                        iconContent={
+                          <TouchableOpacity onPress={showTime2Picker}>
+                            <Icons name="clock" size={20} color="#02d483" />
+                          </TouchableOpacity>
+                        }
+                      />
+                    </Block>
+                  </Block>
+                  <Block>
+                    <Text style={styles.fontDescription}>
+                      จำนวนผู้เข้าร่วม :
+                    </Text>
+                    <Block style={styles.inputView}>
+                      <TextInput
+                        style={styles.inputText}
+                        value={objEventsHD.PEOPLE}
+                        onChangeText={onChangeEventsPeople}
+                        keyboardType="numeric"
+                      />
+                    </Block>
+                  </Block>
+                </Block>
 
-          {/* Button */}
-          <Block>
-            <Button
-              titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-              title={"ลงทะเบียน"}
-              type="solid"
-              buttonStyle={styles.buttonStyle1}
-              containerStyle={{ margin: 40 }}
-              onPress={() => props.navigation.navigate("Order Screen")}
-            />
-          </Block>
-        </Block>
+                <Block style={styles.block1Ends} />
+                {/* Block2 */}
+                <Block>
+                  <Block style={styles.blockTitle2Ends}>
+                    <Text style={styles.fontTitle2}>ข้อมูลผู้จอง</Text>
+                  </Block>
+                  <Block>
+                    <Text style={styles.fontDescription}>ชื่อ-นามสกุล :</Text>
+                    <Block style={styles.inputView}>
+                      <TextInput
+                        style={styles.inputText}
+                        placeholder={"ชื่อ.."}
+                        placeholderTextColor="#808080"
+                        value={objEventsHD.FULL_NAME}
+                        onChangeText={onChangeEventsFirstName}
+                        keyboardType={"default"}
+                      />
+                    </Block>
+                  </Block>
+                  <Block>
+                    <Text style={styles.fontDescription}>เบอร์ติดต่อ :</Text>
+                    <Block style={styles.inputView}>
+                      <TextInput
+                        style={styles.inputText}
+                        placeholder={"เบอร์โทร.."}
+                        placeholderTextColor="#808080"
+                        value={objEventsHD.PHONE}
+                        onChangeText={onChangeEventsPhone}
+                        keyboardType="phone-pad"
+                      />
+                    </Block>
+                  </Block>
+                  <Block>
+                    <Text style={styles.fontDescription}>อีเมล :</Text>
+                    <Block style={styles.inputView}>
+                      <TextInput
+                        style={styles.inputText}
+                        placeholder={"อีเมล.."}
+                        placeholderTextColor="#808080"
+                        value={objEventsHD.EMAIL}
+                        onChangeText={onChangeEventsEmail}
+                        keyboardType="email-address"
+                      />
+                    </Block>
+                  </Block>
+                </Block>
 
-        <WangdekInfo />
-      </ScrollView>
+                {/* Button */}
+                <Block>
+                  <Button
+                    titleStyle={{
+                      color: "white",
+                      fontFamily: "kanitRegular",
+                    }}
+                    title={"ลงทะเบียน"}
+                    type="solid"
+                    buttonStyle={styles.buttonStyle1}
+                    containerStyle={{ margin: 40 }}
+                    onPress={onRegistrationEvents}
+                  />
+                </Block>
+              </Block>
+            </>
+          )}
+          renderSectionFooter={() => <>{<WangdekInfo />}</>}
+          renderItem={() => {
+            return null;
+          }}
+        />
+      </SafeAreaView>
 
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
@@ -494,6 +664,8 @@ function Events(props) {
         onConfirm={handleConfirmTime2}
         onCancel={hideTime2Picker}
       />
+
+      <ModalLoading loading={loading} />
     </>
   );
 }
@@ -509,6 +681,10 @@ const styles = StyleSheet.create({
   itemEventType: {
     margin: 10,
     height: 100,
+  },
+  itemDateEvents: {
+    margin: 10,
+    height: 45,
   },
   blockTitle1: {
     borderBottomWidth: 0.5,
@@ -526,6 +702,37 @@ const styles = StyleSheet.create({
     height: 75,
     width: "95%",
     alignSelf: "center",
+  },
+  activeDays: {
+    width: 42,
+    height: 42,
+    borderRadius: 25,
+    backgroundColor: "#17d18a",
+  },
+  unActiveDays: {
+    width: 42,
+    height: 42,
+    borderRadius: 25,
+    backgroundColor: "white",
+  },
+  textDays: {
+    fontFamily: "kanitBold",
+    fontSize: 24,
+    color: "white",
+    textAlign: "center",
+  },
+  untextDays: {
+    fontFamily: "kanitBold",
+    fontSize: 24,
+    color: "#17d18a",
+    textAlign: "center",
+  },
+  fontTimeEvents: {
+    fontFamily: "kanitRegular",
+    fontSize: 20,
+    color: "white",
+    marginTop: 10,
+    marginLeft: 20,
   },
   fontTitle: {
     fontFamily: "kanitRegular",
@@ -631,30 +838,32 @@ const EVENTS_TYPE = [
     data: [
       {
         key: "1",
-        title: "งานวันเกิด",
-        color: "pink"
+        title: "Birthday",
+        color: "#ff5cad",
       },
       {
         key: "2",
-        title: "Worrkshop",
-        color: "orange"
+        title: "Workshop",
+        color: "#ffa600",
       },
       {
         key: "3",
-        title: "Worrkshop",
-        color: "green"
+        title: "Live stream",
+        color: "#ff6600",
       },
-      {
-        key: "4",
-        title: "Worrkshop",
-        color: "red"
-      },
-      {
-        key: "5",
-        title: "Worrkshop",
-        color: "yellow"
-      },
+    ],
+  },
+];
 
+const EVENTS_LIST = [
+  {
+    title: "Mock",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
     ],
   },
 ];

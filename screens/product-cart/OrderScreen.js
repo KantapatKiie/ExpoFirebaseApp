@@ -1,207 +1,259 @@
 import React, { useState, useEffect } from "react";
 import {
-  View,
   Image,
+  SafeAreaView,
+  FlatList,
   StyleSheet,
   Dimensions,
-  ScrollView,
-  Modal,
+  SectionList,
   TouchableOpacity,
+  ToastAndroid,
 } from "react-native";
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
 import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
-import * as ActionOrder from "../../actions/action-order-status/ActionOrder";
-import products from "../../constants/products";
+import { actions as ActionOrder } from "../../actions/action-order-status/ActionOrder";
+import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
+import { actions as ActionOrderStatus } from "../../actions/action-order-status/ActionOrderStatus.js";
+
 import WangdekInfo from "../../components/WangdekInfo";
 import { Icon } from "../../components/";
 import { Button } from "react-native-elements";
 import commaNumber from "comma-number";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
 
 const { height, width } = Dimensions.get("screen");
+const token = getToken();
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 function OrderScreen(props) {
-  const { objOrderScreen } = useSelector((state) => ({
-    objOrderScreen: state.actionOrder.objOrderScreen,
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  const { listTrCartScreen } = useSelector((state) => ({
+    listTrCartScreen: state.actionCart.listTrCartScreen,
   }));
 
+  const { objUseCoupon, objUseDelivery, objUseAddressDelivery } = useSelector(
+    (state) => ({
+      objUseCoupon: state.actionOrder.objUseCoupon,
+      objUseDelivery: state.actionOrder.objUseDelivery,
+      objUseAddressDelivery: state.actionOrder.objUseAddressDelivery,
+    })
+  );
+  const [listTrOrder, setListTrOrder] = useState();
+
   useEffect(() => {
-    // props.clearObjOrderScreen();
+    loadCartLists();
   }, []);
+  async function loadCartLists() {
+    await axios({
+      method: "GET",
+      url: API_URL.ADD_CART_ORDER_LISTVIEW_API,
+      headers: {
+        Accept: "*/*",
+        Authorization: "Bearer " + (await token),
+        "Content-Type": "application/json",
+      },
+    })
+      .then(async (response) => {
+        let newlst = await response.data.data;
+        setListTrOrder(newlst);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
 
-  const onChangeValue = (value) => {
-    let newObj = Object.assign({}, objOrderScreen);
-    newObj.COUNT = value;
-    props.setObjOrderScreen(newObj);
-  };
+  // Order List
+  const renderOrderLists = ({ item }) => {
+    return (
+      <Block style={styles.blockProduct} key={item.cart_id}>
+        <Block row>
+          <Block style={styles.blockSemiImage}>
+            <Image
+              source={{ uri: rootImage + item.product_image }}
+              style={styles.imageProduct}
+            />
+          </Block>
+          {/* Detail */}
+          <Block style={styles.blockSemiImage2}>
+            <Block style={{ width: 220 }}>
+              <Text style={styles.fontTitleProduct}>
+                {locale == "th" ? item.product_name_th : item.product_name_en}
+              </Text>
+            </Block>
 
-  //#region modalConfirm
-  const [modalVisible, setModalVisible] = useState(false);
-  const handleConfirm = (e) => {
-    setModalVisible(false);
+            <Block row style={{ marginTop: 60 }}>
+              <Text style={styles.detailText}>จำนวน : </Text>
+              <Text style={styles.detailText}>{item.quantity}</Text>
+            </Block>
+          </Block>
+        </Block>
+        {/* Price */}
+        <Block row style={{ margin: 15, alignSelf: "center" }}>
+          <Block style={{ width: "55%" }}>
+            <Text style={styles.fontPriceProductFullPrice}>
+              ฿{commaNumber(parseFloat(item.product_full_price).toFixed(2))}
+            </Text>
+          </Block>
+          <Block style={{ width: "45%" }}>
+            <Text style={styles.fontPriceProduct}>
+              ฿{commaNumber(parseFloat(item.product_price).toFixed(2))}
+            </Text>
+          </Block>
+        </Block>
+      </Block>
+    );
   };
-  const modalHeader = (
-    <View style={styles2.modalHeader}>
-      <Text style={styles2.title}>Notifications 📢</Text>
-      <View style={styles2.divider}></View>
-    </View>
-  );
-  const modalBody = (
-    <View style={styles2.modalBody}>
-      <Text style={styles2.bodyText}>
-        Are you sure you want to product confirm ?
-      </Text>
-    </View>
-  );
-  const modalFooter = (
-    <View style={styles2.modalFooter}>
-      <View style={styles2.divider}></View>
-      <View style={{ flexDirection: "row-reverse", margin: 10 }}>
-        <TouchableOpacity
-          style={{ ...styles2.actions, backgroundColor: "#ed6868" }}
-          onPress={() => {
-            setModalVisible(!modalVisible);
-          }}
-        >
-          <Text style={styles2.actionText}>No</Text>
+  // Other List
+  const onThisConfirmOrders = async () => {
+    if (listTrOrder.length > 0) {
+      if (objUseDelivery.id !== 0) {
+        if (objUseAddressDelivery.FIRST_NAME !== "") {
+          props.setListTrOrder(listTrOrder);
+          props.setObjUseCoupon(objUseCoupon);
+          props.setObjUseDelivery(objUseDelivery);
+          props.setObjUseAddressDelivery(objUseAddressDelivery);
+          props.navigation.navigate("Order Status Price Screen");
+        } else {
+          ToastAndroid.show("กรุณาเลือกที่อยู่ในการจัดส่ง", ToastAndroid.SHORT);
+        }
+      } else {
+        ToastAndroid.show("กรุณาเลือกช่องทางการจัดส่ง", ToastAndroid.SHORT);
+      }
+    } else {
+      ToastAndroid.show("ไม่มีสินค้าในตะกร้า", ToastAndroid.SHORT);
+      alert("ไม่มีสินค้าในตะกร้า");
+    }
+  };
+  const renderOtherList = ({ item }) => {
+    const onOtherChangepage = (item) => {
+      props.navigation.navigate(item.page);
+    };
+    return (
+      <Block style={styles.blockHeaderInfo} key={item.id}>
+        <TouchableOpacity onPress={() => onOtherChangepage(item)}>
+          <Block row middle space="between" style={{ paddingTop: 7 }}>
+            <Text style={styles.textOtherlist}>{item.text}</Text>
+            <Icon
+              name="angle-right"
+              family="font-awesome"
+              style={{ paddingRight: 15 }}
+            />
+          </Block>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={{ ...styles2.actions, backgroundColor: "#54bf6d" }}
-          onPress={(e) => handleConfirm(e)}
-        >
-          <Text style={styles2.actionText}>Yes</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-  const modalContainer = (
-    <View style={styles2.modalContainer}>
-      {modalHeader}
-      {modalBody}
-      {modalFooter}
-    </View>
-  );
-  const modal = (
-    <Modal
-      transparent={true}
-      visible={modalVisible}
-      onRequestClose={() => {
-        Alert.alert("Modal has been closed.");
-      }}
-    >
-      <View style={styles2.modal}>
-        <View>{modalContainer}</View>
-      </View>
-    </Modal>
-  );
-  //#endregion
+      </Block>
+    );
+  };
 
   return (
     <>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Title */}
-        <TouchableOpacity onPress={() => props.navigation.navigate("Cart")}>
-          <Block row style={styles.container}>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-              }}
-            >
-              {"<  "}คำสั่งซื้อ
-            </Text>
-          </Block>
-        </TouchableOpacity>
+      <SafeAreaView style={{ flex: 1 }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={CART_ORDERS_LIST}
+          renderSectionHeader={() => (
+            <>
+              {/* Title */}
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate("Cart")}
+              >
+                <Block row style={styles.container}>
+                  <Text
+                    style={{
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      fontSize: 18,
+                    }}
+                  >
+                    {"<  "}คำสั่งซื้อ
+                  </Text>
+                </Block>
+              </TouchableOpacity>
 
-        {products.map((item) => (
-          <Block style={styles.blockProduct} key={item.key}>
-            <Block row>
-              <Block style={styles.blockSemiImage}>
-                <Image
-                  source={{ uri: item.image }}
-                  style={styles.imageProduct}
+              {/* Product List */}
+              <FlatList
+                data={listTrOrder}
+                style={styles.containers}
+                renderItem={renderOrderLists}
+                numColumns={1}
+                keyExtractor={(item) => item.cart_id.toString()}
+              />
+
+              {/* List Other */}
+              <FlatList
+                data={otherListItem}
+                style={styles.containers}
+                renderItem={renderOtherList}
+                numColumns={1}
+                keyExtractor={(item) => item.id.toString()}
+                listKey={(item) => item.id}
+              />
+
+              {/* Button */}
+              <Block
+                row
+                style={{
+                  paddingTop: 40,
+                  paddingBottom: 40,
+                  alignSelf: "center",
+                }}
+              >
+                <Button
+                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                  title={"ซื้อสินค้าเพิ่มเติม"}
+                  type="solid"
+                  containerStyle={styles.blockButton1}
+                  buttonStyle={styles.buttonStyle1}
+                  onPress={() => props.navigation.navigate("Flash Sale")}
+                />
+                <Button
+                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                  title={"ดำเนินการต่อ"}
+                  type="solid"
+                  containerStyle={styles.blockButton2}
+                  buttonStyle={styles.buttonStyle2}
+                  onPress={onThisConfirmOrders}
                 />
               </Block>
-              <Block style={styles.blockSemiImage2}>
-                <Block style={{ height: "60%", width: "80%" }}>
-                  <Text style={styles.fontTitleProduct}>{item.title}</Text>
-                </Block>
-
-                <Block row>
-                  <Text style={styles.detailText}>จำนวน : </Text>
-                  <Text style={styles.detailText}>1</Text>
-                </Block>
-              </Block>
-            </Block>
-
-            <Block row style={{ width: "90%", alignSelf: "center" }}>
-              <Block style={{ width: "75%", alignSelf: "center" }}>
-                <Text style={styles.fontPriceProduct}>฿{commaNumber(item.price)}</Text>
-              </Block>
-              <Block style={{ width: "25%", alignSelf: "center" }}>
-                <Text style={styles.fontPriceProduct}>฿{commaNumber(item.price)}</Text>
-              </Block>
-            </Block>
-          </Block>
-        ))}
-
-        {infoItem.map((item) => (
-          <Block style={styles.blockHeaderInfo} key={item.key}>
-            <TouchableOpacity
-              onPress={() => props.navigation.navigate(item.page)}
-            >
-              <Block row middle space="between" style={{ paddingTop: 7 }}>
-                <Text
-                  style={{
-                    textAlign: "left",
-                    color: "black",
-                    fontSize: 17,
-                    fontFamily: "kanitRegular",
-                  }}
-                >
-                  {item.text}
-                </Text>
-                <Icon
-                  name="angle-right"
-                  family="font-awesome"
-                  style={{ paddingRight: 5 }}
-                />
-              </Block>
-            </TouchableOpacity>
-          </Block>
-        ))}
-
-        {/* Button */}
-        <Block
-          row
-          style={{ paddingTop: 40, paddingBottom: 40, alignSelf: "center" }}
-        >
-          <Button
-            titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-            title={"ซื้อสินค้าเพิ่เติม"}
-            type="solid"
-            containerStyle={styles.blockButton1}
-            buttonStyle={styles.buttonStyle1}
-            onPress={() => props.navigation.navigate("Home")}
-          />
-          <Button
-            titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-            title={"ดำเนินการต่อ"}
-            type="solid"
-            containerStyle={styles.blockButton2}
-            buttonStyle={styles.buttonStyle2}
-            onPress={() => props.navigation.navigate("Product Order")}
-          />
-        </Block>
-
-        <WangdekInfo />
-      </ScrollView>
-      {modal}
+            </>
+          )}
+          renderSectionFooter={() => <>{<WangdekInfo />}</>}
+          renderItem={() => {
+            return null;
+          }}
+        />
+      </SafeAreaView>
     </>
   );
 }
 
-export default connect(null, ActionOrder.actions)(OrderScreen);
+const mapActions = {
+  setobjOrderScreen: ActionOrder.setobjOrderScreen,
+  clearobjOrderScreen: ActionOrder.clearobjOrderScreen,
+  setListTrOrder: ActionOrder.setListTrOrder,
+  //option ActionOrder
+  setObjUseCoupon: ActionOrder.setObjUseCoupon,
+  setObjUseDelivery: ActionOrder.setObjUseDelivery,
+  setObjUseAddressDelivery: ActionOrder.setObjUseAddressDelivery,
+
+  setObjCartScreen: ActionCart.setObjCartScreen,
+  clearObjCartScreen: ActionCart.clearObjCartScreen,
+  setListTrCartScreen: ActionCart.setListTrCartScreen,
+
+  setObjOrderStatus: ActionOrderStatus.setObjOrderStatus,
+};
+
+export default connect(null, mapActions)(OrderScreen);
 
 const styles = StyleSheet.create({
   container: {
@@ -213,10 +265,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
   },
+  containers: {
+    flex: 1,
+    marginVertical: 20,
+  },
   blockProduct: {
     backgroundColor: "#ededed",
     width: width,
-    height: height / 4,
+    height: height / 4.2,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
   },
@@ -240,6 +296,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "black",
   },
+  fontPriceProductFullPrice: {
+    fontFamily: "kanitRegular",
+    fontSize: 18,
+    color: "#8f8f8f",
+    textDecorationLine: "line-through",
+    textDecorationStyle: "solid",
+  },
   blockButton1: {
     flexDirection: "row",
   },
@@ -260,81 +323,47 @@ const styles = StyleSheet.create({
   },
   blockHeaderInfo: {
     paddingLeft: 25,
-    paddingTop:8,
+    paddingTop: 8,
     backgroundColor: "#f7f7f7",
-    height:55,
-    borderBottomWidth:1,
-    borderBottomColor:"#e0e0e0"
+    height: 55,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+  },
+  textOtherlist: {
+    textAlign: "left",
+    color: "black",
+    fontSize: 17,
+    fontFamily: "kanitRegular",
   },
 });
 
-//Style Modal
-const styles2 = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modal: {
-    backgroundColor: "#00000099",
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  modalContainer: {
-    backgroundColor: "#f9fafb",
-    width: "80%",
-    borderRadius: 13,
-  },
-  modalHeader: {},
-  title: {
-    fontWeight: "bold",
-    fontSize: 20,
-    padding: 15,
-    color: "#000",
-  },
-  divider: {
-    width: "100%",
-    height: 1,
-    backgroundColor: "lightgray",
-  },
-  modalBody: {
-    backgroundColor: "#fff",
-    paddingVertical: 25,
-    paddingHorizontal: 10,
-  },
-  modalFooter: {},
-  actions: {
-    borderRadius: 5,
-    marginHorizontal: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  actionText: {
-    color: "#fff",
-  },
-  bloxStyle: {
-    marginTop: 10,
-  },
-});
-
-const infoItem = [
+const otherListItem = [
   {
-    key: "1",
+    id: "1",
     text: "ใช้ส่วนลด",
     page: "Use Coupon",
   },
   {
-    key: "2",
+    id: "2",
     text: "ช่องทางการจัดส่ง",
     page: "Use Delivery",
   },
   {
-    key: "3",
+    id: "3",
     text: "ที่อยู่ในการจัดส่ง",
     page: "Use Address Delivery",
   },
 ];
 
+const CART_ORDERS_LIST = [
+  {
+    title: "Mock",
+    horizontal: false,
+    data: [
+      {
+        key: "1",
+        uri: "",
+      },
+    ],
+  },
+];

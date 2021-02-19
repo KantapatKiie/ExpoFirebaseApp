@@ -13,6 +13,8 @@ import * as ActionProductActivity from "../actions/action-product/ActionProduct"
 import commaNumber from "comma-number";
 
 const { width } = Dimensions.get("screen");
+//const rootImage = "http://10.0.1.37:8080";
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 function Product(props) {
   const {
@@ -44,7 +46,6 @@ function Product(props) {
     newObj.FLASHSALE = false;
     props.setObjProductActivity(newObj);
   };
-
   return (
     <>
       <Block
@@ -56,7 +57,10 @@ function Product(props) {
         {/* Source Image */}
         <TouchableWithoutFeedback>
           <Block flex>
-            <Image source={{ uri: product.image }} style={imageStyles} />
+            <Image
+              source={{ uri: product.image }}
+              style={imageStyles}
+            />
           </Block>
         </TouchableWithoutFeedback>
         <TouchableOpacity onPress={onClickProducts}>
@@ -67,7 +71,7 @@ function Product(props) {
               muted={!priceColor}
               color={priceColor}
             >
-              ราคา : ฿{commaNumber(product.price)}
+              ราคา : ฿{commaNumber(parseFloat(product.price).toFixed(2))}
             </Text>
           </Block>
         </TouchableOpacity>

@@ -12,85 +12,610 @@ import {
   ImageBackground,
   Modal,
   ScrollView,
+  RefreshControl,
 } from "react-native";
 import axios from "axios";
-import { withNavigation } from "@react-navigation/compat";
-import { connect, useSelector } from "react-redux";
 import moment from "moment";
 import "moment-duration-format";
-import { StatusBar } from "expo-status-bar";
+import "moment/locale/th";
+import "moment/locale/en-au";
+import { withNavigation } from "@react-navigation/compat";
+import { connect, useSelector } from "react-redux";
 import { Block, Text, theme } from "galio-framework";
-import { Product } from "../components/";
-import products from "../constants/products";
-import { LinearGradient } from "expo-linear-gradient";
 import { formatTr } from "../i18n/I18nProvider";
-import * as ActionHome from "../actions/action-home/ActionHome";
+import { actions as ActionHome } from "../actions/action-home/ActionHome";
+import { actions as ActionProduct } from "../actions/action-product/ActionProduct";
+import { actions as ActionProductType } from "../actions/action-product-type/ActionProductType";
+import { actions as ActionNewsRelations } from "../actions/action-news-relations/ActionNewsRelations";
 import WangdekInfo from "../components/WangdekInfo";
-import CountDown from "react-native-countdown-component";
 import Icons from "react-native-vector-icons/MaterialIcons";
-
-// import { getToken } from "../store/mock/token";
-// let token = getToken();
+import { API_URL } from "../config/config.app";
+import { getToken } from "../store/mock/token";
+import CountDownEvent from "../components/CountDownEvent";
+import commaNumber from "comma-number";
+import ModalLoading from "../components/ModalLoading";
+import { ToastAndroid } from "react-native";
 
 const { width } = Dimensions.get("screen");
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
+let token = getToken();
+
+const defalutCouponList = [
+  {
+    id: "1",
+    code: "",
+    image: "/storage/8/coupon-1.png",
+    title1_th: "title1_th",
+    title1_en: "title1_en",
+    title2_th: "title2_th",
+    title2_en: "title2_en",
+    valid_from: "2021-02-03 15:15:00",
+    valid_until: "2021-02-03 15:15:00",
+  },
+];
+const defalutBestsaleProduct = [
+  {
+    id: 2,
+    name_th: "กระเป๋า เอ",
+    name_en: "Bag A",
+    image: "/storage/2/download-%281%29.jfif",
+    price: "1000.00",
+    total_quantity: "4",
+  },
+];
+const defalutPopularProduct = [
+  {
+    id: 2,
+    name_th: "กระเป๋า เอ",
+    name_en: "Bag A",
+    image: "/storage/2/download-%281%29.jfif",
+    price: "1000.00",
+    total_quantity: "4",
+  },
+];
+const defalutInformationList = [
+  {
+    id: 1,
+    type: "news",
+    title_th: "ข่าว 1",
+    title_en: "News 1",
+    short_description_th: "กกกกก กกดกดกดกด กดกดกดด",
+    short_description_en: "dfdfd dfdfd dfdfdfd fdfdfdf",
+    operate_datetime: "2021-02-16 07:11:58",
+    image: "/storage/85/download.jfif",
+  },
+];
 
 function Home(props) {
-  const { objHomeHD, disabledInput } = useSelector((state) => ({
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
+  //#region Time & Translate
+  let LeftTime = moment(new Date()).format("HH:mm");
+  
+  var VIEW_ALL = formatTr("VIEW_ALL").toString(); //View all
+  var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
+  var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
+  var NEWS_RELEASE = formatTr("NEWS_RELEASE").toString();
+  var READ_MORE = formatTr("READ_MORE").toString();
+
+  var SUNDAY = formatTr("SUNDAY").toString();
+  var MONDAY = formatTr("MONDAY").toString();
+  var TUESDAY = formatTr("TUESDAY").toString();
+  var WEDNESDAY = formatTr("WEDNESDAY").toString();
+  var THURSDAY = formatTr("THURSDAY").toString();
+  var FRIDAY = formatTr("FRIDAY").toString();
+  var SATURDAY = formatTr("SATURDAY").toString();
+  //#endregion
+
+  //Refresh Control
+  const [loading, setLoading] = useState(null);
+  const [refreshingPage, setRefreshingPage] = useState(false);
+  const onRefreshPageNow = React.useCallback(() => {
+    const wait = (timeout) => {
+      return new Promise((resolve) => setTimeout(resolve, timeout));
+    };
+    setRefreshingPage(true);
+    wait(1000).then(() => {
+      setTimeout(async () => {
+        await loadDataFlashsale();
+      }, 200);
+      setTimeout(async () => {
+        await loadDataCoupon();
+      }, 200);
+      loadDataProductLists();
+      loadDataNews();
+      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      setRefreshingPage(false);
+    });
+  }, []);
+
+  const { objHomeHD } = useSelector((state) => ({
     objHomeHD: state.actionHomeHD.objHomeHD,
-    disabledInput: state.actionHomeHD.disabledInput,
+  }));
+  const { objProductActivity } = useSelector((state) => ({
+    objProductActivity: state.actionProduct.objProductActivity,
+  }));
+  const { objProductType } = useSelector((state) => ({
+    objProductType: state.actionProductType.objProductType,
+  }));
+  const { objNewsRelationsHD } = useSelector((state) => ({
+    objNewsRelationsHD: state.actionNewsRelations.objNewsRelationsHD,
   }));
 
   useEffect(() => {
-    setModalVisible(false); // Popup Coupon
-    // FlashsaleOnLoad(); // Flashsale onLoad
+    // setModalVisible(false); // Popup Coupon
+    loadDataFlashsale();
+    loadDataCoupon();
+    loadDataProductLists();
+    loadDataNews();
   }, []);
 
-  const FlashsaleOnLoad = async () =>{
-    console.log("FlashsaleOnLoad");
-    await  axios
-    .get("http://wangdek.am2bmarketing.co.th/api/v1/flashsales?offset=1&limit=10")
-    .then(function (response) {
-      console.log(response.data);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
+  // Flashsale onLoad
+  const [countDownTime, setCountDownTime] = useState(objHomeHD.timeEnds);
+  async function loadDataFlashsale() {
+    await axios
+      .get(API_URL.FALSH_SALE_VIEW_API, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        params: {
+          page: 1,
+        },
+      })
+      .then(async (response) => {
+        var date = moment().utcOffset("+07:00").format("YYYY-MM-DD hh:mm:ss");
+        var expirydate = await response.data.data.end_at;
+        var diffr = moment.duration(moment(expirydate).diff(moment(date)));
+        var hours = parseInt(diffr.asHours());
+        var minutes = parseInt(diffr.minutes());
+        var seconds = parseInt(diffr.seconds());
+        let objNew = Object.assign({}, objHomeHD);
+        objNew.timeEnds = hours * 60 * 60 + minutes * 60 + seconds;
+        let newlistFlashsale = await response.data.data.lists;
+
+        setCountDownTime(objNew.timeEnds);
+        props.setObjHomeHD(objNew);
+        props.setListTrSearchHD(newlistFlashsale);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    setCountDownTime(objHomeHD.timeEnds);
   }
+  // Flashsale Detail
+  const onClickFalshsaleDetail = () => {
+    props.setListCouponHD(couponList);
+    props.navigation.navigate("Flashsale Product");
+  };
 
-  //Time Everthing
-  let LeftTime = moment(new Date()).format("HH:mm");
-  let TimeActDay = moment(new Date()).format("DD");
-  let TimeActMonth = moment(new Date()).format("MMM");
-  let TimeActivity = moment(new Date()).format("DD MMM YYYY   |   HH:mm ");
-
-  //FlatList Coupon
+  // Coupon
+  const [couponList, setCouponList] = useState(defalutCouponList);
+  const loadDataCoupon = async () => {
+    if ((await token) !== null && (await token) !== undefined) {
+      await axios
+        .get(API_URL.COUPON_LIST_TR_API, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          setCouponList(response.data.data);
+          props.setListCouponHD(response.data.data);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+  };
   const ListItemCoupon = ({ item }) => {
     return (
       <View style={styles2.item}>
-        <TouchableOpacity onPress={() => props.navigation.navigate("Basket")}>
+        <TouchableOpacity
+          onPress={() => props.navigation.navigate("My Coupon")}
+        >
           <Image
-            source={item.uri}
+            source={{ uri: rootImage + item.image }}
             style={{ width: 170, height: 80, margin: 10 }}
           />
         </TouchableOpacity>
       </View>
     );
   };
-  //FlatList Information
-  const ListItemInformation = ({ item }) => {
+  //Pop-up Coupon
+  const [modalVisible, setModalVisible] = useState(false);
+  const ModalNotification = () => {
+    const renderModalCouponList = ({ item }) => {
+      return (
+        <Block row style={{ marginBottom: 15 }}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={{ width: 130, height: 55 }}
+          />
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#00e099",
+              width: 80,
+              height: 24,
+              borderRadius: 20,
+              alignSelf: "center",
+              marginLeft: 15,
+            }}
+          >
+            <Text style={styles.fontCoupon}>COLLECT</Text>
+          </TouchableOpacity>
+        </Block>
+      );
+    };
+    return (
+      <>
+        <Modal
+          animationType="none"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(false);
+          }}
+        >
+          <Block style={styles.centeredView}>
+            <Block style={styles.modalView}>
+              <TouchableOpacity
+                onPress={() => {
+                  setModalVisible(false);
+                }}
+                style={{ alignSelf: "flex-end" }}
+              >
+                <Icons name="clear" size={20} color="black" />
+              </TouchableOpacity>
+              <Text style={styles.modalText}>You have received coupons</Text>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <SafeAreaView style={{ flex: 1 }}>
+                  <FlatList
+                    data={couponList}
+                    style={styles.containers}
+                    renderItem={renderModalCouponList}
+                    numColumns={1}
+                    keyExtractor={(item) => item.id.toString()}
+                  />
+                </SafeAreaView>
+              </ScrollView>
+              <TouchableOpacity
+                style={{ ...styles.openButton, backgroundColor: "#4a5aed" }}
+                onPress={() => {
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>OK</Text>
+              </TouchableOpacity>
+            </Block>
+          </Block>
+        </Modal>
+      </>
+    );
+  };
+
+  // Best selling
+  const [listBestsale, setListBestsale] = useState(defalutBestsaleProduct);
+  const [listPopularSale, setListPopularSale] = useState(defalutPopularProduct);
+  async function loadDataProductLists() {
+    await axios({
+      method: "GET",
+      url: API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API,
+      timeout: 2500,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      params: {
+        page: 1,
+      },
+    })
+      .then(async (resBestsale) => {
+        var lstBestSale = await resBestsale.data.data.product_lists;
+
+        let newlstBestsale = [];
+        for (let i = 0; i < 4; i++) {
+          if (lstBestSale[i] !== undefined) newlstBestsale.push(lstBestSale[i]);
+        }
+        //Popularity List
+        await axios({
+          method: "GET",
+          url: API_URL.POPULARITY_PRODUCT_LISTVIEW_API,
+          timeout: 2500,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: 1,
+          },
+        }).then(async (resPopuplar) => {
+          let lstPopular = await resPopuplar.data.data.product_lists;
+          let newlstPopular = [];
+          for (let i = 0; i < 4; i++) {
+            if (lstPopular[i] !== undefined) newlstPopular.push(lstPopular[i]);
+          }
+          if (newlstBestsale || lstPopular) {
+            setListBestsale(newlstBestsale);
+            setListPopularSale(lstPopular);
+          }
+        });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+  const renderBestsaler = ({ item }) => {
+    const selectProductBestsale = async (item) => {
+      setLoading(true);
+      await axios
+        .get(API_URL.PRODUCT_SEARCH_HD_API + item.id, {
+          headers: {
+            Accept: "application/json",
+            // Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        })
+        .then(function (response) {
+          let newObj = Object.assign({}, objProductActivity);
+          newObj.FLASHSALE = false;
+          newObj.product_id = response.data.data.id;
+
+          newObj.TITLE =
+            locale == "th"
+              ? response.data.data.name_th
+              : response.data.data.name_en;
+          if (locale == "th") {
+            newObj.DETAIL = response.data.data.description_th;
+          } else {
+            newObj.DETAIL = response.data.data.description_en;
+          }
+          newObj.IMAGE = response.data.data.image;
+          newObj.PRICE = response.data.data.price;
+          newObj.product_full_price = response.data.data.full_price;
+          newObj.stock = response.data.data.stock;
+          newObj.quantity = response.data.data.stock;
+          newObj.quantity = 1;
+          newObj.discount = 0;
+          if (locale == "th") {
+            newObj.product_info_th = response.data.data.info_th;
+          } else {
+            newObj.product_info_th = response.data.data.info_en;
+          }
+          newObj.product_favorite = response.data.data.favorite;
+
+          props.setObjProductActivity(newObj);
+          setLoading(false);
+
+          props.navigation.navigate("Products");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+    };
+    return (
+      <Block flex style={{ marginTop: 10, marginLeft: 7 }} key={item.id}>
+        <TouchableOpacity onPress={() => selectProductBestsale(item)}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={pdStyle.imageProduct}
+          />
+          <Block flex space="between" flex style={pdStyle.productDescription}>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 15,
+              }}
+            >
+              {locale == "th" ? item.name_th : item.name_en}
+            </Text>
+            <Block
+              style={{ borderBottomWidth: 1, borderBottomColor: "#e0e0e0" }}
+            ></Block>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 17,
+              }}
+            >
+              ราคา : {"฿"}
+              {commaNumber(parseFloat(item.price).toFixed(2))}
+            </Text>
+          </Block>
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+  const viewAllBestsaler = () => {
+    let newObj = Object.assign({}, objProductType);
+    newObj.API_TYPE = API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API;
+    newObj.HOME_TYPE = true;
+    props.setObjProductType(newObj);
+    props.navigation.navigate("Product Type");
+  };
+  const renderPopularsaler = ({ item }) => {
+    const selectProductPopulatrity = async (item) => {
+      setLoading(true);
+      await axios
+        .get(API_URL.PRODUCT_SEARCH_HD_API + item.id, {
+          headers: {
+            Accept: "application/json",
+            // Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+            // "X-localization": locale,
+          },
+        })
+        .then(function (response) {
+          let newObj = Object.assign({}, objProductActivity);
+          newObj.FLASHSALE = false;
+          newObj.product_id = response.data.data.id;
+
+          newObj.TITLE =
+            locale == "th"
+              ? response.data.data.name_th
+              : response.data.data.name_en;
+          if (locale == "th") {
+            newObj.DETAIL = response.data.data.description_th;
+          } else {
+            newObj.DETAIL = response.data.data.description_en;
+          }
+          newObj.IMAGE = response.data.data.image;
+          newObj.PRICE = response.data.data.price;
+          newObj.product_full_price = response.data.data.full_price;
+          newObj.stock = response.data.data.stock;
+          newObj.quantity = 1;
+          newObj.discount = 0;
+          if (locale == "th") {
+            newObj.product_info_th = response.data.data.info_th;
+          } else {
+            newObj.product_info_th = response.data.data.info_en;
+          }
+          newObj.product_favorite = response.data.data.favorite;
+
+          setLoading(false);
+          props.setObjProductActivity(newObj);
+          props.navigation.navigate("Products");
+        })
+        .catch(function (error) {
+          setLoading(false);
+          console.log(error);
+        });
+    };
+    return (
+      <Block flex style={{ marginTop: 10, marginLeft: 7 }} key={item.id}>
+        <TouchableOpacity onPress={() => selectProductPopulatrity(item)}>
+          <Image
+            source={{ uri: rootImage + item.image }}
+            style={pdStyle.imageProduct}
+          />
+          <Block flex style={pdStyle.productDescription}>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 15,
+              }}
+            >
+              {locale == "th" ? item.name_th : item.name_en}
+            </Text>
+            <Text
+              style={{
+                color: "black",
+                fontFamily: "kanitRegular",
+                fontSize: 17,
+                marginTop: 10,
+                borderTopWidth: 1,
+                borderTopColor: "#e0e0e0",
+              }}
+            >
+              ราคา : {"฿"}
+              {commaNumber(parseFloat(item.price).toFixed(2))}
+            </Text>
+          </Block>
+        </TouchableOpacity>
+      </Block>
+    );
+  };
+  const viewAllPopularity = () => {
+    let newObj = Object.assign({}, objProductType);
+    newObj.API_TYPE = API_URL.POPULARITY_PRODUCT_LISTVIEW_API;
+    newObj.HOME_TYPE = true;
+    props.setObjProductType(newObj);
+    props.navigation.navigate("Product Type");
+  };
+
+  // Information List
+  const [informationList, setInformationList] = useState(
+    defalutInformationList
+  );
+  async function loadDataNews() {
+    await axios
+      .get(API_URL.NEWS_EVENTS_RELATIONS_HD, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      })
+      .then(async (response) => {
+        let newlst = await response.data.data.filter(
+          (item) => item.type == "news"
+        );
+        setInformationList(newlst);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+  const renderInformation = ({ item }) => {
+    var fullDate = item.operate_datetime;
+    var colorItem = moment(item.operate_datetime).format("ddd", locale);
+    var colorEtc = "";
+
+    switch (colorItem) {
+      case locale != "th" ? SUNDAY.substring(0, 3) : SUNDAY:
+        colorItem = "#fc4353";
+        colorEtc = "#ba303c";
+        break;
+
+      case locale != "th" ? MONDAY.substring(0, 3) : MONDAY:
+        colorItem = "#fdb837";
+        colorEtc = "#cc952f";
+        break;
+      case locale != "th" ? TUESDAY.substring(0, 3) : TUESDAY:
+        colorItem = "#ec429a";
+        colorEtc = "#c93a84";
+        break;
+
+      case locale != "th" ? WEDNESDAY.substring(0, 3) : WEDNESDAY:
+        colorItem = "#10c990";
+        colorEtc = "#0c9c6f";
+        break;
+
+      case locale != "th" ? THURSDAY.substring(0, 3) : THURSDAY:
+        colorItem = "#fd761a";
+        colorEtc = "#c75e16";
+        break;
+
+      case locale != "th" ? FRIDAY.substring(0, 3) : FRIDAY:
+        colorItem = "#119bf6";
+        colorEtc = "#1080c9";
+        break;
+
+      case locale != "th" ? SATURDAY.substring(0, 3) : SATURDAY:
+        colorItem = "#c924a7";
+        colorEtc = "#961b7d";
+        break;
+
+      default:
+        break;
+    }
+
+    const onSelectNewsEvents = (item) => {
+      let objNews = Object.assign({}, objNewsRelationsHD);
+      props.navigation.navigate("News Relation Detail");
+    };
     return (
       <View style={styles2.items}>
         <Block flex>
           {/* Image */}
           <ImageBackground
             source={{
-              uri: item.uri,
+              uri: rootImage + item.image,
             }}
             style={styles2.itemPhotos}
           >
             <Block
               style={{
-                backgroundColor: item.color,
+                backgroundColor: colorItem,
                 width: 45,
                 height: 60,
                 borderRadius: 10,
@@ -107,7 +632,7 @@ function Home(props) {
                   textAlign: "center",
                 }}
               >
-                {TimeActDay}
+                {moment(fullDate).format("DD")}
               </Text>
               <Text
                 style={{
@@ -118,7 +643,7 @@ function Home(props) {
                   textAlign: "center",
                 }}
               >
-                {TimeActMonth}
+                {moment(fullDate).format("MMM")}
               </Text>
             </Block>
           </ImageBackground>
@@ -130,17 +655,21 @@ function Home(props) {
                 fontFamily: "kanitBold",
               }}
             >
-              {item.title}
+              {locale == "th" ? item.title_th : item.title_en}
             </Text>
-            <Text style={styles2.TextActivity}>{TimeActivity}</Text>
+            <Text style={styles2.TextActivity}>{moment(fullDate).format("LLLL")} </Text>
             <Text style={styles2.TextActivity}>&nbsp;</Text>
             {/* Detail Information */}
-            <Text style={styles2.TextActivity}>{item.body}</Text>
+            <Text style={styles2.TextActivity}>
+              {locale == "th"
+                ? item.short_description_th
+                : item.short_description_en}
+            </Text>
             <Text style={styles2.TextActivity}>&nbsp;</Text>
             <TouchableOpacity
-              onPress={() => props.navigation.navigate("Basket")}
+              onPress={() => onSelectNewsEvents(item)}
               style={{
-                backgroundColor: item.colorEtc,
+                backgroundColor: colorEtc,
                 borderRadius: 10,
                 width: 100,
                 Opacity: 0.5,
@@ -163,452 +692,240 @@ function Home(props) {
     );
   };
 
-  //#region PopupCoupon
-  const [modalVisible, setModalVisible] = useState(false);
-  const ModalNotification = () => {
-    return (
-      <>
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(false);
-          }}
-        >
-          <Block style={styles.centeredView}>
-            <Block style={styles.modalView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setModalVisible(false);
-                }}
-                style={{ alignSelf: "flex-end" }}
-              >
-                <Icons name="clear" size={20} color="black" />
-              </TouchableOpacity>
-              <Text style={styles.modalText}>You have received coupons</Text>
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <Block row style={{ marginBottom: 15 }}>
-                  <Image
-                    source={require("../assets/images/coupon/coupon-1-md.png")}
-                    style={{ width: 130, height: 55 }}
-                  />
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: "#00e099",
-                      width: 80,
-                      height: 24,
-                      borderRadius: 20,
-                      alignSelf: "center",
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Text style={styles.fontCoupon}>COLLECT</Text>
-                  </TouchableOpacity>
-                </Block>
-                <Block row style={{ marginBottom: 15 }}>
-                  <Image
-                    source={require("../assets/images/coupon/coupon-2-md.png")}
-                    style={{ width: 130, height: 55 }}
-                  />
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: "#00e099",
-                      width: 80,
-                      height: 24,
-                      borderRadius: 20,
-                      alignSelf: "center",
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Text style={styles.fontCoupon}>COLLECT</Text>
-                  </TouchableOpacity>
-                </Block>
-              </ScrollView>
-              <TouchableOpacity
-                style={{ ...styles.openButton, backgroundColor: "#4a5aed" }}
-                onPress={() => {
-                  setModalVisible(!modalVisible);
-                }}
-              >
-                <Text style={styles.textStyle}>OK</Text>
-              </TouchableOpacity>
-            </Block>
-          </Block>
-        </Modal>
-      </>
-    );
-  };
-  //#endregion
-
-  //#region Translate
-  var VIEW_ALL = formatTr("VIEW_ALL").toString(); //View all
-  var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
-  var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
-  var NEWS_RELEASE = formatTr("NEWS_RELEASE").toString();
-  var READ_MORE = formatTr("READ_MORE").toString();
-  //#endregion
-
   return (
     <>
-      <Block flex center style={styles.home}>
-        <View style={styles2.container}>
-          <StatusBar style="auto" />
-          <SafeAreaView style={{ flex: 1 }}>
-            <SectionList
-              // contentContainerStyle={{ paddingHorizontal: 10 }}
-              stickySectionHeadersEnabled={false}
-              sections={COUPON_LIST}
-              renderSectionHeader={({ section }) => (
-                <>
-                  {/* Festival */}
-                  <Block style={styles2.blockHeader}>
-                    <Text
-                      style={{
-                        textAlign: "center",
-                        color: "white",
-                        fontFamily: "kanitLight",
-                        fontSize: 15,
-                      }}
-                    >
-                      WANGDEKFEST ลดล้างสต็อกครึ่งปี : เริ่ม{LeftTime}
-                    </Text>
-                  </Block>
-                  {/* Flash Sale Count Down */}
-                  <TouchableHighlight
-                    onPress={() =>
-                      props.navigation.navigate("Flashsale Product")
-                    }
-                  >
-                    <LinearGradient
-                      colors={["#00cef2", "#00c4b7", "#00d184"]}
-                      style={linerStyle.linearGradient}
-                    >
-                      <Image
-                        source={require("../assets/images/flashsale_head.png")}
-                        style={{
-                          width: width - 50,
-                          height: 45,
-                          alignSelf: "center",
-                          marginTop: 20,
-                        }}
-                      />
-                      <Image
-                        source={require("../assets/images/onsale.png")}
-                        style={{
-                          width: 120,
-                          height: 50,
-                          marginTop: 20,
-                          marginLeft: 30,
-                        }}
-                      />
-                      {/* CountDownTime */}
-                      <Block style={linerStyle.BlockTime}>
-                        <CountDown
-                          size={22}
-                          until={70000}
-                          digitStyle={{
-                            backgroundColor: "#ff4545",
-                            height: 30,
-                            width: 40,
-                          }}
-                          style={{
-                            marginLeft: 20,
-                            marginBottom: 20,
-                          }}
-                          digitTxtStyle={{
-                            color: "white",
-                            fontSize: 18,
-                            fontFamily: "kanitRegular",
-                          }}
-                          timeToShow={["H", "M", "S"]}
-                          timeLabelStyle={{
-                            color: "white",
-                            fontWeight: "bold",
-                          }}
-                          timeLabels={{ d: null, h: null, m: null, s: null }}
-                          separatorStyle={{ color: "white", marginBottom: 3.5 }}
-                          showSeparator
-                          // onFinish={() => alert("Finished")}
-                        />
-                        <Image
-                          source={require("../assets/icons/arrow_right.png")}
-                        />
-                        {/* <Text style={timeStyle.timeTextArrow}>{">"}</Text> */}
-                      </Block>
-                    </LinearGradient>
-                  </TouchableHighlight>
-                  {/* Coupon */}
-                  <Block style={styles2.containerHeader}>
-                    {section.horizontal ? (
-                      <FlatList
-                        horizontal
-                        data={section.data}
-                        renderItem={({ item }) => (
-                          <ListItemCoupon item={item} />
-                        )}
-                        showsHorizontalScrollIndicator={false}
-                      />
-                    ) : null}
-                  </Block>
-                </>
-              )}
-              renderSectionFooter={() => (
-                <>
-                  {/* Best seller product */}
-                  <Block flex style={styles.textContainerBlock1}>
-                    <Text
-                      style={{
-                        fontSize: 25,
-                        color: "white",
-                        marginTop: 20,
-                        fontFamily: "kanitRegular",
-                      }}
-                    >
-                      {GOOD_PRODUCT}
-                    </Text>
-                    <Block flex style={{ marginTop: 25 }}>
-                      <Block flex style={styles.containerBlock}>
-                        <Block flex row>
-                          <Product
-                            product={products[7]}
-                            style={{ marginRight: theme.SIZES.BASE }}
-                          />
-                          <Product product={products[5]} />
-                        </Block>
-                      </Block>
-                      <Block flex style={styles.containerBlock}>
-                        <Block flex row>
-                          <Product
-                            product={products[6]}
-                            style={{ marginRight: theme.SIZES.BASE }}
-                          />
-                          <Product product={products[8]} />
-                        </Block>
-                      </Block>
-                    </Block>
-                  </Block>
-                  {/* Popular product */}
-                  <Block flex style={styles.textContainerBlock2}>
-                    <Text style={{ fontSize: 25, fontFamily: "kanitRegular" }}>
-                      {POPULAR_PRODUCT}
-                    </Text>
-                    <Block
-                      flex
-                      style={{
-                        marginTop: 25,
-                      }}
-                    >
-                      <Block flex style={styles.containerBlock}>
-                        <Block flex row>
-                          <Product
-                            product={products[1]}
-                            style={{ marginRight: theme.SIZES.BASE }}
-                          />
-                          <Product product={products[2]} />
-                        </Block>
-                      </Block>
-                    </Block>
-                    <Block flex style={styles.containerBlock}>
-                      <Block flex row>
-                        <Product
-                          product={products[3]}
-                          style={{ marginRight: theme.SIZES.BASE }}
-                        />
-                        <Product product={products[4]} />
-                      </Block>
-                    </Block>
-                    <TouchableOpacity
-                      onPress={() => props.navigation.navigate("Basket")}
-                    >
-                      <Text
-                        style={{
-                          alignSelf: "center",
-                          marginTop: 10,
-                          color: "black",
-                          fontFamily: "kanitRegular",
-                          borderBottomWidth: 5,
-                          borderBottomColor: "#00bcd1",
-                          borderRadius: 2,
-                        }}
-                      >
-                        {VIEW_ALL + " >"}
-                      </Text>
-                    </TouchableOpacity>
-                  </Block>
-                  {/* Public relations */}
-                  <Block
-                    flex
-                    style={{ backgroundColor: "#f7f7f7", marginBottom: 25 }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 25,
-                        color: "black",
-                        paddingTop: 25,
-                        alignSelf: "center",
-                        fontFamily: "kanitRegular",
-                      }}
-                    >
-                      {NEWS_RELEASE}
-                    </Text>
-                    <SafeAreaView style={{ flex: 1, marginTop: 25 }}>
-                      <SectionList
-                        stickySectionHeadersEnabled={false}
-                        sections={INFORMATION}
-                        renderSectionHeader={({ section }) => (
-                          <>
-                            <Block style={styles2.containerHeader2}>
-                              {section.horizontal ? (
-                                <FlatList
-                                  horizontal
-                                  data={section.data}
-                                  renderItem={({ item }) => (
-                                    <ListItemInformation item={item} />
-                                  )}
-                                  showsHorizontalScrollIndicator={false}
-                                />
-                              ) : null}
-                            </Block>
-                          </>
-                        )}
-                        // renderSectionFooter={() => <></>}
-                        renderItem={({ item, section }) => {
-                          if (section.horizontal) {
-                            return null;
-                          }
-                          return <ListItemInformation item={item} />;
-                        }}
-                      />
-                    </SafeAreaView>
-                  </Block>
-                  <TouchableOpacity
-                    onPress={() => props.navigation.navigate("News Relation")}
-                    style={{ marginBottom: 15 }}
-                  >
-                    <Text
-                      style={{
-                        alignSelf: "center",
-                        color: "black",
-                        fontFamily: "kanitRegular",
-                        borderBottomWidth: 5,
-                        borderBottomColor: "#00bcd1",
-                        borderRadius: 2,
-                      }}
-                      size={14}
-                      color={theme.COLORS.PRIMARY}
-                    >
-                      {VIEW_ALL + " >"}
-                    </Text>
-                  </TouchableOpacity>
-                  {/* Bottom info */}
-                  <WangdekInfo />
-                </>
-              )}
-              renderItem={({ item, section }) => {
-                if (section.horizontal) {
-                  return null;
-                }
-                return <ListItem item={item} />;
-              }}
+      <SafeAreaView style={{ flex: 1 }}>
+        <SectionList
+          stickySectionHeadersEnabled={false}
+          sections={HOME_LIST}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshingPage}
+              onRefresh={onRefreshPageNow}
             />
-          </SafeAreaView>
-        </View>
-      </Block>
+          }
+          renderSectionHeader={() => (
+            <>
+              {/* Festival */}
+              <Block style={styles2.blockHeader}>
+                <Text
+                  style={{
+                    textAlign: "center",
+                    color: "white",
+                    fontFamily: "kanitLight",
+                    fontSize: 15,
+                  }}
+                >
+                  WANGDEKFEST ลดล้างสต็อกครึ่งปี : เริ่ม{LeftTime}
+                </Text>
+              </Block>
+
+              {/* Count Down */}
+              <TouchableHighlight
+                style={{ width: width }}
+                onPress={onClickFalshsaleDetail}
+              >
+                <CountDownEvent times={countDownTime} />
+              </TouchableHighlight>
+
+              {/* Coupon */}
+              <Block style={styles2.containerHeader}>
+                <FlatList
+                  horizontal
+                  data={couponList}
+                  renderItem={({ item }) =>
+                    item.code !== "" && item.image ? (
+                      <ListItemCoupon item={item} />
+                    ) : null
+                  }
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item) => item.id.toString()}
+                />
+              </Block>
+            </>
+          )}
+          renderSectionFooter={() => (
+            <>
+              {/* Best seller product */}
+              <Block flex style={styles.textContainerBlock1}>
+                <Block style={{ alignSelf: "center", marginTop: 20 }}>
+                  <Text
+                    style={{
+                      fontSize: 27,
+                      color: "white",
+                      marginTop: 20,
+                      fontFamily: "kanitRegular",
+                      textAlign: "center",
+                    }}
+                  >
+                    {GOOD_PRODUCT}
+                  </Text>
+                </Block>
+                <FlatList
+                  data={listBestsale}
+                  style={styles.containers}
+                  renderItem={renderBestsaler}
+                  numColumns={2}
+                  keyExtractor={(item) => item.id.toString()}
+                  listKey={(item) => item.id.toString()}
+                />
+                <TouchableOpacity
+                  onPress={viewAllBestsaler}
+                  style={{ marginBottom: 40, marginTop: 15 }}
+                >
+                  <Text
+                    style={{
+                      alignSelf: "center",
+                      marginTop: 10,
+                      color: "white",
+                      fontFamily: "kanitRegular",
+                      borderBottomWidth: 5,
+                      borderBottomColor: "white",
+                      borderRadius: 2,
+                    }}
+                  >
+                    {VIEW_ALL + " >"}
+                  </Text>
+                </TouchableOpacity>
+              </Block>
+
+              {/* Popular product */}
+              <Block flex style={styles.textContainerBlock2}>
+                <Block style={{ alignSelf: "center", marginTop: 20 }}>
+                  <Text
+                    style={{
+                      fontSize: 25,
+                      fontFamily: "kanitRegular",
+                      textAlign: "center",
+                    }}
+                  >
+                    {POPULAR_PRODUCT}
+                  </Text>
+                </Block>
+                <FlatList
+                  data={listPopularSale}
+                  style={styles.containers}
+                  renderItem={renderPopularsaler}
+                  numColumns={2}
+                  keyExtractor={(item) => item.id.toString()}
+                  listKey={(item) => item.id.toString()}
+                />
+                <TouchableOpacity
+                  onPress={viewAllPopularity}
+                  style={{ marginBottom: 25, marginTop: 15 }}
+                >
+                  <Text
+                    style={{
+                      alignSelf: "center",
+                      marginTop: 10,
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      borderBottomWidth: 5,
+                      borderBottomColor: "#0fa8db",
+                      borderRadius: 2,
+                    }}
+                  >
+                    {VIEW_ALL + " >"}
+                  </Text>
+                </TouchableOpacity>
+              </Block>
+
+              {/* Public relations */}
+              <Block
+                flex
+                style={{ backgroundColor: "#f7f7f7", marginBottom: 25 }}
+              >
+                <Block style={{ alignSelf: "center", margin: 20 }}>
+                  <Text
+                    style={{
+                      fontSize: 25,
+                      color: "black",
+                      paddingTop: 25,
+                      alignSelf: "center",
+                      fontFamily: "kanitRegular",
+                    }}
+                  >
+                    {NEWS_RELEASE}
+                  </Text>
+                </Block>
+                <FlatList
+                  horizontal={true}
+                  data={informationList}
+                  renderItem={renderInformation}
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item) => item.id.toString()}
+                  listKey={(item) => item.id.toString()}
+                />
+
+                <TouchableOpacity
+                  onPress={() => props.navigation.navigate("News Relation")}
+                  style={{ marginBottom: 30, marginTop: 15 }}
+                >
+                  <Text
+                    style={{
+                      alignSelf: "center",
+                      color: "black",
+                      fontFamily: "kanitRegular",
+                      borderBottomWidth: 5,
+                      borderBottomColor: "#00bcd1",
+                      borderRadius: 2,
+                    }}
+                    size={14}
+                    color={theme.COLORS.PRIMARY}
+                  >
+                    {VIEW_ALL + " >"}
+                  </Text>
+                </TouchableOpacity>
+              </Block>
+
+              <WangdekInfo />
+            </>
+          )}
+          renderItem={() => {
+            return null;
+          }}
+        />
+      </SafeAreaView>
       <ModalNotification />
+      <ModalLoading loading={loading} />
     </>
   );
 }
 
-export default withNavigation(connect(null, ActionHome.actions)(Home));
+const mapActions = {
+  setObjHomeHD: ActionHome.setObjHomeHD,
+  clearObjHomeHD: ActionHome.clearObjHomeHD,
+  setListTrSearchHD: ActionHome.setListTrSearchHD,
+  setListCouponHD: ActionHome.setListCouponHD,
+  pushListTrSearchHD: ActionHome.pushListTrSearchHD,
 
-const COUPON_LIST = [
+  //Product Detail
+  setObjProductActivity: ActionProduct.setObjProductActivity,
+  clearObjProductActivity: ActionProduct.clearObjProductActivity,
+  setListTrProductActivity: ActionProduct.setListTrProductActivity,
+  pushListTrProductActivity: ActionProduct.pushListTrProductActivity,
+
+  //Product Type
+  setObjProductType: ActionProductType.setObjProductType,
+  clearObjProductType: ActionProductType.clearObjProductType,
+  setListTrProductType: ActionProductType.setListTrProductType,
+  pushListTrProductType: ActionProductType.pushListTrProductType,
+
+  // News Relations
+  setObjNewsRelationsHD: ActionNewsRelations.setObjNewsRelationsHD,
+  setListTrNewsRelationsHD: ActionNewsRelations.setListTrNewsRelationsHD,
+};
+
+export default withNavigation(connect(null, mapActions)(Home));
+
+const HOME_LIST = [
   {
-    title: "Discount",
+    title: "Mock",
     horizontal: true,
     data: [
       {
         key: "1",
-        uri: require("../assets/images/coupon/coupon-1.png"),
-      },
-      {
-        key: "2",
-        uri: require("../assets/images/coupon/coupon-2.png"),
-      },
-    ],
-  },
-];
-
-const INFORMATION = [
-  {
-    title: "Information",
-    horizontal: true,
-    data: [
-      {
-        key: "1",
-        title: "Activity 1",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#fdb837",
-        colorEtc: "#cc952f",
-        uri: "https://picsum.photos/id/1/200",
-      },
-      {
-        key: "2",
-        title: "Activity 2",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#ec429a",
-        colorEtc: "#c93a84",
-        uri: "https://picsum.photos/id/10/200",
-      },
-
-      {
-        key: "3",
-        title: "Activity 3",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#10c990",
-        colorEtc: "#0c9c6f",
-        uri: "https://picsum.photos/id/1002/200",
-      },
-      {
-        key: "4",
-        title: "Activity 4",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#fd761a",
-        colorEtc: "#c75e16",
-        uri: "https://picsum.photos/id/1006/200",
-      },
-      {
-        key: "5",
-        title: "Activity 5",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#119bf6",
-        colorEtc: "#1080c9",
-        uri: "https://picsum.photos/id/1008/200",
-      },
-
-      {
-        key: "6",
-        title: "Activity 6",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#c924a7",
-        colorEtc: "#961b7d",
-        uri: "https://picsum.photos/id/1008/200",
-      },
-
-      {
-        key: "7",
-        title: "Activity 7",
-        body:
-          "Barbie LittleBarbie LittleBarbie LittleBarbie LittleBarbie Little",
-        color: "#fc4353",
-        colorEtc: "#ba303c",
-        uri: "https://picsum.photos/id/1008/200",
+        uri: "../assets/images/coupon/coupon-1.png",
       },
     ],
   },
@@ -618,6 +935,10 @@ const styles = StyleSheet.create({
   home: {
     width: width,
   },
+  containers: {
+    flex: 1,
+    marginVertical: 20,
+  },
   containerBlock: {
     flex: 1,
     flexDirection: "row",
@@ -626,15 +947,13 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   textContainerBlock1: {
-    alignItems: "center",
-    alignSelf: "center",
-    backgroundColor: "#00d184",
+    backgroundColor: "#10c985",
     padding: 5,
-    // marginTop: 10,
+    width: width,
+    borderTopWidth: 1,
+    borderTopColor: "#9ee390",
   },
   textContainerBlock2: {
-    alignItems: "center",
-    alignSelf: "center",
     backgroundColor: "#ffffff",
     marginTop: 25,
     padding: 5,
@@ -751,13 +1070,14 @@ const styles2 = StyleSheet.create({
     backgroundColor: "white",
   },
   containerHeader: {
-    backgroundColor: "#4967ad",
+    backgroundColor: "#486ec7",
   },
   blockHeader: {
     padding: 8,
     paddingLeft: 15,
     backgroundColor: "#486ec7",
     flexDirection: "column",
+    width: width,
   },
   blockHeaderInfo: {
     padding: 8,
@@ -802,76 +1122,51 @@ const styles2 = StyleSheet.create({
   },
 });
 
-const linerStyle = StyleSheet.create({
-  container: {
-    flex: 1,
+const pdStyle = StyleSheet.create({
+  image: {
+    borderRadius: 4,
+    marginTop: -20,
+  },
+  textContainerBlock1: {
+    padding: 5,
+    flexWrap: "wrap",
+  },
+  imageProduct: {
+    resizeMode: "cover",
+    width: 180,
+    height: 150,
+    borderTopRightRadius: 2,
+    borderTopLeftRadius: 2,
+  },
+  productText: {
+    width: 180,
+    height: 80,
+  },
+  productDescription: {
+    width: 180,
+    height: 80,
+    padding: 10,
+    backgroundColor: "white",
+    borderBottomEndRadius: 3,
+    borderBottomLeftRadius: 3,
+    shadowColor: theme.COLORS.BLACK,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    elevation: 2,
+  },
+  item: {
+    backgroundColor: "#4D243D",
     alignItems: "center",
     justifyContent: "center",
-  },
-  linearGradient: {
-    justifyContent: "flex-end",
-    height: 150,
-  },
-  BlockTime: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    alignSelf: "flex-end",
-    marginBottom: 5,
-    marginRight: 5,
+    margin: 5,
+    height: width / 3, // approximate a square
+  },
+  itemInvisible: {
+    backgroundColor: "transparent",
+  },
+  itemText: {
+    color: "#fff",
   },
 });
-
-const timeStyle = StyleSheet.create({
-  timeText: {
-    fontWeight: "800",
-    fontSize: 24,
-    color: "white",
-    marginBottom: 5,
-    textAlign: "center",
-    fontFamily: "kanitRegular",
-  },
-  timeTextArrow: {
-    fontWeight: "500",
-    fontSize: 22,
-    color: "white",
-    paddingLeft: 10,
-    paddingRight: 3,
-    marginBottom: 5,
-    fontFamily: "kanitRegular",
-  },
-  timeTextBlock: {
-    fontWeight: "bold",
-    fontSize: 25,
-    color: "white",
-    paddingLeft: 3,
-    paddingRight: 3,
-    marginBottom: 7,
-    fontFamily: "kanitRegular",
-  },
-});
-
-// //#region CountDown-Date
-// const [stateTime, setStateTime] = useState({
-//   eventDate: moment.duration().add({ hours: 12, minutes: 34, seconds: 56 }), // add 9 full days, 3 hours, 40 minutes and 50 seconds
-//   hours: 0,
-//   mins: 0,
-//   secs: 0,
-// });
-// const CountdownTime = async () => {
-//   await setInterval(() => {
-//     let { eventDate } = stateTime;
-//     eventDate = eventDate.subtract(1, "s");
-//     const hours = eventDate.hours();
-//     const mins = eventDate.minutes();
-//     const secs = eventDate.seconds();
-
-//     setStateTime({
-//       hours,
-//       mins,
-//       secs,
-//       eventDate,
-//     });
-//   }, 1000);
-// };
-// //#endregion

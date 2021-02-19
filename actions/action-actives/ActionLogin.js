@@ -14,6 +14,7 @@ const initialState = {
   objLoginHD: {
     EMAIL: "",
     PASSWORD: "",
+    IMAGE: "",
     TOKEN: "",
     ID: 0,
     GUEST: 0,
@@ -38,18 +39,18 @@ const initialState = {
     SUB_DISTRICT_NAME: "",
     ZIP_CODE: "10000",
     ADDRESS_FULL_NAME: "aa",
-    // INSERT_DT: moment(new Date()).format("YYYY-MM-DDT00:00:00"),
 
     //Push List EditProfile
     profile_id: 5,
     sex: 1,
-    birthday: "0000-00-00",
+    birthday: moment(new Date()).format("YYYY-MM-DD"),
     telephone: "1",
     address: "a",
     province_id: 1,
     district_id: 1,
     sub_district_id: 1,
     postcode: "1",
+    receive_info: 0,
 
     address_deliveries_id: 5,
     address_deliveries: "a",
@@ -58,6 +59,9 @@ const initialState = {
     sub_district_id_deliveries: 1,
     postcode_deliveries: "1",
     telephone_deliveries: "1",
+
+    ORDER_COMPLETED: 0,
+    ORDER_CANCELLED: 0,
   },
   listTrLoginHD: [],
 };

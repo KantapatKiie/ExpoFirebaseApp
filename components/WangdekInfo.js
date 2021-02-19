@@ -1,12 +1,10 @@
 import React from "react";
-import { StyleSheet, Dimensions, Text, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import { withNavigation } from "@react-navigation/compat";
 import { Icon } from "../components/";
 import { formatTr } from "../i18n/I18nProvider";
 import { Block } from "galio-framework";
 import infoList from "../constants/InfoList";
-
-const { width } = Dimensions.get("screen");
 
 function WangdekInfo(props) {
   return (

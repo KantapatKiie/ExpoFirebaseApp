@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Image, StyleSheet, LogBox } from "react-native";
+import { Image, StyleSheet } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Header } from "../components";
@@ -7,7 +7,7 @@ import { connect } from "react-redux";
 import * as ActionLogin from "../actions/action-actives/ActionLogin";
 import * as firebase from "firebase";
 import * as Notifications from "expo-notifications";
-// import * as Permissions from "expo-permissions";
+import * as Permissions from "expo-permissions";
 // Screen //
 import HomeScreen from "../screens/Home";
 import ProfileScreen from "../screens/Profile";
@@ -34,6 +34,7 @@ import HistoryOrderScreen from "../screens/order-status/HistoryOrder";
 import OrderStatusScreen from "../screens/order-status/OrderStatus";
 //Order Screen & Notification-order
 import OrderScreen from "../screens/product-cart/OrderScreen";
+import OrderStatusPriceScreen from "../screens/product-cart/OrderStatusPriceScreen";
 import UseCouponScreen from "../screens/product-cart/notification-order-screen/UseCoupon";
 import UseDeliveryScreen from "../screens/product-cart/notification-order-screen/UseDelivery";
 import UseAddressDeliveryScreen from "../screens/product-cart/notification-order-screen/UseAddressDelivery";
@@ -46,9 +47,11 @@ import NewsScreen from "../screens/notifications/News";
 import AboutUsScreen from "../screens/about/AboutUs";
 import NewsRelationScreen from "../screens/notifications/NewsRelation";
 import NewsRelationDetailScreen from "../screens/notifications/NewsRelationDetail";
+import TermConditionScreen from "../screens/notifications/TermConditions";
+import PrivacyPolicyScreen from "../screens/notifications/PrivacyPolicy";
 import MyCouponScreen from "../screens/coupon/MyCoupon";
 
-//SET FIREBASE-CONFIG
+//SET FIREBASE-CONFIG & NOTIFICATIONS-CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyCJcBZXaJYkEn49dfUiqbKW2H5FWLgmKrQ",
   authDomain: "fir-ntms-app.firebaseapp.com",
@@ -62,11 +65,10 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
-//SET NOTIFICATIONS-CONFIG
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
-    shouldPlaySound: false,
+    shouldPlaySound: true,
     shouldSetBadge: false,
   }),
 });
@@ -534,19 +536,71 @@ function NewsRelationStack() {
 function NewsRelationDetailStack() {
   return (
     <Stack.Navigator
-      initialRouteName="News Realtion Detail"
+      initialRouteName="News Relation Detail"
       mode="card"
       headerMode="screen"
     >
       <Stack.Screen
-        name="News Realtion Detail"
+        name="News Relation Detail"
         component={NewsRelationDetailScreen}
         options={{
           header: ({ navigation, scene }) => (
             <Header
               search
               tabs
-              title="News Realtion Detail"
+              title="News Relation Detail"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function TermConditionStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Term Conditions"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Term Conditions"
+        component={TermConditionScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Term Conditions"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function PrivacyPolicyStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Privacy Policy"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Privacy Policy"
+        component={PrivacyPolicyScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Privacy Policy"
               scene={scene}
               navigation={navigation}
             />
@@ -839,6 +893,31 @@ function OrderScreenStack() {
     </Stack.Navigator>
   );
 }
+function OrderStatusPriceStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Order Status Price Screen"
+      mode="card"
+      headerMode="screen"
+    >
+      <Stack.Screen
+        name="Order Status Price Screen"
+        component={OrderStatusPriceScreen}
+        options={{
+          header: ({ navigation, scene }) => (
+            <Header
+              search
+              tabs
+              title="Order Status Price Screen"
+              scene={scene}
+              navigation={navigation}
+            />
+          ),
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
 function UseCouponStack() {
   return (
     <Stack.Navigator
@@ -1014,7 +1093,7 @@ function MyTabs() {
 }
 
 function OnboardingStack(props) {
-  // //#region BackpUp Firebase
+  //#region BackpUp Firebase
   // const [expoPushToken, setExpoPushToken] = useState("");
   // const [notification, setNotification] = useState(false);
   // const notificationListener = useRef();
@@ -1028,7 +1107,7 @@ function OnboardingStack(props) {
   //   notificationListener.current = Notifications.addNotificationReceivedListener(
   //     (notification) => {
   //       setNotification(notification);
-  //       console.log(notification);
+
   //     }
   //   );
   //   responseListener.current = Notifications.addNotificationResponseReceivedListener(
@@ -1058,10 +1137,12 @@ function OnboardingStack(props) {
   //     return;
   //   }
   //   token = (await Notifications.getExpoPushTokenAsync()).data;
+  //   // token = (await Notifications.getDevicePushTokenAsync()).data;
+  //   console.log(token);
+
   //   firebase.database().ref("ExpoToken").set({
   //     Token: token,
   //   });
-  //   console.log(token);
 
   //   if (Platform.OS === "android") {
   //     await Notifications.setNotificationChannelAsync("default", {
@@ -1073,10 +1154,8 @@ function OnboardingStack(props) {
   //   }
   //   return token;
   // }
-  // //#endregion
-  useEffect(() => {
-    LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
-  }, []);
+  //#endregion
+
   return (
     <>
       <Stack.Navigator>
@@ -1171,6 +1250,16 @@ function OnboardingStack(props) {
           options={{ header: () => null }}
         />
         <Stack.Screen
+          name="Term Conditions"
+          component={TermConditionStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Privacy Policy"
+          component={PrivacyPolicyStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
           name="History View"
           component={HistoryViewStack}
           options={{ header: () => null }}
@@ -1213,6 +1302,11 @@ function OnboardingStack(props) {
         <Stack.Screen
           name="Order Screen"
           component={OrderScreenStack}
+          options={{ header: () => null }}
+        />
+        <Stack.Screen
+          name="Order Status Price Screen"
+          component={OrderStatusPriceStack}
           options={{ header: () => null }}
         />
         <Stack.Screen
