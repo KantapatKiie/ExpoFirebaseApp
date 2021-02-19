@@ -21,7 +21,7 @@ function ModalLoading (props){
       transparent={true}
       animationType={"fade"}
       visible={loading}
-      style={{height: 300, width: 300}}
+      style={{height: height, width: width}}
     >
       <View style={styles.modalBackground}>
         <View style={styles.activityIndicatorWrapper}>
@@ -40,14 +40,13 @@ function ModalLoading (props){
 const styles = StyleSheet.create({
   modalBackground: {
     flex: 1,
-    height: "100%",
+    height: height,
+    width:width,
     alignItems: "center",
     justifyContent: "center",
-    margin: 0,
     backgroundColor: "#00000040",
   },
   activityIndicatorWrapper: {
-    // backgroundColor: '#FFFFFF',
     height: 120,
     width: 120,
     borderRadius: 12,

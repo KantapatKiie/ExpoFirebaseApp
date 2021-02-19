@@ -411,11 +411,12 @@ function ProductDetail(props) {
               initValue={parseInt(objProductActivity.quantity)}
               value={parseInt(objProductActivity.quantity)}
               onChange={(value) => onChangeCountProduct(value)}
-              totalWidth={125}
-              totalHeight={32}
+              totalWidth={128}
+              totalHeight={35}
               iconSize={18}
+              minValue={0}
+              maxValue={objProductActivity.stock}
               step={1}
-              valueType="real"
               type="plus-minus"
               rounded={false}
               textColor="black"

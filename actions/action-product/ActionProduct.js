@@ -36,6 +36,7 @@ const initialState = {
     product_brand: "Coming",
     product_stock: 10,
     product_favorite: 1,
+    stock: 1,
     quantity: 1,
     amount: 1,
     discount: 1,

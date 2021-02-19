@@ -94,6 +94,7 @@ function Promotions(props) {
           newObj.IMAGE = response.data.data.image;
           newObj.PRICE = response.data.data.price;
           newObj.product_full_price = response.data.data.full_price;
+          newObj.stock = response.data.data.stock;
           newObj.quantity = 1;
           newObj.discount = 0;
           if (locale == "th") {

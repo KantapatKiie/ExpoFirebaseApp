@@ -9,6 +9,7 @@ import {
   View,
   Image,
   FlatList,
+  SafeAreaView
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -23,7 +24,7 @@ import { getToken } from "../store/mock/token";
 import { connect, useSelector } from "react-redux";
 import { actions as ActionProductType } from "../actions/action-product-type/ActionProductType";
 import ModalLoading from "../components/ModalLoading";
-import { SafeAreaView } from "react-native";
+import SvgUri from "expo-svg-uri";
 
 const { width } = Dimensions.get("window");
 let token = getToken();
@@ -142,6 +143,7 @@ function Header(props) {
         });
       setLoading(false);
     };
+    console.log(rootImage + item.image);
     return (
       <Block style={styles2.itemType}>
         <TouchableOpacity onPress={() => categoryProductType(item)}>
@@ -149,6 +151,11 @@ function Header(props) {
             source={{ uri: rootImage + item.image }}
             style={{ width: 74, height: 64 }}
           />
+          {/* <SvgUri
+            width={200}
+            height={200}
+            source={{ uri: rootImage + item.image }}
+          /> */}
         </TouchableOpacity>
       </Block>
     );

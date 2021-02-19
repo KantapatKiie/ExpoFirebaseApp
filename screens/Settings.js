@@ -13,11 +13,8 @@ import { formatTr } from "../i18n/I18nProvider";
 const { width } = Dimensions.get("screen");
 
 function Settings(props) {
-  const [state, setState] = useState({});
-  const toggleSwitch = (switchNumber) =>
-    setState({ [switchNumber]: !state[switchNumber] });
-
-  const [language, setLanguage] = useState(props.lang);
+  const { lang } = props;
+  const [language, setLanguage] = useState(lang);
   const itemLanguage = [
     {
       label: "Thai",
@@ -58,11 +55,11 @@ function Settings(props) {
         containerStyle={{ height: 40, width: width - 20, marginTop:10,alignSelf:"center" }}
         style={{ backgroundColor: "#fafafa"}}
         itemStyle={{
-          justifyContent: "flex-start",
+          justifyContent: "center",
         }}
         dropDownStyle={{ backgroundColor: "#fafafa" }}
         placeholderStyle={{
-          textAlign: "left",
+          textAlign: "center",
           color: "gray",
           fontFamily: "kanitRegular",
         }}
@@ -79,7 +76,7 @@ function Settings(props) {
           borderRadius: 20,
           color: "white",
         }}
-        defaultValue={language}
+        // defaultValue={lang}
         onChangeItem={onChangeLanguage}
       />
     </View>

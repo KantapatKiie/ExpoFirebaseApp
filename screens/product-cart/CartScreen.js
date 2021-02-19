@@ -90,7 +90,6 @@ function CartScreen(props) {
         let newlst = await response.data.data;
         setListCarts(newlst);
         setLoading(false);
-        // props.setListTrCartScreen(response.data.data)
       })
       .catch(function (error) {
         setLoading(true);
@@ -130,6 +129,7 @@ function CartScreen(props) {
           console.log(false);
         });
     };
+    console.log(item.stock)
     return (
       <Block style={styles.blockProduct} key={item.cart_id}>
         <Block row>
@@ -158,6 +158,7 @@ function CartScreen(props) {
                 iconSize={18}
                 step={1}
                 minValue={0}
+                maxValue={item.stock}
                 valueType="integer"
                 type="plus-minus"
                 rounded={false}

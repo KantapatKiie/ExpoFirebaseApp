@@ -34,11 +34,12 @@ function HistoryView(props) {
   } else {
     moment.locale("en-au");
   }
+  
+  var LOAD_MORE = formatTr("LOAD_MORE").toString();
+  const [loading, setLoading] = useState(null);
   const { objProductActivity } = useSelector((state) => ({
     objProductActivity: state.actionProduct.objProductActivity,
   }));
-  var LOAD_MORE = formatTr("LOAD_MORE").toString();
-  const [loading, setLoading] = useState(null);
 
   useEffect(() => {
     loadHistoryViewList();
@@ -134,6 +135,7 @@ function HistoryView(props) {
           newObj.IMAGE = response.data.data.image;
           newObj.PRICE = response.data.data.price;
           newObj.product_full_price = response.data.data.full_price;
+          newObj.stock = response.data.data.stock;
           newObj.quantity = 1;
           newObj.discount = 0;
           if (locale == "th") {

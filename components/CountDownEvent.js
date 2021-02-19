@@ -1,21 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   StyleSheet,
   Dimensions,
   Image,
-  TouchableHighlight,
 } from "react-native";
-import axios from "axios";
-import moment from "moment";
-import "moment-duration-format";
-import "moment/locale/th";
-import "moment/locale/en-au";
-import { Block, Text, theme } from "galio-framework";
+import { Block } from "galio-framework";
 import { LinearGradient } from "expo-linear-gradient";
 import { formatTr } from "../i18n/I18nProvider";
 import CountDown from "react-native-countdown-component";
-import { API_URL } from "../config/config.app";
-import { getToken } from "../store/mock/token";
 
 const { width } = Dimensions.get("screen");
 
@@ -49,7 +41,7 @@ function CountDownEvent(props) {
         <Block style={linerStyle.BlockTime}>
           <CountDown
             size={22}
-            until={parseInt(times)}
+            until={times}
             digitStyle={{
               backgroundColor: "#ff4545",
               height: 30,
