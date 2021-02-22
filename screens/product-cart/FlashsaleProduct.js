@@ -109,7 +109,12 @@ function FlashsaleProduct(props) {
           onPress={() => props.navigation.navigate("My Coupon")}
         >
           <Image
-            source={{ uri: rootImage + item.image }}
+            source={{
+              uri:
+                locale == "th"
+                  ? rootImage + item.image_th
+                  : rootImage + item.image_en,
+            }}
             style={{ width: 170, height: 80, margin: 10 }}
           />
         </TouchableOpacity>
@@ -229,7 +234,7 @@ function FlashsaleProduct(props) {
                         horizontal
                         data={listCouponHD}
                         renderItem={({ item }) =>
-                          item.code !== "" && item.image ? (
+                          item.code !== "" ? (
                             <ListItemCoupon item={item} />
                           ) : null
                         }

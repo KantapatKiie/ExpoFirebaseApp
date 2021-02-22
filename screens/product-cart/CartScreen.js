@@ -69,6 +69,10 @@ function CartScreen(props) {
     });
   }, []);
 
+  // const { auth_token } = useSelector((state) => ({
+  //   auth_token: state.auth.auth_token,
+  // }));
+
   useEffect(() => {
     loadCartLists();
   }, []);
@@ -129,7 +133,6 @@ function CartScreen(props) {
           console.log(false);
         });
     };
-    console.log(item.stock)
     return (
       <Block style={styles.blockProduct} key={item.cart_id}>
         <Block row>

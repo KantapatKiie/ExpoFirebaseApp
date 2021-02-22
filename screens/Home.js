@@ -95,7 +95,7 @@ function Home(props) {
   }
   //#region Time & Translate
   let LeftTime = moment(new Date()).format("HH:mm");
-  
+
   var VIEW_ALL = formatTr("VIEW_ALL").toString(); //View all
   var GOOD_PRODUCT = formatTr("GOOD_PRODUCT").toString();
   var POPULAR_PRODUCT = formatTr("POPULAR_PRODUCT").toString();
@@ -201,8 +201,8 @@ function Home(props) {
         .get(API_URL.COUPON_LIST_TR_API, {
           headers: {
             Accept: "application/json",
-            Authorization: "Bearer " + (await token),
             "Content-Type": "application/json",
+            Authorization: "Bearer " + (await token),
           },
         })
         .then((response) => {
@@ -215,27 +215,73 @@ function Home(props) {
     }
   };
   const ListItemCoupon = ({ item }) => {
+    const onCollectCoupon = async (item) =>{
+      await axios({
+        method: "POST",
+        url: API_URL.COLLECT_COUPON_ADD_HD_API + item.id,
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+        .then(function (response) {
+          ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        })
+        .catch(function (error) {
+          console.log(error);
+          ToastAndroid.show(error.response.data, ToastAndroid.SHORT);
+        });
+    }
     return (
-      <View style={styles2.item}>
+      <Block style={styles2.itemCouponList}>
         <TouchableOpacity
-          onPress={() => props.navigation.navigate("My Coupon")}
+          onPress={() => onCollectCoupon(item)}
         >
           <Image
-            source={{ uri: rootImage + item.image }}
+            source={{
+              uri:
+                locale == "th"
+                  ? rootImage + item.image_th
+                  : rootImage + item.image_en,
+            }}
             style={{ width: 170, height: 80, margin: 10 }}
           />
         </TouchableOpacity>
-      </View>
+      </Block>
     );
   };
   //Pop-up Coupon
   const [modalVisible, setModalVisible] = useState(false);
-  const ModalNotification = () => {
+  const ModalPopupCoupon = () => {
     const renderModalCouponList = ({ item }) => {
+      const onCollectCouponModal = async (item) =>{
+        await axios({
+          method: "POST",
+          url: API_URL.COLLECT_COUPON_ADD_HD_API + item.id,
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        })
+          .then(function (response) {
+            ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+          })
+          .catch(function (error) {
+            console.log(error);
+            ToastAndroid.show(error.response.data, ToastAndroid.SHORT);
+          });
+      }
       return (
         <Block row style={{ marginBottom: 15 }}>
           <Image
-            source={{ uri: rootImage + item.image }}
+            source={{
+              uri:
+                locale == "th"
+                  ? rootImage + item.image_th
+                  : rootImage + item.image_en,
+            }}
             style={{ width: 130, height: 55 }}
           />
           <TouchableOpacity
@@ -247,6 +293,7 @@ function Home(props) {
               alignSelf: "center",
               marginLeft: 15,
             }}
+            onPress={() => onCollectCouponModal(item)}
           >
             <Text style={styles.fontCoupon}>COLLECT</Text>
           </TouchableOpacity>
@@ -274,17 +321,32 @@ function Home(props) {
                 <Icons name="clear" size={20} color="black" />
               </TouchableOpacity>
               <Text style={styles.modalText}>You have received coupons</Text>
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <SafeAreaView style={{ flex: 1 }}>
-                  <FlatList
-                    data={couponList}
-                    style={styles.containers}
-                    renderItem={renderModalCouponList}
-                    numColumns={1}
-                    keyExtractor={(item) => item.id.toString()}
-                  />
-                </SafeAreaView>
-              </ScrollView>
+              <SafeAreaView style={{ flex: 1 }}>
+                <SectionList
+                  stickySectionHeadersEnabled={false}
+                  sections={HOME_LIST}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshingPage}
+                      onRefresh={onRefreshPageNow}
+                    />
+                  }
+                  renderSectionHeader={() => (
+                    <>
+                      <FlatList
+                        data={couponList}
+                        style={styles.containers}
+                        renderItem={renderModalCouponList}
+                        numColumns={1}
+                        keyExtractor={(item) => item.id.toString()}
+                      />
+                    </>
+                  )}
+                  renderItem={() => {
+                    return null;
+                  }}
+                />
+              </SafeAreaView>
               <TouchableOpacity
                 style={{ ...styles.openButton, backgroundColor: "#4a5aed" }}
                 onPress={() => {
@@ -407,18 +469,16 @@ function Home(props) {
             source={{ uri: rootImage + item.image }}
             style={pdStyle.imageProduct}
           />
-          <Block flex space="between" flex style={pdStyle.productDescription}>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 15,
-              }}
-            >
+          <Block flex space="between" style={pdStyle.productDescription}>
+            <Text style={styles.textProductBestsale}>
               {locale == "th" ? item.name_th : item.name_en}
             </Text>
             <Block
-              style={{ borderBottomWidth: 1, borderBottomColor: "#e0e0e0" }}
+              style={{
+                borderBottomWidth: 1,
+                borderBottomColor: "#e0e0e0",
+                margin: 2,
+              }}
             ></Block>
             <Text
               style={{
@@ -497,24 +557,22 @@ function Home(props) {
             source={{ uri: rootImage + item.image }}
             style={pdStyle.imageProduct}
           />
-          <Block flex style={pdStyle.productDescription}>
-            <Text
-              style={{
-                color: "black",
-                fontFamily: "kanitRegular",
-                fontSize: 15,
-              }}
-            >
+          <Block flex space="between" style={pdStyle.productDescription}>
+            <Text style={styles.textProductBestsale}>
               {locale == "th" ? item.name_th : item.name_en}
             </Text>
+            <Block
+              style={{
+                borderBottomWidth: 1,
+                borderBottomColor: "#e0e0e0",
+                margin: 2,
+              }}
+            ></Block>
             <Text
               style={{
                 color: "black",
                 fontFamily: "kanitRegular",
                 fontSize: 17,
-                marginTop: 10,
-                borderTopWidth: 1,
-                borderTopColor: "#e0e0e0",
               }}
             >
               ราคา : {"฿"}
@@ -657,7 +715,9 @@ function Home(props) {
             >
               {locale == "th" ? item.title_th : item.title_en}
             </Text>
-            <Text style={styles2.TextActivity}>{moment(fullDate).format("LLLL")} </Text>
+            <Text style={styles2.TextActivity}>
+              {moment(fullDate).format("LLLL")}{" "}
+            </Text>
             <Text style={styles2.TextActivity}>&nbsp;</Text>
             {/* Detail Information */}
             <Text style={styles2.TextActivity}>
@@ -734,7 +794,7 @@ function Home(props) {
                   horizontal
                   data={couponList}
                   renderItem={({ item }) =>
-                    item.code !== "" && item.image ? (
+                    item.code !== "" ? (
                       <ListItemCoupon item={item} />
                     ) : null
                   }
@@ -886,7 +946,7 @@ function Home(props) {
           }}
         />
       </SafeAreaView>
-      <ModalNotification />
+      <ModalPopupCoupon />
       <ModalLoading loading={loading} />
     </>
   );
@@ -1063,6 +1123,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 4,
   },
+  textProductBestsale: {
+    color: "black",
+    fontFamily: "kanitRegular",
+    fontSize: 15,
+    height: 25,
+  },
 });
 
 const styles2 = StyleSheet.create({
@@ -1098,7 +1164,7 @@ const styles2 = StyleSheet.create({
     marginTop: 5,
     marginBottom: 5,
   },
-  item: {
+  itemCouponList: {
     margin: 5,
   },
   itemPhoto: {

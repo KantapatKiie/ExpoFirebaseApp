@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   textMenu: {
     textAlign: "center",
     fontFamily: "kanitRegular",
-    fontSize: 18,
+    fontSize: 16,
     marginTop: 12,
   },
 });

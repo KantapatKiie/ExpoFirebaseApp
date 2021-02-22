@@ -5,23 +5,23 @@ import moment from "moment";
 const actionTypes = {
   setObjMyCouponins: "OBJ_MY_COUPON_HD_HD",
   clearObjMyCoupon: "CLEAR_OBJ_MY_COUPON_HD",
-  setDisabledInput: "SET_DISABLED_INPUT_MY_COUPON_HD",
-  pushListTrMyCoupon: "PUSH_LIST_TR_MY_COUPON_HD",
   setListTrMyCoupon: "SET_LIST_TR_MY_COUPON_HD",
-  removeListTrMyCoupon: "REMOVE_LIST_TR_MY_COUPON_HD",
-  setEditable: "SET_EDITABLE_MY_COUPON_HD",
 };
 
 const initialState = {
   objMyCoupon: {
-    TITLE: "",
-    DETAIL: "",
-    IMAGE: "../../assets/tiendat.png",
-    PRICE: 0,
-    COUNT: 1,
-    TOTAL_PRICE: 0,
+    id: 1,
+    code: "A001",
+    image_th: "/storage/130/coupon-th.png",
+    image_en: "/storage/131/coupon-en.png",
+    title1_th: "title1_th",
+    title1_en: "title1_en",
+    title2_th: "title2_th",
+    title2_en: "title2_en",
+    valid_from: "2021-02-15 11:43:00",
+    valid_until: "2021-02-28 17:27:00",
   },
-  // listTrMyCoupon: [],
+  listTrMyCoupon: [],
   // disabledInput: false,
   // editable: false,
 };
@@ -41,27 +41,10 @@ export const reducer = persistReducer(
         return initialState;
       }
 
-      case actionTypes.setDisabledInput: {
-        return { ...state, disabledInput: action.payload.bool };
-      }
-
-      case actionTypes.pushListTrMyCoupon: {
-        return {
-          ...state,
-          listTrMyCoupon: [
-            ...state.listTrMyCoupon,
-            action.payload.obj,
-          ],
-        };
-      }
-
       case actionTypes.setListTrMyCoupon: {
         return { ...state, listTrMyCoupon: action.payload.obj };
       }
 
-      case actionTypes.setEditable: {
-        return { ...state, editable: action.payload.bool };
-      }
 
       default:
         return initialState;
@@ -79,21 +62,9 @@ export const actions = {
     type: actionTypes.clearObjMyCoupon,
   }),
 
-  setDisabledInput: (bool) => ({
-    type: actionTypes.setDisabledInput,
-    payload: { bool },
-  }),
-  pushListTrMyCoupon: (obj) => ({
-    type: actionTypes.pushListTrMyCoupon,
-    payload: { obj },
-  }),
+  
   setListTrMyCoupon: (obj) => ({
     type: actionTypes.setListTrMyCoupon,
     payload: { obj },
-  }),
-
-  setEditable: (bool) => ({
-    type: actionTypes.setEditable,
-    payload: { bool },
   }),
 };

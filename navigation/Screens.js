@@ -2,12 +2,15 @@ import React, { useEffect, useState, useRef } from "react";
 import { Image, StyleSheet } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { useIsFocused } from "@react-navigation/native";
 import { Header } from "../components";
 import { connect } from "react-redux";
 import * as ActionLogin from "../actions/action-actives/ActionLogin";
 import * as firebase from "firebase";
 import * as Notifications from "expo-notifications";
-import * as Permissions from "expo-permissions";
+// import * as Permissions from "expo-permissions";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getToken } from "../store/mock/token";
 // Screen //
 import HomeScreen from "../screens/Home";
 import ProfileScreen from "../screens/Profile";
@@ -73,6 +76,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
+const token = getToken();
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -796,7 +800,7 @@ function ProductTypeStack() {
 function MyCouponStack() {
   return (
     <Stack.Navigator
-      initialRouteName="My Coupo"
+      initialRouteName="My Coupon"
       mode="card"
       headerMode="screen"
     >
@@ -808,7 +812,7 @@ function MyCouponStack() {
             <Header
               search
               tabs
-              title="My Coupo"
+              title="My Coupon"
               scene={scene}
               navigation={navigation}
             />
@@ -1155,7 +1159,6 @@ function OnboardingStack(props) {
   //   return token;
   // }
   //#endregion
-
   return (
     <>
       <Stack.Navigator>
