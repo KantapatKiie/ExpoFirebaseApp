@@ -10,20 +10,25 @@ import {
   ScrollView,
   Platform,
   UIManager,
-  Image,
   Dimensions,
+  ToastAndroid
 } from "react-native";
-import ModalLoading from "../../components/ModalLoading";
-import { logins } from "../../store/mock/mock"; //mock api
-import { setToken } from "../../store/mock/token";
-import { login } from "../../store/crud/auth.crud"; //real api
+import axios from "axios";
+import moment from "moment";
+import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
 import * as ActionForgotPassword from "../../actions/action-forgot-password/ActionForgotPassword";
 import { Block } from "galio-framework";
-import { Icon } from "../../components";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
+import ModalLoading from "../../components/ModalLoading";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+const token = getToken();
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 if (
   Platform.OS === "android" &&
@@ -46,7 +51,6 @@ function ForgotPassword(props) {
   const [expanded, setExpanded] = useState(false);
   const [stateObj, setStateObj] = useState({
     email: "",
-    password: "",
   });
 
   const onChangeEmail = (e) => {
@@ -68,19 +72,26 @@ function ForgotPassword(props) {
       } else {
         setRequiredEmail(false);
         setRequiredPass(false);
-        setTimeout(() => {
-          setLoading(true);
-          logins(email, password)
-            .then(async (res) => {
-              newLogin.EMAIL = email;
-              newLogin.PASSWORD = password;
-              props.setObjLogin(newLogin);
-
-              await setToken(res.auth_token);
-              props.navigation.navigate("Flash Sale");
-            })
-            .catch((err) => console.log("error:", err.message));
-        }, 120);
+        await axios({
+          method: "POST",
+          url: API_URL.FORGOT_PASSWORD_RESET_API,
+          headers: {
+            Accept: "*/*",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+          data: {
+            email: stateObj.email,
+          },
+        })
+          .then(function (response) {
+            console.log(response.data);
+            ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+          })
+          .catch(function (error) {
+            console.log(error);
+            ToastAndroid.show(error.response.data, ToastAndroid.SHORT);
+          });
       }
     } else {
       setRequiredPass(true);
@@ -95,8 +106,8 @@ function ForgotPassword(props) {
       <View style={styles.container}>
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Title */}
-          <Block
-            row
+          <TouchableOpacity
+            onPress={() => props.navigation.navigate("Sign In")}
             style={{
               paddingTop: 20,
               paddingLeft: 20,
@@ -113,7 +124,7 @@ function ForgotPassword(props) {
             >
               {"<  "}ลืมรหัสผ่าน
             </Text>
-          </Block>
+          </TouchableOpacity>
           <Block style={{ width: width, paddingTop: 20 }}>
             <Text
               style={{
@@ -166,19 +177,18 @@ function ForgotPassword(props) {
               >
                 หากท่านยังไม่ได้รับรหัส กรุณากด
               </Text>
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontFamily: "kanitRegular",
-                  color: "black",
-                  textAlign: "center",
-                  textAlignVertical: "top",
-                  paddingLeft: 8,
-                  borderBottomWidth: 1,
-                }}
-              >
-                ขอรับรหัส
-              </Text>
+              <Block style={{ paddingLeft: 2, borderBottomWidth: 1}}>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontFamily: "kanitBold",
+                    color: "black",
+
+                  }}
+                >
+                  ขอรับรหัส
+                </Text>
+              </Block>
             </Block>
             <Text
               style={{

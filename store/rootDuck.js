@@ -58,5 +58,5 @@ export const rootReducer = combineReducers({
 });
 
 export function* rootSaga() {
-  // yield all([auth.saga()]);
+  yield all([auth.saga()]);
 }

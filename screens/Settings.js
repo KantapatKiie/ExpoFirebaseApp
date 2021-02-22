@@ -18,12 +18,12 @@ function Settings(props) {
   const itemLanguage = [
     {
       label: "Thai",
-      value: "th-TH",
+      value: "th",
       hidden: true,
     },
     {
       label: "English",
-      value: "en-US",
+      value: "en",
     },
   ];
   const onChangeLanguage = (item) => {
@@ -76,7 +76,7 @@ function Settings(props) {
           borderRadius: 20,
           color: "white",
         }}
-        // defaultValue={lang}
+        defaultValue={language}
         onChangeItem={onChangeLanguage}
       />
     </View>

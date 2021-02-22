@@ -8,6 +8,9 @@ export const API_URL = {
   //AUTHENTICATE
   REGISTER_API: REACT_NATIVE_APP_API + "/register",
   LOGIN_API: REACT_NATIVE_APP_API + "/login",
+  FORGOT_PASSWORD_RESET_API: REACT_NATIVE_APP_API + "/forgot_password_reset",
+
+  //USER_INFO
   USER_INFO_API: REACT_NATIVE_APP_API + "/user",
   EDIT_USER_PROFILE_API: REACT_NATIVE_APP_API + "/user",
   CHANGE_PASSWORD_API: REACT_NATIVE_APP_API + "/user/change_pass",
@@ -16,10 +19,13 @@ export const API_URL = {
   DISTRICT_API: REACT_NATIVE_APP_API + "/districts",
   SUB_DISTRICT_API: REACT_NATIVE_APP_API + "/sub_districts",
 
-  //API PAGE
+  //FLASH_SALE
   FALSH_SALE_VIEW_API: REACT_NATIVE_APP_API + "/flashsales",
-  COUPON_LIST_TR_API: REACT_NATIVE_APP_API + "/coupon/list",
+
+  //FAVORITE
   FAVORITE_VIEW_LIST_API: REACT_NATIVE_APP_API + "/user/favorite",
+
+  //HISTORY
   HISTORY_ORDER_LIST_API:
     REACT_NATIVE_APP_API + "/user/history/{search_orderid}",
   HISTORY_ORDER_LIST_SEARCH_API: REACT_NATIVE_APP_API + "/user/history/",
@@ -70,5 +76,10 @@ export const API_URL = {
   CONTACT_US_HD_API: REACT_NATIVE_APP_API + "/contactus",
 
   //CONTACT_US
-  ACTIVITIES_LIST_HD_API: REACT_NATIVE_APP_API + "/activities"
+  ACTIVITIES_LIST_HD_API: REACT_NATIVE_APP_API + "/activities",
+
+  //COUPON
+  COUPON_LIST_TR_API: REACT_NATIVE_APP_API + "/coupon/list",
+  MY_COUPON_LIST_TR_API: REACT_NATIVE_APP_API + "/coupon/my_coupon/",
+  COLLECT_COUPON_ADD_HD_API: REACT_NATIVE_APP_API + "/coupon/",
 };

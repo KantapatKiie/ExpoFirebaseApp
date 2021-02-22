@@ -2,24 +2,103 @@ import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
   ScrollView,
   TouchableHighlight,
   Image,
   Dimensions,
+  ToastAndroid,
 } from "react-native";
+import axios from "axios";
 import moment from "moment";
 import "moment-duration-format";
+import "moment/locale/th";
+import "moment/locale/en-au";
+import { connect, useSelector } from "react-redux";
 import { Block } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
-import { LinearGradient } from "expo-linear-gradient";
+import { actions as ActionHome } from "../../actions/action-home/ActionHome";
+import { actions as ActionProduct } from "../../actions/action-product/ActionProduct";
+import CountDownEvent from "../../components/CountDownEvent";
 import WangdekInfo from "../../components/WangdekInfo";
-import CountDown from "react-native-countdown-component";
+import { API_URL } from "../../config/config.app";
+import { getToken } from "../../store/mock/token";
 
-const { height, width } = Dimensions.get("screen");
+const { width } = Dimensions.get("screen");
+const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
+let token = getToken();
 
 function News(props) {
+  const { objHomeHD } = useSelector((state) => ({
+    objHomeHD: state.actionHomeHD.objHomeHD,
+  }));
+  useEffect(() => {
+    loadDataFlashsale();
+    loadDataCoupon();
+  }, []);
+
+  const [countDownTime, setCountDownTime] = useState(objHomeHD.timeEnds);
+  const [couponList, setCouponList] = useState(null);
+  async function loadDataFlashsale() {
+    await axios
+      .get(API_URL.FALSH_SALE_VIEW_API, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        params: {
+          page: 1,
+        },
+      })
+      .then(async (response) => {
+        var date = moment().utcOffset("+07:00").format("YYYY-MM-DD hh:mm:ss");
+        var expirydate = await response.data.data.end_at;
+        var diffr = moment.duration(moment(expirydate).diff(moment(date)));
+        var hours = parseInt(diffr.asHours());
+        var minutes = parseInt(diffr.minutes());
+        var seconds = parseInt(diffr.seconds());
+        let objNew = Object.assign({}, objHomeHD);
+        objNew.timeEnds = hours * 60 * 60 + minutes * 60 + seconds;
+        let newlistFlashsale = await response.data.data.lists;
+
+        setCountDownTime(objNew.timeEnds);
+        props.setObjHomeHD(objNew);
+        props.setListTrSearchHD(newlistFlashsale);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    setCountDownTime(objHomeHD.timeEnds);
+  }
+  const loadDataCoupon = async () => {
+    if ((await token) !== null && (await token) !== undefined) {
+      await axios
+        .get(API_URL.COUPON_LIST_TR_API, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          console.log("adasdsadasdsad")
+          setCouponList(response.data.data);
+          props.setListCouponHD(response.data.data);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+  };
+  const onClickFalshsaleDetail = () => {
+    if(countDownTime > 5){
+      props.setListCouponHD(couponList);
+      props.navigation.navigate("Flashsale Product");
+    }
+    else{
+      ToastAndroid.show("⏰ Flashsale Time Out ⏰", ToastAndroid.SHORT)
+    }
+  };
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -50,65 +129,15 @@ function News(props) {
               </Text>
             </Block>
           </TouchableOpacity>
+
           {/* Flash Sale Count Down */}
           <TouchableHighlight
-            onPress={() => props.navigation.navigate("Flashsale Product")}
+            style={{ width: width }}
+            onPress={onClickFalshsaleDetail}
           >
-            <LinearGradient
-              colors={["#00cef2", "#00c4b7", "#00d184"]}
-              style={linerStyle.linearGradient}
-            >
-              <Image
-                source={require("../../assets/images/flashsale_head.png")}
-                style={{
-                  width: width - 80,
-                  height: 40,
-                  alignSelf: "center",
-                  marginTop: 20,
-                }}
-              />
-              <Image
-                source={require("../../assets/images/onsale.png")}
-                style={{
-                  width: 120,
-                  height: 50,
-                  marginTop: 20,
-                  marginLeft: 30,
-                }}
-              />
-              {/* CountDownTime */}
-              <Block style={linerStyle.BlockTime}>
-                <CountDown
-                  size={22}
-                  until={60000}
-                  digitStyle={{
-                    backgroundColor: "#ff4545",
-                    height: 30,
-                    width: 40,
-                  }}
-                  style={{
-                    marginLeft: 20,
-                    marginBottom: 20,
-                  }}
-                  digitTxtStyle={{
-                    color: "white",
-                    fontSize: 18,
-                    fontFamily: "kanitRegular",
-                  }}
-                  timeToShow={["H", "M", "S"]}
-                  timeLabelStyle={{
-                    color: "white",
-                    fontWeight: "bold",
-                  }}
-                  timeLabels={{ d: null, h: null, m: null, s: null }}
-                  separatorStyle={{ color: "white", marginBottom: 3.5 }}
-                  showSeparator
-                  // onFinish={() => alert("Finished")}
-                />
-                <Text style={timeStyle.timeTextArrow}>{">"}</Text>
-              </Block>
-            </LinearGradient>
+            <CountDownEvent times={countDownTime} />
           </TouchableHighlight>
+
           {/* Promotopn Sale */}
           <Block
             style={{
@@ -133,7 +162,21 @@ function News(props) {
   );
 }
 
-export default News;
+const mapActions = {
+  setObjHomeHD: ActionHome.setObjHomeHD,
+  clearObjHomeHD: ActionHome.clearObjHomeHD,
+  setListTrSearchHD: ActionHome.setListTrSearchHD,
+  setListCouponHD: ActionHome.setListCouponHD,
+  pushListTrSearchHD: ActionHome.pushListTrSearchHD,
+
+  //Product Detail
+  setObjProductActivity: ActionProduct.setObjProductActivity,
+  clearObjProductActivity: ActionProduct.clearObjProductActivity,
+  setListTrProductActivity: ActionProduct.setListTrProductActivity,
+  pushListTrProductActivity: ActionProduct.pushListTrProductActivity,
+};
+
+export default connect(null, mapActions)(News);
 
 const linerStyle = StyleSheet.create({
   container: {

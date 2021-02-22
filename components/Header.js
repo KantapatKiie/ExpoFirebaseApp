@@ -9,7 +9,8 @@ import {
   View,
   Image,
   FlatList,
-  SafeAreaView
+  SafeAreaView,
+  ImageBackground,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -24,7 +25,7 @@ import { getToken } from "../store/mock/token";
 import { connect, useSelector } from "react-redux";
 import { actions as ActionProductType } from "../actions/action-product-type/ActionProductType";
 import ModalLoading from "../components/ModalLoading";
-import SvgUri from "expo-svg-uri";
+// import SvgUri from "expo-svg-uri";
 
 const { width } = Dimensions.get("window");
 let token = getToken();
@@ -38,6 +39,9 @@ function Header(props) {
     moment.locale("en-au");
   }
   const [loading, setLoading] = useState(null);
+  const { auth_token } = useSelector((state) => ({
+    auth_token: state.auth.auth_token,
+  }));
   const { objProductType } = useSelector((state) => ({
     objProductType: state.actionProductType.objProductType,
   }));
@@ -45,31 +49,30 @@ function Header(props) {
   useEffect(() => {
     loadDataBrandsTypes();
     loadCountCart();
-  }, []);
+  }, [props.navigation]);
 
   //Count _Cart_&_Notifications_
   const [countCart, setCountCart] = useState(0);
   const [countNews, setCountNews] = useState(0);
   async function loadCountCart() {
-    if ((await token) !== null && (await token) !== undefined) {
-      setTimeout(async () => {
-        await axios({
-          method: "GET",
-          url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
-          timeout: 2500,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + (await token),
-          },
+    if (token !== undefined || auth_token !== undefined) {
+      await axios({
+        method: "GET",
+        url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization:
+            "Bearer " +
+            ((await token) !== undefined ? await token : auth_token),
+        },
+      })
+        .then(async (response) => {
+          setCountCart(response.data.data.result);
         })
-          .then(async (response) => {
-            await setCountCart(response.data.data.result);
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
-      }, 500);
+        .catch(function (error) {
+          console.log(error);
+        });
     }
   }
 
@@ -143,14 +146,71 @@ function Header(props) {
         });
       setLoading(false);
     };
-    console.log(rootImage + item.image);
+    var colorBG = "";
+    switch (item.id) {
+      case 1:
+        colorBG = "#119bf7";
+        break;
+      case 2:
+        colorBG = "#10c990";
+        break;
+      case 3:
+        colorBG = "#9bc91f";
+        break;
+      case 4:
+        colorBG = "#fca936";
+        break;
+      case 5:
+        colorBG = "#fd7619";
+        break;
+      case 6:
+        colorBG = "#fb4352";
+        break;
+      case 7:
+        colorBG = "#c923a7";
+        break;
+      case 8:
+        colorBG = "#6646cd";
+        break;
+
+      default:
+        break;
+    }
     return (
       <Block style={styles2.itemType}>
         <TouchableOpacity onPress={() => categoryProductType(item)}>
-          <Image
-            source={{ uri: rootImage + item.image }}
-            style={{ width: 74, height: 64 }}
-          />
+          <Block
+            style={{
+              width: 40,
+              height: 40,
+              alignSelf: "center",
+              backgroundColor: colorBG,
+              borderRadius: 50,
+            }}
+          >
+            <ImageBackground
+              source={{ uri: rootImage + item.image }}
+              style={{
+                width: 25,
+                height: 25,
+                resizeMode: "contain",
+                alignSelf: "center",
+                marginTop: 7.5,
+              }}
+            />
+          </Block>
+          <Block style={{ marginTop: 5 }}>
+            <Text
+              style={{
+                fontFamily: "kanitRegular",
+                color: "black",
+                fontSize: 9.2,
+                textAlign: "center",
+              }}
+            >
+              {locale == "th" ? item.name_th : item.name_en}
+            </Text>
+          </Block>
           {/* <SvgUri
             width={200}
             height={200}
@@ -198,7 +258,7 @@ function Header(props) {
         >
           <Image
             source={{ uri: rootImage + item.image }}
-            style={{ width: 75, height: 35 }}
+            style={{ width: 55, height: 28, resizeMode: "contain" }}
           />
         </TouchableOpacity>
       </Block>
@@ -415,6 +475,19 @@ function Header(props) {
             isWhite={white}
           />,
         ];
+        case "My Coupon":
+          return [
+            <ModalNotification
+              key="chat-deals"
+              navigation={navigation}
+              isWhite={white}
+            />,
+            <ModalSearch
+              key="basket-deals"
+              navigation={navigation}
+              isWhite={white}
+            />,
+          ];
       case "Profile":
         return [
           <ModalNotification
@@ -1520,7 +1593,7 @@ function Header(props) {
         />
         {/* List Bars */}
         <Block>
-          <Block style={styles2.container1}>
+          <Block style={styles2.containerListType}>
             <FlatList
               horizontal={true}
               data={listProductType}
@@ -1667,9 +1740,9 @@ const styles = StyleSheet.create({
   },
 });
 const styles2 = StyleSheet.create({
-  container1: {
+  containerListType: {
     backgroundColor: "#f5f5f5",
-    height: 80,
+    height: 84,
     padding: 0,
   },
   container2: {
@@ -1688,11 +1761,12 @@ const styles2 = StyleSheet.create({
   },
   itemType: {
     margin: 8,
-    height: 65,
+    height: 60,
+    width: 70,
   },
   itemBrand: {
-    margin: 4,
-    height: 72,
+    margin: 5,
+    height: 74,
   },
   itemPhoto: {
     width: 90,

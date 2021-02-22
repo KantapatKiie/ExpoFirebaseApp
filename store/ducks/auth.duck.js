@@ -1,34 +1,20 @@
 import { persistReducer } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const actionTypes = {
-  SignIn: "[SignIn] Action",
-  SignOut: "[SignOut] Action",
-  SignUp: "[SignUp] Action",
+const actionTypes = {
+  setTokenGenerate: "ACTION_SET_TOKENS_STATE_HD",
 };
 
-const initialAuthState = {
-  user: undefined,
-  authToken: undefined,
+const initialState = {
+  auth_token: undefined,
 };
 
 export const reducer = persistReducer(
-  {
-    storage: AsyncStorage,
-    key: "auth",
-    whitelist: ["user", "authToken"],
-  },
-  (state = initialAuthState, action) => {
+  { storage: AsyncStorage, key: "tokensGenerateApp" },
+  (state = initialState, action) => {
     switch (action.type) {
-      case actionTypes.SignIn: {
-        return { ...state, user: action.payload.obj };
-      }
-
-      case actionTypes.SignUp: {
-        const { authToken } = action.payload;
-
-        return { authToken, user: undefined };
-      }
+      case actionTypes.setTokenGenerate:
+        return { ...state, auth_token: action.payload.auth_token };
 
       default:
         return state;
@@ -37,12 +23,5 @@ export const reducer = persistReducer(
 );
 
 export const actions = {
-  signin: (obj) => ({ type: actionTypes.SignIn, payload: { obj } }),
-  signup: (authToken) => ({
-    type: actionTypes.SignUp,
-    payload: { authToken },
-  }),
-  signout: () => ({ type: actionTypes.SignOut }),
+  setTokenGenerate: (auth_token) => ({ type: actionTypes.setTokenGenerate, payload: { auth_token } }),
 };
-
-export function* saga() {}

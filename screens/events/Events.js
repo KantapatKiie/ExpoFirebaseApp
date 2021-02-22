@@ -163,46 +163,10 @@ function Events(props) {
     props.setObjEventsHD(newObj);
   };
 
-  const ListEventType = ({ item }) => {
-    return (
-      <Block style={styles.itemEventType}>
-        <TouchableOpacity>
-          <Block
-            row
-            style={{
-              width: 140,
-              backgroundColor: "#bfbfbf",
-              borderRadius: 50,
-              height: 30,
-            }}
-          >
-            <Block
-              style={{
-                width: 25,
-                height: 10,
-                backgroundColor: item.color,
-                borderRadius: 3,
-                margin: 10,
-              }}
-            ></Block>
-            <Text
-              style={{
-                fontFamily: "kanitRegular",
-                fontSize: 15,
-                color: "white",
-                margin: 2,
-                marginRight: 10,
-              }}
-            >
-              {item.title}
-            </Text>
-          </Block>
-        </TouchableOpacity>
-      </Block>
-    );
-  };
+  
   const [listPeriodEvent, setListPeriodEvent] = useState(null);
   const [listDays, setListDays] = useState(null);
+  const [keyDaysFilter, setKeyDaysFilter] = useState(1);
   async function onLoadActivitiesList() {
     setLoading(true);
     await axios
@@ -273,6 +237,7 @@ function Events(props) {
         return val;
       });
       setListDays(newListEvents);
+      setKeyDaysFilter(item.key);
       await axios
         .get(API_URL.ACTIVITIES_LIST_HD_API, {
           headers: {
@@ -318,6 +283,68 @@ function Events(props) {
           </Block>
         </Block>
       </TouchableOpacity>
+    );
+  };
+  const ListEventType = ({ item }) => {
+    const onFilterTypeEvents = async (item) => {
+      await axios
+        .get(API_URL.ACTIVITIES_LIST_HD_API, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + (await token),
+            "Content-Type": "application/json",
+          },
+          params: {
+            page: 1,
+          },
+        })
+        .then(function (response) {
+          let newEvents = response.data.data.filter(
+            (eve) =>
+              eve.operate_date ==
+              moment(objEventsHD.EVENT_MONTH).format("YYYY-MM-") + keyDaysFilter & eve.type == item.key
+          );
+          setListPeriodEvent(newEvents);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+    return (
+      <Block style={styles.itemEventType}>
+        <TouchableOpacity onPress={() => onFilterTypeEvents(item)}>
+          <Block
+            row
+            style={{
+              width: 140,
+              backgroundColor: "#bfbfbf",
+              borderRadius: 50,
+              height: 30,
+            }}
+          >
+            <Block
+              style={{
+                width: 25,
+                height: 10,
+                backgroundColor: item.color,
+                borderRadius: 3,
+                margin: 10,
+              }}
+            ></Block>
+            <Text
+              style={{
+                fontFamily: "kanitRegular",
+                fontSize: 15,
+                color: "white",
+                margin: 2,
+                marginRight: 10,
+              }}
+            >
+              {item.title}
+            </Text>
+          </Block>
+        </TouchableOpacity>
+      </Block>
     );
   };
 

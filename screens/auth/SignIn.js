@@ -21,10 +21,12 @@ import { getToken, setToken, removeToken } from "../../store/mock/token";
 import { actions as ActionLogin } from "../../actions/action-actives/ActionLogin";
 import { actions as ActionEditProfile } from "../../actions/action-actives/ActionEditProfile";
 import { actions as ActionOrder } from "../../actions/action-order-status/ActionOrder";
+import { actions as ActionAuth } from "../../store/ducks/auth.duck";
 import { Block } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import * as Facebook from "expo-facebook";
 import * as ImagePicker from "expo-image-picker";
+import * as Updates from "expo-updates";
 import WangdekInfo from "../../components/WangdekInfo";
 import { API_URL } from "../../config/config.app";
 
@@ -322,7 +324,7 @@ function SignIn(props) {
       });
   };
   // Login
-  const LoginAccount = () => {
+  async function LoginAccount() {
     removeToken();
     setLoading(true);
     let newLogin = Object.assign({}, objLoginMasterHD);
@@ -349,14 +351,14 @@ function SignIn(props) {
               newLogin.FIRST_NAME = response.data.data.user[0].first_name;
               newLogin.LAST_NAME = response.data.data.user[0].last_name;
               newLogin.IMAGE = response.data.data.user[0].image;
-              newLogin.ORDER_COMPLETED = response.data.data.order_completed;
-              newLogin.ORDER_CANCELLED = response.data.data.order_cancelled;
 
               setLoadImageUser(newLogin.IMAGE);
 
-              let tokenGenerate = await response.data.data.token;
-              newLogin.TOKEN = await response.data.data.token;
-              await setToken(tokenGenerate);
+              var tokenGenerate = await response.data.data.token;
+              newLogin.TOKEN = tokenGenerate;
+              setToken(tokenGenerate);
+              props.setTokenGenerate(tokenGenerate);
+              Updates.reloadAsync();
 
               //get UserInfo
               await axios
@@ -377,6 +379,8 @@ function SignIn(props) {
                   newLogin.DISTRICT_ID = response.data.data.profile.district_id;
                   newLogin.SUB_DISTRICT_ID =
                     response.data.data.profile.sub_district_id;
+                  newLogin.ORDER_COMPLETED = response.data.data.order_completed;
+                  newLogin.ORDER_CANCELLED = response.data.data.order_cancelled;
 
                   //get EditProfile
                   newLogin.profile_id = response.data.data.profile.id;
@@ -517,7 +521,7 @@ function SignIn(props) {
                         });
                     });
                 });
-              await setLoggedinStatus(true);
+              setLoggedinStatus(true);
               setLoading(false);
               ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
             })
@@ -554,17 +558,19 @@ function SignIn(props) {
       );
     }
     setLoading(false);
-  };
+  }
   // Logout
-  const LogoutAccount = async () => {
+  async function LogoutAccount() {
     setStateObj({
       email: "",
       password: "",
     });
     await removeToken();
+    props.setTokenGenerate("");
+    Updates.reloadAsync();
     setLoggedinStatus(false);
     ToastAndroid.show("Logout successfully", ToastAndroid.SHORT);
-  };
+  }
 
   // Facbook login
   const [userData, setUserData] = useState(null);
@@ -953,7 +959,7 @@ function SignIn(props) {
                       </TouchableOpacity>
                     </ImageBackground>
                   </Block>
-                  <Block style={{ paddingLeft: "10%", width: "90%" }}>
+                  <Block style={{ paddingLeft: "8%", width: "90%" }}>
                     <Text
                       style={{
                         color: "black",
@@ -1029,7 +1035,9 @@ function SignIn(props) {
                         color: "#0646c7",
                       }}
                     >
-                      {objLoginMasterHD.ORDER_COMPLETED}
+                      {objLoginMasterHD.ORDER_COMPLETED < 1
+                        ? 0
+                        : objLoginMasterHD.ORDER_COMPLETED}
                     </Text>
                   </Block>
                   <Block style={styles.orderHeader}>
@@ -1052,7 +1060,9 @@ function SignIn(props) {
                         color: "#6e6e6e",
                       }}
                     >
-                      {objLoginMasterHD.ORDER_CANCELLED}
+                      {objLoginMasterHD.ORDER_CANCELLED < 1
+                        ? 0
+                        : objLoginMasterHD.ORDER_CANCELLED}
                     </Text>
                   </Block>
                 </Block>
@@ -1236,7 +1246,7 @@ function SignIn(props) {
                   </TouchableOpacity>
                 </ImageBackground>
               </Block>
-              <Block style={{ paddingLeft: "10%", width: "90%" }}>
+              <Block style={{ paddingLeft: "8%", width: "90%" }}>
                 <Text
                   style={{
                     color: "black",
@@ -1312,7 +1322,9 @@ function SignIn(props) {
                     color: "#0646c7",
                   }}
                 >
-                  {objLoginMasterHD.ORDER_COMPLETED}
+                  {objLoginMasterHD.ORDER_COMPLETED < 1
+                    ? 0
+                    : objLoginMasterHD.ORDER_COMPLETED}
                 </Text>
               </Block>
               <Block style={styles.orderHeader}>
@@ -1335,7 +1347,9 @@ function SignIn(props) {
                     color: "#6e6e6e",
                   }}
                 >
-                  {objLoginMasterHD.ORDER_CANCELLED}
+                  {objLoginMasterHD.ORDER_CANCELLED < 1
+                    ? 0
+                    : objLoginMasterHD.ORDER_CANCELLED}
                 </Text>
               </Block>
             </Block>
@@ -1477,6 +1491,9 @@ function SignIn(props) {
 }
 
 const mapActions = {
+  //Authenticate
+  setTokenGenerate: ActionAuth.setTokenGenerate,
+
   setObjLogin: ActionLogin.setObjLogin,
   pushListTrLoginHD: ActionLogin.pushListTrLoginHD,
   setListTrLoginHD: ActionLogin.setListTrLoginHD,

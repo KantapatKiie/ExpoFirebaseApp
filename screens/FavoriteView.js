@@ -30,20 +30,6 @@ const { width } = Dimensions.get("screen");
 const token = getToken();
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
-const defaultListFavorite = [
-  {
-    favorite: 1,
-    favorite_id: 3,
-    id: 1,
-    name_th: "",
-    name_en: "",
-    image: "/storage/3/images-%281%29.jfif",
-    price: "0",
-    favorite: 1,
-    updated_at: moment(new Date()).format("YYYY-MM-DDT00:00:00"),
-  },
-];
-
 function FavoriteView(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
   if (locale === "th") {
@@ -70,7 +56,7 @@ function FavoriteView(props) {
     loadListFavorite();
   }, []);
 
-  const [stateObj, setStateObj] = useState(defaultListFavorite);
+  const [stateObj, setStateObj] = useState(null);
 
   //List Favorite View
   const [numColumns] = useState(2);
