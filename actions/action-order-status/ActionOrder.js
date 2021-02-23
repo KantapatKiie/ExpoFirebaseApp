@@ -44,6 +44,7 @@ const initialState = {
     total_weight: 112,
     discount: "0.00",
     promotion_discount: 0,
+    coupon_discount: 0,
     coupons_id: null,
     delivery_charge: 2,
     fullname: "test1 test2",
@@ -76,6 +77,7 @@ const initialState = {
     title1_th: "title1_th",
     title2_en: "title2_en",
     title2_th: "title2_th",
+    coupon_discount: 0,
   },
   objUseDelivery: {
     id: 0,

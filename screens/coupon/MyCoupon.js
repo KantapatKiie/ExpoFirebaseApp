@@ -91,7 +91,6 @@ function MyCoupon(props) {
         },
       })
       .then(function (response) {
-        console.log(response.data.data);
         setListCoupon(response.data.data);
         setLoading(true);
       })

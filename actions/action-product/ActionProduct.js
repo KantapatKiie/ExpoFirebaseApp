@@ -3,20 +3,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 
 const actionTypes = {
-  setObjProductActivityins: "OBJ_PRODUCT_ACTIVITY_HD",
-  clearObjProductActivity: "CLEAR_OBJ_PRODUCT_ACTIVITY",
-  setDisabledInput: "SET_DISABLED_INPUT_PRODUCT_ACTIVITY",
-  pushListTrProductActivity: "PUSH_LIST_TR_PRODUCT_ACTIVITY",
-  setListTrProductActivity: "SET_LIST_TR_PRODUCT_ACTIVITY",
-  removeListTrProductActivity: "REMOVE_LIST_TR_PRODUCT_ACTIVITY",
-  setEditable: "SET_EDITABLE_PRODUCT_ACTIVITY",
+  setObjProductActivityins: "OBJ_PRODUCTS_ACTIVITY_HD",
+  clearObjProductActivity: "CLEAR_OBJ_PRODUCTS_ACTIVITY_HD",
 };
 
 const initialState = {
   objProductActivity: {
     TITLE: "",
     DETAIL: "",
-    IMAGE: "../../assets/tiendat.png",
+    IMAGE: "",
     PRICE: 0,
     COUNT: 1,
     TOTAL_PRICE: 0,
@@ -46,13 +41,10 @@ const initialState = {
     progressPercent: 0,
     FLASHSALE: false,
   },
-  // listTrProductActivity: [],
-  // disabledInput: false,
-  // editable: false,
 };
 
 export const reducer = persistReducer(
-  { storage: AsyncStorage, key: "productActivity" },
+  { storage: AsyncStorage, key: "productActivityHD" },
   (state = initialState, action) => {
     switch (action.type) {
       case actionTypes.setObjProductActivityins: {
@@ -64,28 +56,6 @@ export const reducer = persistReducer(
 
       case actionTypes.clearObjProductActivity: {
         return initialState;
-      }
-
-      case actionTypes.setDisabledInput: {
-        return { ...state, disabledInput: action.payload.bool };
-      }
-
-      case actionTypes.pushListTrProductActivity: {
-        return {
-          ...state,
-          listTrProductActivity: [
-            ...state.listTrProductActivity,
-            action.payload.obj,
-          ],
-        };
-      }
-
-      case actionTypes.setListTrProductActivity: {
-        return { ...state, listTrProductActivity: action.payload.obj };
-      }
-
-      case actionTypes.setEditable: {
-        return { ...state, editable: action.payload.bool };
       }
 
       default:
@@ -102,23 +72,5 @@ export const actions = {
 
   clearObjProductActivity: () => ({
     type: actionTypes.clearObjProductActivity,
-  }),
-
-  setDisabledInput: (bool) => ({
-    type: actionTypes.setDisabledInput,
-    payload: { bool },
-  }),
-  pushListTrProductActivity: (obj) => ({
-    type: actionTypes.pushListTrProductActivity,
-    payload: { obj },
-  }),
-  setListTrProductActivity: (obj) => ({
-    type: actionTypes.setListTrProductActivity,
-    payload: { obj },
-  }),
-
-  setEditable: (bool) => ({
-    type: actionTypes.setEditable,
-    payload: { bool },
   }),
 };

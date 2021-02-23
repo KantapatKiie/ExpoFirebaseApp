@@ -19,7 +19,7 @@ import { connect, useSelector } from "react-redux";
 import { actions as ActionOrder } from "../../actions/action-order-status/ActionOrder";
 import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
 import { actions as ActionOrderStatus } from "../../actions/action-order-status/ActionOrderStatus.js";
-
+import ModalLoading from "../../components/ModalLoading";
 import WangdekInfo from "../../components/WangdekInfo";
 import { Icon } from "../../components/";
 import { Button } from "react-native-elements";
@@ -38,10 +38,7 @@ function OrderScreen(props) {
   } else {
     moment.locale("en-au");
   }
-  const { listTrCartScreen } = useSelector((state) => ({
-    listTrCartScreen: state.actionCart.listTrCartScreen,
-  }));
-
+  const [loading, setLoading] = useState(null);
   const { objUseCoupon, objUseDelivery, objUseAddressDelivery } = useSelector(
     (state) => ({
       objUseCoupon: state.actionOrder.objUseCoupon,
@@ -73,7 +70,7 @@ function OrderScreen(props) {
       });
   }
 
-  // Order List
+  // Order_List
   const renderOrderLists = ({ item }) => {
     return (
       <Block style={styles.blockProduct} key={item.cart_id}>
@@ -114,18 +111,40 @@ function OrderScreen(props) {
       </Block>
     );
   };
-  // Other List
   const onThisConfirmOrders = async () => {
     if (listTrOrder.length > 0) {
       if (objUseDelivery.id !== 0) {
         if (objUseAddressDelivery.FIRST_NAME !== "") {
-          props.setListTrOrder(listTrOrder);
-          props.setObjUseCoupon(objUseCoupon);
-          props.setObjUseDelivery(objUseDelivery);
-          props.setObjUseAddressDelivery(objUseAddressDelivery);
-          props.navigation.navigate("Order Status Price Screen");
+          //Get Promotions Agains
+          setLoading(true);
+          await axios({
+            method: "POST",
+            url: API_URL.SAVE_CART_ORDER_LISTVIEW_API,
+            headers: {
+              Accept: "*/*",
+              Authorization: "Bearer " + (await token),
+              "Content-Type": "application/json",
+              "X-localization": locale,
+            },
+            data: listTrOrder,
+          }).then(function (response) {
+            let newListFix = listTrOrder.map((val) => {
+              val.promotion_discount =
+                response.data.data.discount_from_promotion.total;
+              val.vat = response.data.data.vat;
+              return val;
+            });
+            console.log(newListFix);
+            props.setListTrOrder(newListFix);
+            props.setObjUseCoupon(objUseCoupon);
+            props.setObjUseDelivery(objUseDelivery);
+            props.setObjUseAddressDelivery(objUseAddressDelivery);
+            props.navigation.navigate("Order Status Price Screen");
+            setLoading(false);
+          });
         } else {
           ToastAndroid.show("กรุณาเลือกที่อยู่ในการจัดส่ง", ToastAndroid.SHORT);
+          setLoading(false);
         }
       } else {
         ToastAndroid.show("กรุณาเลือกช่องทางการจัดส่ง", ToastAndroid.SHORT);
@@ -134,6 +153,7 @@ function OrderScreen(props) {
       ToastAndroid.show("ไม่มีสินค้าในตะกร้า", ToastAndroid.SHORT);
       alert("ไม่มีสินค้าในตะกร้า");
     }
+    setLoading(false);
   };
   const renderOtherList = ({ item }) => {
     const onOtherChangepage = (item) => {
@@ -233,6 +253,7 @@ function OrderScreen(props) {
           }}
         />
       </SafeAreaView>
+      <ModalLoading loading={loading} />
     </>
   );
 }

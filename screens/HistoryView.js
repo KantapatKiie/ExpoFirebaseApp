@@ -263,7 +263,6 @@ const mapActions = {
   //Product Detail
   setObjProductActivity: ActionProduct.setObjProductActivity,
   clearObjProductActivity: ActionProduct.clearObjProductActivity,
-  setListTrProductActivity: ActionProduct.setListTrProductActivity,
 };
 
 export default connect(null, mapActions)(HistoryView);

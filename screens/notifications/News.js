@@ -172,8 +172,6 @@ const mapActions = {
   //Product Detail
   setObjProductActivity: ActionProduct.setObjProductActivity,
   clearObjProductActivity: ActionProduct.clearObjProductActivity,
-  setListTrProductActivity: ActionProduct.setListTrProductActivity,
-  pushListTrProductActivity: ActionProduct.pushListTrProductActivity,
 };
 
 export default connect(null, mapActions)(News);

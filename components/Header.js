@@ -45,15 +45,17 @@ function Header(props) {
   const { objProductType } = useSelector((state) => ({
     objProductType: state.actionProductType.objProductType,
   }));
-
+  // const { count_cart } = useSelector((state) => ({
+  //   count_cart: state.actionCountCart.count_cart,
+  // }));
+  
   useEffect(() => {
     loadDataBrandsTypes();
     loadCountCart();
-  }, [props.navigation]);
+  }, [countCart]);
 
   //Count _Cart_&_Notifications_
   const [countCart, setCountCart] = useState(0);
-  const [countNews, setCountNews] = useState(0);
   async function loadCountCart() {
     if (token !== undefined || auth_token !== undefined) {
       await axios({
@@ -298,7 +300,7 @@ function Header(props) {
           // onPress={() => { setModalVisible(true);}}
         >
           <Icons name="notifications" color={"#383838"} size={20} />
-          {countNews > 0 ? <Block middle style={styles.notify} /> : null}
+          <Block middle style={styles.notify} />
         </TouchableOpacity>
       </>
     );
@@ -391,7 +393,20 @@ function Header(props) {
             source={require("../assets/icons/cart.png")}
             style={{ width: 20, height: 20 }}
           />
-          {countCart > 0 ? <Block middle style={styles.notify} /> : null}
+          {countCart > 0 ? (
+            <Block middle style={styles.notifyCart}>
+              <Text
+                style={{
+                  fontFamily: "kanitBold",
+                  color: "white",
+                  fontSize: 9.2,
+                  textAlign: "center",
+                }}
+              >
+                {countCart}
+              </Text>
+            </Block>
+          ) : null}
         </TouchableOpacity>
       </>
     );
@@ -475,19 +490,19 @@ function Header(props) {
             isWhite={white}
           />,
         ];
-        case "My Coupon":
-          return [
-            <ModalNotification
-              key="chat-deals"
-              navigation={navigation}
-              isWhite={white}
-            />,
-            <ModalSearch
-              key="basket-deals"
-              navigation={navigation}
-              isWhite={white}
-            />,
-          ];
+      case "My Coupon":
+        return [
+          <ModalNotification
+            key="chat-deals"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-deals"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
       case "Profile":
         return [
           <ModalNotification
@@ -1659,6 +1674,15 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 8,
     right: 8,
+  },
+  notifyCart: {
+    backgroundColor: materialTheme.COLORS.NEW_LABEL,
+    borderRadius: 10,
+    height: 15,
+    width: 15,
+    position: "absolute",
+    top: 5,
+    right: 4,
   },
   header: {
     backgroundColor: theme.COLORS.WHITE,

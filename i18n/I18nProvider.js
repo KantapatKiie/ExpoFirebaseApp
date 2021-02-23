@@ -14,7 +14,7 @@ I18n.translations = {
 
 export function formatTr(name) {
   const locale = useSelector(({ i18n }) => i18n.lang);
-  // const messages = allMessages[locale];
+  //// const messages = allMessages[locale];
   I18n.locale = locale.substring(0, 2);
   I18n.initAsync();
   return I18n.t(name, locale);

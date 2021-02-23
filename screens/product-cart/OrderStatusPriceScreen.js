@@ -77,10 +77,9 @@ function OrderStatus(props) {
   useEffect(() => {
     setCheckPayType(1);
     loadDataDeliveryList(objUseDelivery.id);
-    summaryPriceListTrOrder(listTrOrder);
+    summaryPriceListTrOrder(listTrOrder)
     getCountry();
   }, []);
-  
 
   const [newDelivery, setNewDelivery] = useState({
     id: 0,
@@ -110,25 +109,28 @@ function OrderStatus(props) {
         console.log(error);
       });
   };
-  const summaryPriceListTrOrder = (list) => {
-    let Amounts = 0;
-    let Discounts = 0;
-    let newSummaryPrice = Object.assign({}, objOrderStatusPriceScreen);
-    for (let i = 0; i < list.length; i++) {
-      Amounts += list[i].product_price * list[i].quantity;
+  async function summaryPriceListTrOrder (list) {
+    var Amounts = 0;
+    var Discounts = 0;
+    var Vats = listTrOrder[0].vat;
+    var CouponDiscounts = objUseCoupon.coupon_discount;
+    var PromotionsDiscount = listTrOrder[0].promotion_discount;
+    var newSummaryPrice = Object.assign({}, objOrderStatusPriceScreen);
+    for (var i = 0; i < list.length; i++) {
+      Amounts += await list[i].product_price * list[i].quantity;
     }
     newSummaryPrice.total_amount = Amounts;
     newSummaryPrice.discount = Discounts;
-    newSummaryPrice.vat =
-      (parseFloat(Amounts) +
-        parseFloat(newDelivery.base_price) -
-        parseFloat(Discounts)) *
-      0.07;
+    newSummaryPrice.coupon_discount = CouponDiscounts;
+    newSummaryPrice.promotion_discount = PromotionsDiscount;
+    newSummaryPrice.vat = Vats;
 
-    TotalAmounts =
-      parseFloat(Amounts) +
-      parseFloat(newDelivery.base_price) +
-      parseFloat(newSummaryPrice.vat);
+    TotalAmounts = await (parseFloat(Amounts) +
+      parseFloat(newDelivery.base_price) -
+      parseFloat(Discounts) -
+      parseFloat(CouponDiscounts) -
+      parseFloat(PromotionsDiscount) +
+      parseFloat(Vats));
 
     props.setobjOrderStatusPriceScreenins(newSummaryPrice);
   };
@@ -228,7 +230,6 @@ function OrderStatus(props) {
         security_code: 111,
       },
     });
-
     return tokenOmise;
 
     // const transferData = await Omise.createSource({
@@ -238,9 +239,53 @@ function OrderStatus(props) {
     //   card: tokenOmise.id,
     // });
 
-    console.log(tokenOmise.id);
   };
-  const handleConfirmPayment = (e) => {
+  const handleConfirmPaymentOmise = async () => {
+    const tokenOmise = await checkedOmiseTransfer();
+    console.log(tokenOmise.id)
+    await axios({
+      method: "POST",
+      url: API_URL.CREATE_ORDER_HD_API,
+      headers: {
+        Accept: "*/*",
+        Authorization: "Bearer " + (await token),
+        "Content-Type": "application/json",
+      },
+      data: {
+        coupons_id: objUseCoupon.id,
+        logistics_id: objUseDelivery.id,
+        delivery_address: {
+          fullname:
+            objUseAddressDelivery.FIRST_NAME +
+            " " +
+            objUseAddressDelivery.LAST_NAME,
+          telephone: objUseAddressDelivery.PHONE_NUMBER_ORDER,
+          address: objUseAddressDelivery.ADDRESS_NAME_ORDER,
+          sub_district_id: objUseAddressDelivery.SUB_DISTRICT_CODE_ORDER,
+          district_id: objUseAddressDelivery.DISTRICT_CODE_ORDER,
+          province_id: objUseAddressDelivery.PROVINCE_CODE_ORDER,
+          postcode: objUseAddressDelivery.ZIP_CODE_ORDER,
+        },
+        payment_type: checkPayType == 1 ? 0 : 1,
+        payment_token: tokenOmise.id,
+        total_amount: objOrderStatusPriceScreen.total_amount,
+        delivery_charge: newDelivery.base_price,
+        discount: objOrderStatusPriceScreen.discount,
+        coupon_discount: objUseCoupon.coupon_discount,
+        promotion_discount: objOrderStatusPriceScreen.promotion_discount,
+        vat: objOrderStatusPriceScreen.vat,
+      },
+    })
+      .then(function (response) {
+        ToastAndroid.show(
+          "เลขที่สั่งซื้อ " + response.data.data.code,
+          ToastAndroid.SHORT
+        );
+        props.navigation.navigate("Payment");
+      })
+      .catch(function (error) {
+        console.log(error.response.data);
+      });
     setModalVisible(false);
   };
   const onChangeCardNumber = (e) => {
@@ -413,7 +458,7 @@ function OrderStatus(props) {
                   type="solid"
                   containerStyle={{ margin: 15 }}
                   buttonStyle={{ backgroundColor: "#0c5aeb" }}
-                  onPress={handleConfirmPayment}
+                  onPress={handleConfirmPaymentOmise}
                 />
                 <Block row style={{ alignSelf: "center", marginTop: 25 }}>
                   <Text style={stylesModal.titleFooter2}>
@@ -434,6 +479,7 @@ function OrderStatus(props) {
   //#endregion
 
   const onConfirmToPaymentPage = async () => {
+
     if (checkPayType === 1) {
       await axios({
         method: "POST",
@@ -459,9 +505,11 @@ function OrderStatus(props) {
             postcode: objUseAddressDelivery.ZIP_CODE_ORDER,
           },
           payment_type: checkPayType == 1 ? 0 : 1,
+          payment_token: "",
           total_amount: objOrderStatusPriceScreen.total_amount,
           delivery_charge: newDelivery.base_price,
           discount: objOrderStatusPriceScreen.discount,
+          coupon_discount: objUseCoupon.coupon_discount,
           promotion_discount: objOrderStatusPriceScreen.promotion_discount,
           vat: objOrderStatusPriceScreen.vat,
         },
@@ -478,8 +526,6 @@ function OrderStatus(props) {
         });
     } else {
       setModalVisible(true);
-      const tokenOmise = await checkedOmiseTransfer();
-      ToastAndroid.show("Omise token : " + tokenOmise.id, ToastAndroid.SHORT);
     }
   };
 
@@ -794,7 +840,7 @@ function OrderStatus(props) {
                   >
                     ส่วนลด : ฿ -
                     {commaNumber(
-                      parseFloat(objOrderStatusPriceScreen.discount).toFixed(2)
+                      parseFloat(objUseCoupon.coupon_discount).toFixed(2)
                     )}
                   </Text>
                   <Text

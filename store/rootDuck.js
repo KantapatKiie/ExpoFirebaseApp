@@ -2,6 +2,7 @@
 import { combineReducers } from "redux";
 import * as login from "../actions/action-actives/ActionLogin";
 import * as auth from "./ducks/auth.duck";
+import * as actionCountCart from "../actions/action-cart/ActionCountCart";
 import * as activesComponent from "../actions/action-actives/ActionActives";
 import * as actionSignUp from "../actions/action-actives/ActionSignUp";
 import * as actionEditProfile from "../actions/action-actives/ActionEditProfile";
@@ -32,6 +33,7 @@ export const rootReducer = combineReducers({
   login: login.reducer,
   auth: auth.reducer,
   i18n: i18n.reducer,
+  actionCountCart: actionCountCart.reducer,
   actionSignUp: actionSignUp.reducer,
   actionEditProfile: actionEditProfile.reducer,
   activesComponent: activesComponent.reducer,

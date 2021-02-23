@@ -19,6 +19,7 @@ import { Block, Button, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import { actions as ActionProduct } from "../../actions/action-product/ActionProduct";
 import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
+import { actions as ActionCountCart } from "../../actions/action-cart/ActionCountCart";
 import WangdekInfo from "../../components/WangdekInfo";
 import ReadMore from "react-native-read-more-text";
 import NumericInput from "rn-numeric-input";
@@ -32,21 +33,6 @@ import { getToken } from "../../store/mock/token";
 const { width } = Dimensions.get("screen");
 const token = getToken();
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
-
-const defaultSocialsMedia = [
-  {
-    id: 1,
-    name: "facebook",
-    url: "https://www.facebook.com/xxx",
-    image: "/storage/24/fb-share.png",
-  },
-  {
-    id: 2,
-    name: "line",
-    url: "#",
-    image: "/storage/25/line-share.png",
-  },
-];
 
 function ProductDetail(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -149,10 +135,22 @@ function ProductDetail(props) {
         product_quantity: objProductActivity.quantity,
       },
     })
-      .then(function (response) {
+      .then(async (response) => {
         ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
-        // props.navigation.navigate("Cart");
-        // AsyncStorage["sessionCartBefore"] = newObjCart;
+        
+        await axios({
+          method: "GET",
+          url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + (await token),
+          },
+        }).then(async (response) => {
+          let newListCount = await response.data.data.result;
+          props.setCountCart(newListCount);
+          props.navigation.navigate("Cart");
+        });
       })
       .catch(function (error) {
         console.log(error);
@@ -183,7 +181,7 @@ function ProductDetail(props) {
       });
   };
 
-  const [dataSocials, setDataSocials] = useState(defaultSocialsMedia);
+  const [dataSocials, setDataSocials] = useState(null);
   const loadDataSocialsMedia = async () => {
     await axios
       .get(API_URL.SOCIALS_LIST_HD_API, {
@@ -523,15 +521,15 @@ function ProductDetail(props) {
 }
 
 const mapActions = {
+  setCountCart: ActionCountCart.setCountCart,
+  
   setObjProductActivity: ActionProduct.setObjProductActivity,
   clearObjProductActivity: ActionProduct.clearObjProductActivity,
-  setListTrProductActivity: ActionProduct.setListTrProductActivity,
-  pushListTrProductActivity: ActionProduct.pushListTrProductActivity,
 
-  setObjCartBasket: ActionCart.setObjCartBasket,
-  clearObjCartBasket: ActionCart.clearObjCartBasket,
-  setListTrCartBasket: ActionCart.setListTrCartBasket,
-  pushListTrCartBasket: ActionCart.pushListTrCartBasket,
+  setObjCartScreen: ActionCart.setObjCartScreen,
+  clearObjCartScreen: ActionCart.clearObjCartScreen,
+  setListTrCartScreen: ActionCart.setListTrCartScreen,
+  pushListTrCartScreen: ActionCart.pushListTrCartScreen,
 };
 
 export default connect(null, mapActions)(ProductDetail);

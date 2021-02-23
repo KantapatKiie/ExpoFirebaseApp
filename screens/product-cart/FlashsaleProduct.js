@@ -10,6 +10,7 @@ import {
   Image,
   FlatList,
   ImageBackground,
+  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -103,20 +104,40 @@ function FlashsaleProduct(props) {
 
   //FlatList Coupon
   const ListItemCoupon = ({ item }) => {
+    const onCollectCoupon = async (item) => {
+      await axios({
+        method: "POST",
+        url: API_URL.COLLECT_COUPON_ADD_HD_API + item.id,
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+        .then(function (response) {
+          ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        })
+        .catch(function (error) {
+          console.log(error);
+          ToastAndroid.show(error.response.data, ToastAndroid.SHORT);
+        });
+    };
     return (
-      <Block style={styles.itemCoupon}>
+      <Block style={styles.itemCouponList}>
+        <Image
+          source={{
+            uri:
+              locale == "th"
+                ? rootImage + item.image_th
+                : rootImage + item.image_en,
+          }}
+          style={styles.imageListCouponView}
+        />
         <TouchableOpacity
-          onPress={() => props.navigation.navigate("My Coupon")}
+          onPress={() => onCollectCoupon(item)}
+          style={styles.listCouponView}
         >
-          <Image
-            source={{
-              uri:
-                locale == "th"
-                  ? rootImage + item.image_th
-                  : rootImage + item.image_en,
-            }}
-            style={{ width: 170, height: 80, margin: 10 }}
-          />
+          <Text style={styles.textListCouponView}>COLLECT</Text>
         </TouchableOpacity>
       </Block>
     );
@@ -215,35 +236,29 @@ function FlashsaleProduct(props) {
           <SectionList
             stickySectionHeadersEnabled={false}
             sections={COUPON_LIST}
-            renderSectionHeader={({ section }) => (
+            renderSectionHeader={() => (
               <>
                 {/* Coupon */}
-                {listCouponHD ? (
-                  <Block style={styles.containerHeader}>
-                    <Image
-                      source={require("../../assets/images/coupon/couponhead.png")}
-                      style={{
-                        width: width - 200,
-                        height: 25,
-                        alignSelf: "center",
-                        marginTop: 20,
-                      }}
-                    />
-                    {section.horizontal ? (
-                      <FlatList
-                        horizontal
-                        data={listCouponHD}
-                        renderItem={({ item }) =>
-                          item.code !== "" ? (
-                            <ListItemCoupon item={item} />
-                          ) : null
-                        }
-                        showsHorizontalScrollIndicator={false}
-                        keyExtractor={(item) => item.id.toString()}
-                      />
-                    ) : null}
-                  </Block>
-                ) : null}
+                <Block style={styles.containerHeader}>
+                  <Image
+                    source={require("../../assets/images/coupon/couponhead.png")}
+                    style={{
+                      width: width - 200,
+                      height: 30,
+                      alignSelf: "center",
+                      marginTop: 20,
+                    }}
+                  />
+                  <FlatList
+                    horizontal={true}
+                    data={listCouponHD}
+                    renderItem={({ item }) =>
+                      item.code !== "" ? <ListItemCoupon item={item} /> : null
+                    }
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(item) => item.id.toString()}
+                  />
+                </Block>
 
                 {/* Flash Sale Count Down */}
                 <LinearGradient
@@ -476,8 +491,6 @@ function FlashsaleProduct(props) {
 const mapActions = {
   setObjProductActivity: ActionProduct.setObjProductActivity,
   clearObjProductActivity: ActionProduct.clearObjProductActivity,
-  setListTrProductActivity: ActionProduct.setListTrProductActivity,
-  pushListTrProductActivity: ActionProduct.pushListTrProductActivity,
 
   setObjHomeHD: ActionHome.setObjHomeHD,
   clearObjHomeHD: ActionHome.clearObjHomeHD,
@@ -554,9 +567,31 @@ const styles = StyleSheet.create({
   },
   containerHeader: {
     backgroundColor: "#4967ad",
+    height: 170,
   },
-  itemCoupon: {
+  itemCouponList: {
     margin: 5,
+  },
+  listCouponView: {
+    backgroundColor: "#17e391",
+    width: 100,
+    height: 25,
+    borderRadius: 25,
+    alignSelf: "center",
+    position: "relative",
+    marginTop: -27,
+  },
+  textListCouponView: {
+    fontSize: 14,
+    color: "white",
+    textAlign: "center",
+    fontFamily: "kanitRegular",
+    marginTop: 2,
+  },
+  imageListCouponView: {
+    width: 170,
+    height: 82,
+    margin: 10,
   },
 });
 

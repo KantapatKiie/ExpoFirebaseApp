@@ -80,6 +80,7 @@ export const API_URL = {
 
   //COUPON
   COUPON_LIST_TR_API: REACT_NATIVE_APP_API + "/coupon/list",
+  COUPON_VERIFY_IDS_API: REACT_NATIVE_APP_API + "/coupon/verify/",
   MY_COUPON_LIST_TR_API: REACT_NATIVE_APP_API + "/coupon/my_coupon/",
   COLLECT_COUPON_ADD_HD_API: REACT_NATIVE_APP_API + "/coupon/",
 };

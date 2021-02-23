@@ -9,6 +9,7 @@ import {
   FlatList,
   ToastAndroid,
   RefreshControl,
+  Alert,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -18,7 +19,8 @@ import "moment/locale/en-au";
 import { formatTr } from "../../i18n/I18nProvider";
 import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
-import * as ActionCart from "../../actions/action-cart/ActionCart";
+import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
+import { actions as ActionCountCart } from "../../actions/action-cart/ActionCountCart";
 import WangdekInfo from "../../components/WangdekInfo";
 import NumericInput from "rn-numeric-input";
 import { Button } from "react-native-elements";
@@ -30,23 +32,6 @@ import ModalLoading from "../../components/ModalLoading";
 const { height, width } = Dimensions.get("screen");
 const token = getToken();
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
-
-const defaultCartListOrders = [
-  {
-    cart_id: 99999,
-    product_id: 0,
-    product_name_th: "เสื้อผ้า 001",
-    product_name_en: "Clothing 001",
-    product_image: "/storage/3/images-%281%29.jfif",
-    product_full_price: "600.00",
-    product_price: 450,
-    quantity: 1,
-    flash_sales_id: 1,
-    flash_sale_events_id: 1,
-    disabled: false,
-    remark: "",
-  },
-];
 
 function CartScreen(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -77,7 +62,7 @@ function CartScreen(props) {
     loadCartLists();
   }, []);
 
-  const [listCarts, setListCarts] = useState(defaultCartListOrders);
+  const [listCarts, setListCarts] = useState(null);
   async function loadCartLists() {
     setLoading(true);
     await axios({
@@ -87,7 +72,6 @@ function CartScreen(props) {
         Accept: "*/*",
         Authorization: "Bearer " + (await token),
         "Content-Type": "application/json",
-        // "X-localization": locale,
       },
     })
       .then(async (response) => {
@@ -97,7 +81,7 @@ function CartScreen(props) {
       })
       .catch(function (error) {
         setLoading(true);
-        console.log(error);
+        console.log(error.response.data);
       });
     setLoading(false);
   }
@@ -126,11 +110,25 @@ function CartScreen(props) {
           "X-localization": locale,
         },
       })
-        .then(function (response) {
+        .then(async (response) => {
           ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+
+          // await axios({
+          //   method: "GET",
+          //   url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
+          //   headers: {
+          //     Accept: "application/json",
+          //     "Content-Type": "application/json",
+          //     Authorization: "Bearer " + (await token),
+          //   },
+          // }).then(async (response) => {
+          //   let newListCount = await response.data.data.result;
+          //   props.setCountCart(newListCount);
+          //   props.navigation.navigate("Cart");
+          // });
         })
         .catch(function (error) {
-          console.log(false);
+          console.log(error);
         });
     };
     return (
@@ -215,12 +213,12 @@ function CartScreen(props) {
       data: listCarts,
     })
       .then(function (response) {
-        props.setListTrCartScreen(listCarts);
         setLoading(false);
+        props.setListTrCartScreen(listCarts);
         props.navigation.navigate("Order Screen");
       })
       .catch(function (error) {
-        console.log(error);
+        console.log(error.response.data.data);
       });
     setLoading(false);
   };
@@ -267,31 +265,49 @@ function CartScreen(props) {
               />
 
               {/* Button */}
-              <Block
-                row
-                style={{
-                  paddingTop: 40,
-                  paddingBottom: 40,
-                  alignSelf: "center",
-                }}
-              >
-                <Button
-                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-                  title={"ซื้อสินค้าเพิ่มเติม"}
-                  type="solid"
-                  containerStyle={styles.blockButton1}
-                  buttonStyle={styles.buttonStyle1}
-                  onPress={() => props.navigation.navigate("Flash Sale")}
-                />
-                <Button
-                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-                  title={"ดำเนินการต่อ"}
-                  type="solid"
-                  containerStyle={styles.blockButton2}
-                  buttonStyle={styles.buttonStyle2}
-                  onPress={addCartListProducts}
-                />
-              </Block>
+              {listCarts ? (
+                <Block
+                  row
+                  style={{
+                    paddingTop: 40,
+                    paddingBottom: 40,
+                    alignSelf: "center",
+                  }}
+                >
+                  <Button
+                    titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                    title={"ซื้อสินค้าเพิ่มเติม"}
+                    type="solid"
+                    containerStyle={styles.blockButton1}
+                    buttonStyle={styles.buttonStyle1}
+                    onPress={() => props.navigation.navigate("Flash Sale")}
+                  />
+                  <Button
+                    titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                    title={"ดำเนินการต่อ"}
+                    type="solid"
+                    containerStyle={styles.blockButton2}
+                    buttonStyle={styles.buttonStyle2}
+                    onPress={addCartListProducts}
+                  />
+                </Block>
+              ) : (
+                <Block
+                  style={{
+                    paddingBottom: 40,
+                    alignSelf: "center",
+                  }}
+                >
+                  <Button
+                    titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
+                    title={"เลือกซื้อสินค้าเพิ่มเติม"}
+                    type="solid"
+                    containerStyle={styles.blockButton1}
+                    buttonStyle={styles.buttonStyle1ss}
+                    onPress={() => props.navigation.navigate("Flash Sale")}
+                  />
+                </Block>
+              )}
             </>
           )}
           renderSectionFooter={() => <>{<WangdekInfo />}</>}
@@ -305,7 +321,15 @@ function CartScreen(props) {
   );
 }
 
-export default connect(null, ActionCart.actions)(CartScreen);
+const mapActions = {
+  setCountCart: ActionCountCart.setCountCart,
+
+  setObjCartScreen: ActionCart.setObjCartScreen,
+  clearObjCartScreen: ActionCart.clearObjCartScreen,
+  setListTrCartScreen: ActionCart.setListTrCartScreen,
+};
+
+export default connect(null, mapActions)(CartScreen);
 
 const styles = StyleSheet.create({
   container: {
@@ -366,6 +390,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#0a86c4",
     borderRadius: 20,
     width: 150,
+    alignSelf: "center",
+  },
+  buttonStyle1ss: {
+    backgroundColor: "red",
+    borderRadius: 20,
+    width: 180,
     alignSelf: "center",
   },
   buttonStyle2: {
