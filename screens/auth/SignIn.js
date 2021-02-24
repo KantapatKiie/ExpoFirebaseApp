@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { connect, useSelector } from "react-redux";
+import { connect } from "react-redux";
 import {
   StyleSheet,
   Text,
@@ -95,9 +95,7 @@ function SignIn(props) {
   // IsLogIn Complete View
   const [isLoggedin, setLoggedinStatus] = useState(token._W ? true : false);
 
-  const [objLoginMasterHD, setObjLoginMasterHD] = useState(
-    defalutLoginMasterHD
-  );
+  const [objLoginMasterHD, setObjLoginMasterHD] = useState(defalutLoginMasterHD);
   const [stateObj, setStateObj] = useState({
     email: "",
     password: "",
@@ -780,19 +778,20 @@ function SignIn(props) {
                     alignSelf: "center",
                   }}
                 >
-                  <Block style={styles.loginBtn}>
-                    <TouchableOpacity onPress={LoginAccount}>
-                      <Text
-                        style={{
-                          color: "white",
-                          fontSize: 17,
-                          fontFamily: "kanitRegular",
-                        }}
-                      >
-                        เข้าสู่ระบบ
-                      </Text>
-                    </TouchableOpacity>
-                  </Block>
+                  <TouchableOpacity
+                    onPress={LoginAccount}
+                    style={styles.loginBtn}
+                  >
+                    <Text
+                      style={{
+                        color: "white",
+                        fontSize: 17,
+                        fontFamily: "kanitRegular",
+                      }}
+                    >
+                      เข้าสู่ระบบ
+                    </Text>
+                  </TouchableOpacity>
                   <Block
                     style={{
                       borderRadius: 20,
@@ -1562,8 +1561,8 @@ const styles = StyleSheet.create({
   loginBtn: {
     width: "70%",
     backgroundColor: "#0ec99a",
-    borderRadius: 20,
-    height: 40,
+    borderRadius: 25,
+    height: 50,
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "center",
@@ -1573,8 +1572,8 @@ const styles = StyleSheet.create({
   loginBtnFacebook: {
     width: "80%",
     backgroundColor: "#2a4abf",
-    borderRadius: 20,
-    height: 40,
+    borderRadius: 25,
+    height: 50,
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "center",

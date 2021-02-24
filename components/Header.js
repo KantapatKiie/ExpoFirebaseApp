@@ -198,7 +198,7 @@ function Header(props) {
               style={{
                 fontFamily: "kanitRegular",
                 color: "black",
-                fontSize: 9.4,
+                fontSize: 8,
                 textAlign: "center",
               }}
             >
