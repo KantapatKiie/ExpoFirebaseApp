@@ -742,17 +742,19 @@ function Home(props) {
               </TouchableHighlight>
 
               {/* Coupon */}
-              <Block style={styles2.containerHeader}>
-                <FlatList
-                  horizontal
-                  data={couponList}
-                  renderItem={({ item }) =>
-                    item.code !== "" ? <ListItemCoupon item={item} /> : null
-                  }
-                  showsHorizontalScrollIndicator={false}
-                  keyExtractor={(item) => item.id.toString()}
-                />
-              </Block>
+              {couponList ? (
+                <Block style={styles2.containerHeader}>
+                  <FlatList
+                    horizontal
+                    data={couponList}
+                    renderItem={({ item }) =>
+                      item.code !== "" ? <ListItemCoupon item={item} /> : null
+                    }
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(item) => item.id.toString()}
+                  />
+                </Block>
+              ) : null}
             </>
           )}
           renderSectionFooter={() => (

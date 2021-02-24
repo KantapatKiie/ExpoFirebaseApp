@@ -102,23 +102,37 @@ console.log(objNewsRelationsHD)
       });
   };
   const shareLinkSocials = (item) => {
-    Share.share(
-      {
+    if (Platform.OS === "android") {
+      Share.share({
         title: "Share message website",
         message: "Message",
         url: item.url,
-      },
-      {
+        tintColor: "black",
+        subject: "Share message website",
+        dialogTitle: "Share website",
+      })
+        .then(function (response) {
+          ToastAndroid.show(response.data, ToastAndroid.SHORT);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    } else {
+      Share.share({
+        title: "Share message website",
+        message: "Message",
+        url: item.url,
+        subject: "Share message website",
         dialogTitle: "Share website",
         tintColor: "black",
-      }
-    )
-      .then(function (response) {
-        ToastAndroid.show(response.data, ToastAndroid.SHORT);
       })
-      .catch(function (error) {
-        console.log(error);
-      });
+        .then(function (response) {
+          ToastAndroid.show(response.data, ToastAndroid.SHORT);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   };
 
   return (

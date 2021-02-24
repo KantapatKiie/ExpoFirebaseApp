@@ -177,10 +177,11 @@ function CartScreen(props) {
           </Block>
         </Block>
         <Block row style={{ width: "90%", alignSelf: "center" }}>
-          <Block style={{ width: "40%", alignSelf: "center" }}>
+          <Block style={{ width: "40%", alignSelf: "flex-start" }}>
             <Text style={styles.fontPriceProductFullPrice}>
               ฿{commaNumber(parseFloat(item.product_full_price).toFixed(2))}
             </Text>
+            <Block style={styles.boxPriceSale}/>
           </Block>
           <Block style={{ width: "40%", alignSelf: "center" }}>
             <Text style={styles.fontPriceProduct}>
@@ -376,9 +377,7 @@ const styles = StyleSheet.create({
     fontFamily: "kanitRegular",
     fontSize: 18,
     color: "#8f8f8f",
-    textDecorationLine: "line-through",
-    textDecorationStyle: "solid",
-    textDecorationColor: "red",
+    marginTop:5
   },
   blockButton1: {
     flexDirection: "row",
@@ -403,6 +402,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: 150,
     alignSelf: "center",
+  },
+  boxPriceSale: {
+    borderTopWidth: 1,
+    borderTopColor: "red",
+    position: "relative",
+    width: 70,
+    transform: [{ rotate: '8deg'}],
+    marginTop: -15,
   },
 });
 

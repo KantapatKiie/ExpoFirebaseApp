@@ -39,11 +39,12 @@ function OrderScreen(props) {
     moment.locale("en-au");
   }
   const [loading, setLoading] = useState(null);
-  const { objUseCoupon, objUseDelivery, objUseAddressDelivery } = useSelector(
+  const { objUseCoupon, objUseDelivery, objUseAddressDelivery,objOrderStatusPriceScreen } = useSelector(
     (state) => ({
       objUseCoupon: state.actionOrder.objUseCoupon,
       objUseDelivery: state.actionOrder.objUseDelivery,
       objUseAddressDelivery: state.actionOrder.objUseAddressDelivery,
+      objOrderStatusPriceScreen: state.actionOrder.objOrderStatusPriceScreen,
     })
   );
   const [listTrOrder, setListTrOrder] = useState();
@@ -97,10 +98,11 @@ function OrderScreen(props) {
         </Block>
         {/* Price */}
         <Block row style={{ margin: 15, alignSelf: "center" }}>
-          <Block style={{ width: "55%" }}>
+          <Block style={{ width: "55%", alignItems: "flex-start" }}>
             <Text style={styles.fontPriceProductFullPrice}>
               ฿{commaNumber(parseFloat(item.product_full_price).toFixed(2))}
             </Text>
+            <Block style={styles.boxPriceSale} />
           </Block>
           <Block style={{ width: "45%" }}>
             <Text style={styles.fontPriceProduct}>
@@ -127,20 +129,44 @@ function OrderScreen(props) {
               "X-localization": locale,
             },
             data: listTrOrder,
-          }).then(function (response) {
-            let newListFix = listTrOrder.map((val) => {
+          }).then(async (response) => {
+            let newListFix = await listTrOrder.map((val) => {
               val.promotion_discount =
                 response.data.data.discount_from_promotion.total;
               val.vat = response.data.data.vat;
               return val;
             });
-            console.log(newListFix);
             props.setListTrOrder(newListFix);
             props.setObjUseCoupon(objUseCoupon);
             props.setObjUseDelivery(objUseDelivery);
             props.setObjUseAddressDelivery(objUseAddressDelivery);
-            props.navigation.navigate("Order Status Price Screen");
+
+            var Amounts = 0;
+            var Discounts = 0;
+            var Vats = listTrOrder[0].vat;
+            var CouponDiscounts = objUseCoupon.coupon_discount;
+            var PromotionsDiscount = listTrOrder[0].promotion_discount;
+            var newSummaryPrice = Object.assign({}, objOrderStatusPriceScreen);
+            for (var i = 0; i < list.length; i++) {
+              Amounts += (await list[i].product_price) * list[i].quantity;
+            }
+            newSummaryPrice.total_amount = Amounts;
+            newSummaryPrice.discount = Discounts;
+            newSummaryPrice.coupon_discount = CouponDiscounts;
+            newSummaryPrice.promotion_discount = PromotionsDiscount;
+            newSummaryPrice.vat = Vats;
+        
+            TotalAmounts = await (parseFloat(Amounts) +
+              parseFloat(newDelivery.base_price) -
+              parseFloat(Discounts) -
+              parseFloat(CouponDiscounts) -
+              parseFloat(PromotionsDiscount) +
+              parseFloat(Vats));
+            newSummaryPrice.total_full_amounts = TotalAmounts;
+        
+            props.setobjOrderStatusPriceScreenins(newSummaryPrice);
             setLoading(false);
+            props.navigation.navigate("Order Status Price Screen");
           });
         } else {
           ToastAndroid.show("กรุณาเลือกที่อยู่ในการจัดส่ง", ToastAndroid.SHORT);
@@ -321,8 +347,6 @@ const styles = StyleSheet.create({
     fontFamily: "kanitRegular",
     fontSize: 18,
     color: "#8f8f8f",
-    textDecorationLine: "line-through",
-    textDecorationStyle: "solid",
   },
   blockButton1: {
     flexDirection: "row",
@@ -355,6 +379,14 @@ const styles = StyleSheet.create({
     color: "black",
     fontSize: 17,
     fontFamily: "kanitRegular",
+  },
+  boxPriceSale: {
+    borderTopWidth: 1,
+    borderTopColor: "red",
+    position: "relative",
+    width: 70,
+    transform: [{ rotate: "8deg" }],
+    marginTop: -15,
   },
 });
 

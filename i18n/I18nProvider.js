@@ -19,16 +19,3 @@ export function formatTr(name) {
   I18n.initAsync();
   return I18n.t(name, locale);
 }
-
-//#region Backup getLanguage
-// const getLanguage = async () => {
-//   try {
-//     const choice = await Localization.locale;
-//     I18n.locale = choice.substring(0, 2);
-//     I18n.initAsync();
-//   } catch (error) {
-//     console.log(error, "Error");
-//   }
-// };
-// getLanguage();
-//#endregion

@@ -163,7 +163,6 @@ function Events(props) {
     props.setObjEventsHD(newObj);
   };
 
-  
   const [listPeriodEvent, setListPeriodEvent] = useState(null);
   const [listDays, setListDays] = useState(null);
   const [keyDaysFilter, setKeyDaysFilter] = useState(1);
@@ -301,15 +300,17 @@ function Events(props) {
         .then(function (response) {
           let newEvents = response.data.data.filter(
             (eve) =>
-              eve.operate_date ==
-              moment(objEventsHD.EVENT_MONTH).format("YYYY-MM-") + keyDaysFilter & eve.type == item.key
+              (eve.operate_date ==
+                moment(objEventsHD.EVENT_MONTH).format("YYYY-MM-") +
+                  keyDaysFilter) &
+              (eve.type == item.key)
           );
           setListPeriodEvent(newEvents);
         })
         .catch(function (error) {
           console.log(error);
         });
-    }
+    };
     return (
       <Block style={styles.itemEventType}>
         <TouchableOpacity onPress={() => onFilterTypeEvents(item)}>
@@ -376,6 +377,7 @@ function Events(props) {
     })
       .then(function (response) {
         ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        onLoadActivitiesList();
       })
       .catch(function (error) {
         console.log(error);

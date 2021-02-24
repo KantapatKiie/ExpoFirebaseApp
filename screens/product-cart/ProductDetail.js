@@ -197,24 +197,37 @@ function ProductDetail(props) {
         console.log(error);
       });
   };
-  const shareLinkSocials = (item) => {
-    Share.share(
-      {
+  const shareLinkSocials = async (item) => {
+    if (Platform.OS === "android") {
+      Share.share({
         title: "Share message website",
         message: "Message",
         url: item.url,
-      },
-      {
+        tintColor: "black",
+        subject: "Share message website",
+      })
+        .then(function (response) {
+          ToastAndroid.show(response.data, ToastAndroid.SHORT);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    } else {
+      Share.share({
+        title: "Share message website",
+        message: "Message",
+        url: item.url,
+        subject: "Share message website",
         dialogTitle: "Share website",
         tintColor: "black",
-      }
-    )
-      .then(function (response) {
-        ToastAndroid.show(response.data, ToastAndroid.SHORT);
       })
-      .catch(function (error) {
-        console.log(error);
-      });
+        .then(function (response) {
+          ToastAndroid.show(response.data, ToastAndroid.SHORT);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   };
   return (
     <>
@@ -387,12 +400,14 @@ function ProductDetail(props) {
             <Block
               style={{ alignSelf: "flex-start", width: "45%", marginLeft: 5 }}
             >
+              
               <Text style={styles.detailFullprice}>
                 ฿
                 {commaNumber(
                   parseFloat(objProductActivity.product_full_price).toFixed(2)
                 )}
               </Text>
+              <Block style={styles.boxPriceSale}/>
             </Block>
             <Block row style={{ alignSelf: "flex-start", width: "50%" }}>
               <Text style={styles.detailPrice1}>ราคา : </Text>
@@ -593,9 +608,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "kanitRegular",
     marginTop: 8,
-    textDecorationLine: "line-through",
-    textDecorationStyle: "solid",
-    textDecorationColor: "red",
+    // textDecorationLine: "line-through",
+    // textDecorationStyle: "solid",
+    // textDecorationColor: "red",
+  },
+  boxPriceSale: {
+    borderTopWidth: 1,
+    borderTopColor: "red",
+    position: "relative",
+    width: 70,
+    transform: [{ rotate: '8deg'}],
+    marginTop: -14,
   },
   blockFavorite: {
     backgroundColor: "#d1d1d1",

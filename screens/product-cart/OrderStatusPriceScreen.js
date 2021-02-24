@@ -35,7 +35,7 @@ const { width } = Dimensions.get("screen");
 const token = getToken();
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 Omise.config("pkey_test_5mvrvso2arsfg21lm3v", "2019-05-29");
-let TotalAmounts = 0;
+var TotalAmounts = 0;
 
 function OrderStatus(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -77,7 +77,7 @@ function OrderStatus(props) {
   useEffect(() => {
     setCheckPayType(1);
     loadDataDeliveryList(objUseDelivery.id);
-    summaryPriceListTrOrder(listTrOrder)
+    summaryPriceListTrOrder(listTrOrder);
     getCountry();
   }, []);
 
@@ -109,7 +109,7 @@ function OrderStatus(props) {
         console.log(error);
       });
   };
-  async function summaryPriceListTrOrder (list) {
+  const summaryPriceListTrOrder = async (list) => {
     var Amounts = 0;
     var Discounts = 0;
     var Vats = listTrOrder[0].vat;
@@ -117,7 +117,7 @@ function OrderStatus(props) {
     var PromotionsDiscount = listTrOrder[0].promotion_discount;
     var newSummaryPrice = Object.assign({}, objOrderStatusPriceScreen);
     for (var i = 0; i < list.length; i++) {
-      Amounts += await list[i].product_price * list[i].quantity;
+      Amounts += (await list[i].product_price) * list[i].quantity;
     }
     newSummaryPrice.total_amount = Amounts;
     newSummaryPrice.discount = Discounts;
@@ -131,6 +131,7 @@ function OrderStatus(props) {
       parseFloat(CouponDiscounts) -
       parseFloat(PromotionsDiscount) +
       parseFloat(Vats));
+    newSummaryPrice.total_full_amounts = TotalAmounts;
 
     props.setobjOrderStatusPriceScreenins(newSummaryPrice);
   };
@@ -184,13 +185,12 @@ function OrderStatus(props) {
                 fontFamily: "kanitRegular",
                 fontSize: 20,
                 color: "#8f8f8f",
-                textDecorationLine: "line-through",
-                textDecorationStyle: "solid",
               }}
             >
               {"฿ " +
                 commaNumber(parseFloat(item.product_full_price).toFixed(2))}
             </Text>
+            <Block style={styles.boxPriceSale} />
           </Block>
           <Block style={{ width: "40%" }}>
             <Text
@@ -238,11 +238,10 @@ function OrderStatus(props) {
     //   // type: 'internet_banking_bbl',
     //   card: tokenOmise.id,
     // });
-
   };
   const handleConfirmPaymentOmise = async () => {
     const tokenOmise = await checkedOmiseTransfer();
-    console.log(tokenOmise.id)
+    console.log(tokenOmise.id);
     await axios({
       method: "POST",
       url: API_URL.CREATE_ORDER_HD_API,
@@ -302,9 +301,8 @@ function OrderStatus(props) {
     let newObj = Object.assign({}, objjOmiseTransfer);
     if (e.length >= 2) {
       newObj.expire_date = e.substr(0, 2) + "/" + (e.substr(3) || "");
-    }
-    else{
-      newObj.expire_date = e
+    } else {
+      newObj.expire_date = e;
     }
     setObjOmiseTransfer(newObj);
   };
@@ -360,7 +358,10 @@ function OrderStatus(props) {
               <Text style={stylesModal.titleMain}>OMISE </Text>
               <Text style={stylesModal.titleFooter}>Secured by Omise </Text>
             </Block>
-            <TouchableOpacity style={stylesModal.closeModal} onPress={() => setModalVisible(false)}>
+            <TouchableOpacity
+              style={stylesModal.closeModal}
+              onPress={() => setModalVisible(false)}
+            >
               <Icons name="close" size={20} color="black" />
             </TouchableOpacity>
           </Block>
@@ -443,7 +444,9 @@ function OrderStatus(props) {
                     color: "white",
                   }}
                   defaultValue={
-                    objjOmiseTransfer.bank_name == "" ? null : objjOmiseTransfer.bank_code
+                    objjOmiseTransfer.bank_name == ""
+                      ? null
+                      : objjOmiseTransfer.bank_code
                   }
                   onChangeItem={(item) => onChangeCountry(item)}
                 />
@@ -454,7 +457,11 @@ function OrderStatus(props) {
               <Block style={{ margin: 10, marginTop: 15 }}>
                 <Button
                   titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-                  title={"Checkout " + commaNumber(parseFloat(TotalAmounts).toFixed(2)) + " THB"}
+                  title={
+                    "Checkout " +
+                    commaNumber(parseFloat(TotalAmounts).toFixed(2)) +
+                    " THB"
+                  }
                   type="solid"
                   containerStyle={{ margin: 15 }}
                   buttonStyle={{ backgroundColor: "#0c5aeb" }}
@@ -479,7 +486,6 @@ function OrderStatus(props) {
   //#endregion
 
   const onConfirmToPaymentPage = async () => {
-
     if (checkPayType === 1) {
       await axios({
         method: "POST",
@@ -867,7 +873,7 @@ function OrderStatus(props) {
                     }}
                   >
                     ยอดรวมทั้งสิ้น : ฿{" "}
-                    {commaNumber(parseFloat(TotalAmounts).toFixed(2))}
+                    {commaNumber(parseFloat(objOrderStatusPriceScreen.total_full_amounts).toFixed(2))}
                   </Text>
                 </Block>
               </Block>
@@ -1052,6 +1058,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#fafafa",
     marginTop: 10,
   },
+  boxPriceSale: {
+    borderTopWidth: 1,
+    borderTopColor: "red",
+    position: "relative",
+    width: 70,
+    transform: [{ rotate: "8deg" }],
+    marginTop: -15,
+  },
 });
 
 const stylesModal = StyleSheet.create({
@@ -1092,8 +1106,8 @@ const stylesModal = StyleSheet.create({
     color: "#a8a8a8",
     fontFamily: "kanitRegular",
   },
-  closeModal:{
-    marginBottom:50,
+  closeModal: {
+    marginBottom: 50,
     marginLeft: 60,
   },
   bodyText: {
@@ -1115,7 +1129,7 @@ const stylesModal = StyleSheet.create({
     padding: 20,
     borderWidth: 0.7,
     borderColor: "#e0e0e0",
-    borderRadius: 4
+    borderRadius: 4,
   },
   inputViews: {
     width: "42%",
@@ -1126,9 +1140,9 @@ const stylesModal = StyleSheet.create({
     padding: 20,
     borderWidth: 0.7,
     borderColor: "#e0e0e0",
-    borderRadius: 4
+    borderRadius: 4,
   },
-  inputViewsRow:{
+  inputViewsRow: {
     width: "42%",
     backgroundColor: "#ffffff",
     height: 35,
@@ -1138,7 +1152,7 @@ const stylesModal = StyleSheet.create({
     padding: 20,
     borderWidth: 0.7,
     borderColor: "#e0e0e0",
-    borderRadius: 4
+    borderRadius: 4,
   },
   divider: {
     width: "100%",
@@ -1148,8 +1162,7 @@ const stylesModal = StyleSheet.create({
   modalBody: {
     marginLeft: 15,
   },
-  modalFooter: {
-  },
+  modalFooter: {},
   actions: {
     borderRadius: 5,
     margin: 5,
