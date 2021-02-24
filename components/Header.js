@@ -39,9 +39,6 @@ function Header(props) {
     moment.locale("en-au");
   }
   const [loading, setLoading] = useState(null);
-  const { auth_token } = useSelector((state) => ({
-    auth_token: state.auth.auth_token,
-  }));
   const { objProductType } = useSelector((state) => ({
     objProductType: state.actionProductType.objProductType,
   }));
@@ -49,13 +46,13 @@ function Header(props) {
   useEffect(() => {
     loadDataBrandsTypes();
     loadCountCart();
-  }, [countCart]);
+  }, []);
 
   //Count _Cart_&_Notifications_
   const [countCart, setCountCart] = useState(0);
   const [countNews, setCountNews] = useState(0);
   async function loadCountCart() {
-    if (token !== undefined || auth_token !== undefined) {
+    if ((await token) !== undefined && (await token)  !== null) {
       await axios({
         method: "GET",
         url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
@@ -63,8 +60,7 @@ function Header(props) {
           Accept: "application/json",
           "Content-Type": "application/json",
           Authorization:
-            "Bearer " +
-            ((await token) !== undefined ? await token : auth_token),
+            "Bearer " + (await token),
         },
       })
         .then(async (response) => {

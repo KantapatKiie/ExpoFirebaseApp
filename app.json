@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "expofirebase",
-    "slug": "expofirebase",
+    "name": "Wangdek",
+    "slug": "Wangdek",
     "version": "1.0.0",
     "orientation": "portrait",
     "privacy": "public",
@@ -16,12 +16,12 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
+      "usesIcloudStorage": true,
       "bundleIdentifier": "com.iamcompany.expofirebase",
       "buildNumber": "1.0.0",
       "config": {
-        "googleMapsApiKey": "AIzaSyBOPwrViKPYbjD7ASVKheIlwHFq5GP4Qyg"
-      },
-      "usesIcloudStorage": true
+        "googleMapsApiKey": "AIzaSyAMD6pyGj7PMAIl4GDWgKWlqfLad-TQkUA"
+      }
     },
     "android": {
       "googleServicesFile": "./google-services.json",

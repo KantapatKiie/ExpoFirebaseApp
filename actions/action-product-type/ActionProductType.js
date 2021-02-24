@@ -30,8 +30,6 @@ const initialState = {
     FLASHSALE: false,
   },
   listTrProductType: [],
-  // disabledInput: false,
-  // editable: false,
 };
 
 export const reducer = persistReducer(

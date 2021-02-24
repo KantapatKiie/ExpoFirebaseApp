@@ -54,10 +54,6 @@ function CartScreen(props) {
     });
   }, []);
 
-  // const { auth_token } = useSelector((state) => ({
-  //   auth_token: state.auth.auth_token,
-  // }));
-
   useEffect(() => {
     loadCartLists();
   }, []);
