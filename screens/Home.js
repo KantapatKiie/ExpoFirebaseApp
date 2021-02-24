@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   ImageBackground,
   Modal,
-  ScrollView,
   RefreshControl,
 } from "react-native";
 import axios from "axios";
@@ -39,52 +38,6 @@ import { ToastAndroid } from "react-native";
 const { width } = Dimensions.get("screen");
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 let token = getToken();
-
-const defalutCouponList = [
-  {
-    id: "1",
-    code: "",
-    image: "/storage/8/coupon-1.png",
-    title1_th: "title1_th",
-    title1_en: "title1_en",
-    title2_th: "title2_th",
-    title2_en: "title2_en",
-    valid_from: "2021-02-03 15:15:00",
-    valid_until: "2021-02-03 15:15:00",
-  },
-];
-const defalutBestsaleProduct = [
-  {
-    id: 2,
-    name_th: "กระเป๋า เอ",
-    name_en: "Bag A",
-    image: "/storage/2/download-%281%29.jfif",
-    price: "1000.00",
-    total_quantity: "4",
-  },
-];
-const defalutPopularProduct = [
-  {
-    id: 2,
-    name_th: "กระเป๋า เอ",
-    name_en: "Bag A",
-    image: "/storage/2/download-%281%29.jfif",
-    price: "1000.00",
-    total_quantity: "4",
-  },
-];
-const defalutInformationList = [
-  {
-    id: 1,
-    type: "news",
-    title_th: "ข่าว 1",
-    title_en: "News 1",
-    short_description_th: "กกกกก กกดกดกดกด กดกดกดด",
-    short_description_en: "dfdfd dfdfd dfdfdfd fdfdfdf",
-    operate_datetime: "2021-02-16 07:11:58",
-    image: "/storage/85/download.jfif",
-  },
-];
 
 function Home(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -194,7 +147,7 @@ function Home(props) {
   };
 
   // Coupon
-  const [couponList, setCouponList] = useState(defalutCouponList);
+  const [couponList, setCouponList] = useState(null);
   const loadDataCoupon = async () => {
     if ((await token) !== null && (await token) !== undefined) {
       await axios
@@ -215,7 +168,7 @@ function Home(props) {
     }
   };
   const ListItemCoupon = ({ item }) => {
-    const onCollectCoupon = async (item) =>{
+    const onCollectCoupon = async (item) => {
       await axios({
         method: "POST",
         url: API_URL.COLLECT_COUPON_ADD_HD_API + item.id,
@@ -232,21 +185,23 @@ function Home(props) {
           console.log(error);
           ToastAndroid.show(error.response.data, ToastAndroid.SHORT);
         });
-    }
+    };
     return (
       <Block style={styles2.itemCouponList}>
+        <Image
+          source={{
+            uri:
+              locale == "th"
+                ? rootImage + item.image_th
+                : rootImage + item.image_en,
+          }}
+          style={styles.imageListCouponView}
+        />
         <TouchableOpacity
           onPress={() => onCollectCoupon(item)}
+          style={styles.listCouponView}
         >
-          <Image
-            source={{
-              uri:
-                locale == "th"
-                  ? rootImage + item.image_th
-                  : rootImage + item.image_en,
-            }}
-            style={{ width: 170, height: 80, margin: 10 }}
-          />
+          <Text style={styles.textListCouponView}>COLLECT</Text>
         </TouchableOpacity>
       </Block>
     );
@@ -255,7 +210,7 @@ function Home(props) {
   const [modalVisible, setModalVisible] = useState(false);
   const ModalPopupCoupon = () => {
     const renderModalCouponList = ({ item }) => {
-      const onCollectCouponModal = async (item) =>{
+      const onCollectCouponModal = async (item) => {
         await axios({
           method: "POST",
           url: API_URL.COLLECT_COUPON_ADD_HD_API + item.id,
@@ -272,7 +227,7 @@ function Home(props) {
             console.log(error);
             ToastAndroid.show(error.response.data, ToastAndroid.SHORT);
           });
-      }
+      };
       return (
         <Block row style={{ marginBottom: 15 }}>
           <Image
@@ -363,8 +318,8 @@ function Home(props) {
   };
 
   // Best selling
-  const [listBestsale, setListBestsale] = useState(defalutBestsaleProduct);
-  const [listPopularSale, setListPopularSale] = useState(defalutPopularProduct);
+  const [listBestsale, setListBestsale] = useState(null);
+  const [listPopularSale, setListPopularSale] = useState(null);
   async function loadDataProductLists() {
     await axios({
       method: "GET",
@@ -592,9 +547,7 @@ function Home(props) {
   };
 
   // Information List
-  const [informationList, setInformationList] = useState(
-    defalutInformationList
-  );
+  const [informationList, setInformationList] = useState(null);
   async function loadDataNews() {
     await axios
       .get(API_URL.NEWS_EVENTS_RELATIONS_HD, {
@@ -789,19 +742,19 @@ function Home(props) {
               </TouchableHighlight>
 
               {/* Coupon */}
-              <Block style={styles2.containerHeader}>
-                <FlatList
-                  horizontal
-                  data={couponList}
-                  renderItem={({ item }) =>
-                    item.code !== "" ? (
-                      <ListItemCoupon item={item} />
-                    ) : null
-                  }
-                  showsHorizontalScrollIndicator={false}
-                  keyExtractor={(item) => item.id.toString()}
-                />
-              </Block>
+              {couponList ? (
+                <Block style={styles2.containerHeader}>
+                  <FlatList
+                    horizontal
+                    data={couponList}
+                    renderItem={({ item }) =>
+                      item.code !== "" ? <ListItemCoupon item={item} /> : null
+                    }
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(item) => item.id.toString()}
+                  />
+                </Block>
+              ) : null}
             </>
           )}
           renderSectionFooter={() => (
@@ -962,8 +915,6 @@ const mapActions = {
   //Product Detail
   setObjProductActivity: ActionProduct.setObjProductActivity,
   clearObjProductActivity: ActionProduct.clearObjProductActivity,
-  setListTrProductActivity: ActionProduct.setListTrProductActivity,
-  pushListTrProductActivity: ActionProduct.pushListTrProductActivity,
 
   //Product Type
   setObjProductType: ActionProductType.setObjProductType,
@@ -1129,6 +1080,27 @@ const styles = StyleSheet.create({
     fontSize: 15,
     height: 25,
   },
+  listCouponView: {
+    backgroundColor: "#17e391",
+    width: 100,
+    height: 25,
+    borderRadius: 25,
+    alignSelf: "center",
+    position: "relative",
+    marginTop: -27,
+  },
+  textListCouponView: {
+    fontSize: 14,
+    color: "white",
+    textAlign: "center",
+    fontFamily: "kanitRegular",
+    marginTop: 2,
+  },
+  imageListCouponView: {
+    width: 170,
+    height: 82,
+    margin: 10,
+  },
 });
 
 const styles2 = StyleSheet.create({
@@ -1137,6 +1109,7 @@ const styles2 = StyleSheet.create({
   },
   containerHeader: {
     backgroundColor: "#486ec7",
+    height: 130,
   },
   blockHeader: {
     padding: 8,
@@ -1165,7 +1138,8 @@ const styles2 = StyleSheet.create({
     marginBottom: 5,
   },
   itemCouponList: {
-    margin: 5,
+    marginLeft: 5,
+    marginTop: 10,
   },
   itemPhoto: {
     width: 100,

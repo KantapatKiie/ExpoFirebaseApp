@@ -547,7 +547,6 @@ const mapActions = {
   //Product Detail
   setObjProductActivity: ActionProduct.setObjProductActivity,
   clearObjProductActivity: ActionProduct.clearObjProductActivity,
-  setListTrProductActivity: ActionProduct.setListTrProductActivity,
 
   //Promotions Detail
   setObjPromotions: ActionPromotions.setObjPromotions,

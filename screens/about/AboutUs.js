@@ -19,7 +19,9 @@ function AboutUs(props) {
       <ScrollView showsVerticalScrollIndicator={false}>
         <Block style={{ backgroundColor: "white" }}>
           {/* Title */}
-          <TouchableOpacity onPress={() => props.navigation.navigate("Flash Sale")}>
+          <TouchableOpacity
+            onPress={() => props.navigation.navigate("Flash Sale")}
+          >
             <Block
               row
               style={{
@@ -68,13 +70,13 @@ function AboutUs(props) {
             </Text>
           </Block>
           {/* Notification-1 */}
-          <Block style={{ marginLeft: 20, marginBottom: 20 }}>
+          <Block style={{ marginLeft: 20, marginBottom: 20,marginRight:20 }}>
             <Text
               style={{
                 color: "#4a4a4a",
                 fontFamily: "kanitRegular",
                 fontSize: 17,
-                textAlign: "left",
+                textAlign: "justify",
                 marginTop: 20,
               }}
             >
@@ -85,6 +87,7 @@ function AboutUs(props) {
             source={require("../../assets/iconBrand/aboutus.png")}
             style={{ width: width, height: 200 }}
           />
+          
           {/* Notification-2 */}
           <Block
             style={{
@@ -165,6 +168,7 @@ function AboutUs(props) {
               />
             </Block>
           </Block>
+          
           {/* Notification-3 */}
           <Block
             style={{
@@ -205,7 +209,7 @@ function AboutUs(props) {
             source={require("../../assets/iconBrand/brand-05.png")}
             style={{
               width: 200,
-              height: 100,
+              height: 110,
               alignSelf: "center",
               marginTop: 25,
               marginBottom: 25,

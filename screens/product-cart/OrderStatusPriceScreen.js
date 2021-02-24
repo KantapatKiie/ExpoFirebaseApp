@@ -35,7 +35,7 @@ const { width } = Dimensions.get("screen");
 const token = getToken();
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 Omise.config("pkey_test_5mvrvso2arsfg21lm3v", "2019-05-29");
-let TotalAmounts = 0;
+var TotalAmounts = 0;
 
 function OrderStatus(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -80,7 +80,6 @@ function OrderStatus(props) {
     summaryPriceListTrOrder(listTrOrder);
     getCountry();
   }, []);
-  
 
   const [newDelivery, setNewDelivery] = useState({
     id: 0,
@@ -110,25 +109,29 @@ function OrderStatus(props) {
         console.log(error);
       });
   };
-  const summaryPriceListTrOrder = (list) => {
-    let Amounts = 0;
-    let Discounts = 0;
-    let newSummaryPrice = Object.assign({}, objOrderStatusPriceScreen);
-    for (let i = 0; i < list.length; i++) {
-      Amounts += list[i].product_price * list[i].quantity;
+  const summaryPriceListTrOrder = async (list) => {
+    var Amounts = 0;
+    var Discounts = 0;
+    var Vats = listTrOrder[0].vat;
+    var CouponDiscounts = objUseCoupon.coupon_discount;
+    var PromotionsDiscount = listTrOrder[0].promotion_discount;
+    var newSummaryPrice = Object.assign({}, objOrderStatusPriceScreen);
+    for (var i = 0; i < list.length; i++) {
+      Amounts += (await list[i].product_price) * list[i].quantity;
     }
     newSummaryPrice.total_amount = Amounts;
     newSummaryPrice.discount = Discounts;
-    newSummaryPrice.vat =
-      (parseFloat(Amounts) +
-        parseFloat(newDelivery.base_price) -
-        parseFloat(Discounts)) *
-      0.07;
+    newSummaryPrice.coupon_discount = CouponDiscounts;
+    newSummaryPrice.promotion_discount = PromotionsDiscount;
+    newSummaryPrice.vat = Vats;
 
-    TotalAmounts =
-      parseFloat(Amounts) +
-      parseFloat(newDelivery.base_price) +
-      parseFloat(newSummaryPrice.vat);
+    TotalAmounts = await (parseFloat(Amounts) +
+      parseFloat(newDelivery.base_price) -
+      parseFloat(Discounts) -
+      parseFloat(CouponDiscounts) -
+      parseFloat(PromotionsDiscount) +
+      parseFloat(Vats));
+    newSummaryPrice.total_full_amounts = TotalAmounts;
 
     props.setobjOrderStatusPriceScreenins(newSummaryPrice);
   };
@@ -182,13 +185,12 @@ function OrderStatus(props) {
                 fontFamily: "kanitRegular",
                 fontSize: 20,
                 color: "#8f8f8f",
-                textDecorationLine: "line-through",
-                textDecorationStyle: "solid",
               }}
             >
               {"฿ " +
                 commaNumber(parseFloat(item.product_full_price).toFixed(2))}
             </Text>
+            <Block style={styles.boxPriceSale} />
           </Block>
           <Block style={{ width: "40%" }}>
             <Text
@@ -228,7 +230,6 @@ function OrderStatus(props) {
         security_code: 111,
       },
     });
-
     return tokenOmise;
 
     // const transferData = await Omise.createSource({
@@ -237,10 +238,53 @@ function OrderStatus(props) {
     //   // type: 'internet_banking_bbl',
     //   card: tokenOmise.id,
     // });
-
-    console.log(tokenOmise.id);
   };
-  const handleConfirmPayment = (e) => {
+  const handleConfirmPaymentOmise = async () => {
+    const tokenOmise = await checkedOmiseTransfer();
+    console.log(tokenOmise.id);
+    await axios({
+      method: "POST",
+      url: API_URL.CREATE_ORDER_HD_API,
+      headers: {
+        Accept: "*/*",
+        Authorization: "Bearer " + (await token),
+        "Content-Type": "application/json",
+      },
+      data: {
+        coupons_id: objUseCoupon.id,
+        logistics_id: objUseDelivery.id,
+        delivery_address: {
+          fullname:
+            objUseAddressDelivery.FIRST_NAME +
+            " " +
+            objUseAddressDelivery.LAST_NAME,
+          telephone: objUseAddressDelivery.PHONE_NUMBER_ORDER,
+          address: objUseAddressDelivery.ADDRESS_NAME_ORDER,
+          sub_district_id: objUseAddressDelivery.SUB_DISTRICT_CODE_ORDER,
+          district_id: objUseAddressDelivery.DISTRICT_CODE_ORDER,
+          province_id: objUseAddressDelivery.PROVINCE_CODE_ORDER,
+          postcode: objUseAddressDelivery.ZIP_CODE_ORDER,
+        },
+        payment_type: checkPayType == 1 ? 0 : 1,
+        payment_token: tokenOmise.id,
+        total_amount: objOrderStatusPriceScreen.total_amount,
+        delivery_charge: newDelivery.base_price,
+        discount: objOrderStatusPriceScreen.discount,
+        coupon_discount: objUseCoupon.coupon_discount,
+        promotion_discount: objOrderStatusPriceScreen.promotion_discount,
+        vat: objOrderStatusPriceScreen.vat,
+      },
+    })
+      .then(function (response) {
+        ToastAndroid.show(
+          "เลขที่สั่งซื้อ " + response.data.data.code,
+          ToastAndroid.SHORT
+        );
+        props.navigation.navigate("Payment");
+      })
+      .catch(function (error) {
+        console.log(error.response.data);
+      });
     setModalVisible(false);
   };
   const onChangeCardNumber = (e) => {
@@ -257,9 +301,8 @@ function OrderStatus(props) {
     let newObj = Object.assign({}, objjOmiseTransfer);
     if (e.length >= 2) {
       newObj.expire_date = e.substr(0, 2) + "/" + (e.substr(3) || "");
-    }
-    else{
-      newObj.expire_date = e
+    } else {
+      newObj.expire_date = e;
     }
     setObjOmiseTransfer(newObj);
   };
@@ -315,7 +358,10 @@ function OrderStatus(props) {
               <Text style={stylesModal.titleMain}>OMISE </Text>
               <Text style={stylesModal.titleFooter}>Secured by Omise </Text>
             </Block>
-            <TouchableOpacity style={stylesModal.closeModal} onPress={() => setModalVisible(false)}>
+            <TouchableOpacity
+              style={stylesModal.closeModal}
+              onPress={() => setModalVisible(false)}
+            >
               <Icons name="close" size={20} color="black" />
             </TouchableOpacity>
           </Block>
@@ -398,7 +444,9 @@ function OrderStatus(props) {
                     color: "white",
                   }}
                   defaultValue={
-                    objjOmiseTransfer.bank_name == "" ? null : objjOmiseTransfer.bank_code
+                    objjOmiseTransfer.bank_name == ""
+                      ? null
+                      : objjOmiseTransfer.bank_code
                   }
                   onChangeItem={(item) => onChangeCountry(item)}
                 />
@@ -409,11 +457,15 @@ function OrderStatus(props) {
               <Block style={{ margin: 10, marginTop: 15 }}>
                 <Button
                   titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-                  title={"Checkout " + commaNumber(parseFloat(TotalAmounts).toFixed(2)) + " THB"}
+                  title={
+                    "Checkout " +
+                    commaNumber(parseFloat(TotalAmounts).toFixed(2)) +
+                    " THB"
+                  }
                   type="solid"
                   containerStyle={{ margin: 15 }}
                   buttonStyle={{ backgroundColor: "#0c5aeb" }}
-                  onPress={handleConfirmPayment}
+                  onPress={handleConfirmPaymentOmise}
                 />
                 <Block row style={{ alignSelf: "center", marginTop: 25 }}>
                   <Text style={stylesModal.titleFooter2}>
@@ -459,9 +511,11 @@ function OrderStatus(props) {
             postcode: objUseAddressDelivery.ZIP_CODE_ORDER,
           },
           payment_type: checkPayType == 1 ? 0 : 1,
+          payment_token: "",
           total_amount: objOrderStatusPriceScreen.total_amount,
           delivery_charge: newDelivery.base_price,
           discount: objOrderStatusPriceScreen.discount,
+          coupon_discount: objUseCoupon.coupon_discount,
           promotion_discount: objOrderStatusPriceScreen.promotion_discount,
           vat: objOrderStatusPriceScreen.vat,
         },
@@ -478,8 +532,6 @@ function OrderStatus(props) {
         });
     } else {
       setModalVisible(true);
-      const tokenOmise = await checkedOmiseTransfer();
-      ToastAndroid.show("Omise token : " + tokenOmise.id, ToastAndroid.SHORT);
     }
   };
 
@@ -794,7 +846,7 @@ function OrderStatus(props) {
                   >
                     ส่วนลด : ฿ -
                     {commaNumber(
-                      parseFloat(objOrderStatusPriceScreen.discount).toFixed(2)
+                      parseFloat(objUseCoupon.coupon_discount).toFixed(2)
                     )}
                   </Text>
                   <Text
@@ -821,7 +873,7 @@ function OrderStatus(props) {
                     }}
                   >
                     ยอดรวมทั้งสิ้น : ฿{" "}
-                    {commaNumber(parseFloat(TotalAmounts).toFixed(2))}
+                    {commaNumber(parseFloat(objOrderStatusPriceScreen.total_full_amounts).toFixed(2))}
                   </Text>
                 </Block>
               </Block>
@@ -1006,6 +1058,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#fafafa",
     marginTop: 10,
   },
+  boxPriceSale: {
+    borderTopWidth: 1,
+    borderTopColor: "red",
+    position: "relative",
+    width: 70,
+    transform: [{ rotate: "8deg" }],
+    marginTop: -15,
+  },
 });
 
 const stylesModal = StyleSheet.create({
@@ -1046,8 +1106,8 @@ const stylesModal = StyleSheet.create({
     color: "#a8a8a8",
     fontFamily: "kanitRegular",
   },
-  closeModal:{
-    marginBottom:50,
+  closeModal: {
+    marginBottom: 50,
     marginLeft: 60,
   },
   bodyText: {
@@ -1069,7 +1129,7 @@ const stylesModal = StyleSheet.create({
     padding: 20,
     borderWidth: 0.7,
     borderColor: "#e0e0e0",
-    borderRadius: 4
+    borderRadius: 4,
   },
   inputViews: {
     width: "42%",
@@ -1080,9 +1140,9 @@ const stylesModal = StyleSheet.create({
     padding: 20,
     borderWidth: 0.7,
     borderColor: "#e0e0e0",
-    borderRadius: 4
+    borderRadius: 4,
   },
-  inputViewsRow:{
+  inputViewsRow: {
     width: "42%",
     backgroundColor: "#ffffff",
     height: 35,
@@ -1092,7 +1152,7 @@ const stylesModal = StyleSheet.create({
     padding: 20,
     borderWidth: 0.7,
     borderColor: "#e0e0e0",
-    borderRadius: 4
+    borderRadius: 4,
   },
   divider: {
     width: "100%",
@@ -1102,8 +1162,7 @@ const stylesModal = StyleSheet.create({
   modalBody: {
     marginLeft: 15,
   },
-  modalFooter: {
-  },
+  modalFooter: {},
   actions: {
     borderRadius: 5,
     margin: 5,

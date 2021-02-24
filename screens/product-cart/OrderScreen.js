@@ -19,7 +19,7 @@ import { connect, useSelector } from "react-redux";
 import { actions as ActionOrder } from "../../actions/action-order-status/ActionOrder";
 import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
 import { actions as ActionOrderStatus } from "../../actions/action-order-status/ActionOrderStatus.js";
-
+import ModalLoading from "../../components/ModalLoading";
 import WangdekInfo from "../../components/WangdekInfo";
 import { Icon } from "../../components/";
 import { Button } from "react-native-elements";
@@ -38,15 +38,13 @@ function OrderScreen(props) {
   } else {
     moment.locale("en-au");
   }
-  const { listTrCartScreen } = useSelector((state) => ({
-    listTrCartScreen: state.actionCart.listTrCartScreen,
-  }));
-
-  const { objUseCoupon, objUseDelivery, objUseAddressDelivery } = useSelector(
+  const [loading, setLoading] = useState(null);
+  const { objUseCoupon, objUseDelivery, objUseAddressDelivery,objOrderStatusPriceScreen } = useSelector(
     (state) => ({
       objUseCoupon: state.actionOrder.objUseCoupon,
       objUseDelivery: state.actionOrder.objUseDelivery,
       objUseAddressDelivery: state.actionOrder.objUseAddressDelivery,
+      objOrderStatusPriceScreen: state.actionOrder.objOrderStatusPriceScreen,
     })
   );
   const [listTrOrder, setListTrOrder] = useState();
@@ -73,7 +71,7 @@ function OrderScreen(props) {
       });
   }
 
-  // Order List
+  // Order_List
   const renderOrderLists = ({ item }) => {
     return (
       <Block style={styles.blockProduct} key={item.cart_id}>
@@ -100,10 +98,11 @@ function OrderScreen(props) {
         </Block>
         {/* Price */}
         <Block row style={{ margin: 15, alignSelf: "center" }}>
-          <Block style={{ width: "55%" }}>
+          <Block style={{ width: "55%", alignItems: "flex-start" }}>
             <Text style={styles.fontPriceProductFullPrice}>
               ฿{commaNumber(parseFloat(item.product_full_price).toFixed(2))}
             </Text>
+            <Block style={styles.boxPriceSale} />
           </Block>
           <Block style={{ width: "45%" }}>
             <Text style={styles.fontPriceProduct}>
@@ -114,18 +113,64 @@ function OrderScreen(props) {
       </Block>
     );
   };
-  // Other List
   const onThisConfirmOrders = async () => {
     if (listTrOrder.length > 0) {
       if (objUseDelivery.id !== 0) {
         if (objUseAddressDelivery.FIRST_NAME !== "") {
-          props.setListTrOrder(listTrOrder);
-          props.setObjUseCoupon(objUseCoupon);
-          props.setObjUseDelivery(objUseDelivery);
-          props.setObjUseAddressDelivery(objUseAddressDelivery);
-          props.navigation.navigate("Order Status Price Screen");
+          //Get Promotions Agains
+          setLoading(true);
+          await axios({
+            method: "POST",
+            url: API_URL.SAVE_CART_ORDER_LISTVIEW_API,
+            headers: {
+              Accept: "*/*",
+              Authorization: "Bearer " + (await token),
+              "Content-Type": "application/json",
+              "X-localization": locale,
+            },
+            data: listTrOrder,
+          }).then(async (response) => {
+            let newListFix = await listTrOrder.map((val) => {
+              val.promotion_discount =
+                response.data.data.discount_from_promotion.total;
+              val.vat = response.data.data.vat;
+              return val;
+            });
+            props.setListTrOrder(newListFix);
+            props.setObjUseCoupon(objUseCoupon);
+            props.setObjUseDelivery(objUseDelivery);
+            props.setObjUseAddressDelivery(objUseAddressDelivery);
+
+            var Amounts = 0;
+            var Discounts = 0;
+            var Vats = listTrOrder[0].vat;
+            var CouponDiscounts = objUseCoupon.coupon_discount;
+            var PromotionsDiscount = listTrOrder[0].promotion_discount;
+            var newSummaryPrice = Object.assign({}, objOrderStatusPriceScreen);
+            for (var i = 0; i < list.length; i++) {
+              Amounts += (await list[i].product_price) * list[i].quantity;
+            }
+            newSummaryPrice.total_amount = Amounts;
+            newSummaryPrice.discount = Discounts;
+            newSummaryPrice.coupon_discount = CouponDiscounts;
+            newSummaryPrice.promotion_discount = PromotionsDiscount;
+            newSummaryPrice.vat = Vats;
+        
+            TotalAmounts = await (parseFloat(Amounts) +
+              parseFloat(newDelivery.base_price) -
+              parseFloat(Discounts) -
+              parseFloat(CouponDiscounts) -
+              parseFloat(PromotionsDiscount) +
+              parseFloat(Vats));
+            newSummaryPrice.total_full_amounts = TotalAmounts;
+        
+            props.setobjOrderStatusPriceScreenins(newSummaryPrice);
+            setLoading(false);
+            props.navigation.navigate("Order Status Price Screen");
+          });
         } else {
           ToastAndroid.show("กรุณาเลือกที่อยู่ในการจัดส่ง", ToastAndroid.SHORT);
+          setLoading(false);
         }
       } else {
         ToastAndroid.show("กรุณาเลือกช่องทางการจัดส่ง", ToastAndroid.SHORT);
@@ -134,6 +179,7 @@ function OrderScreen(props) {
       ToastAndroid.show("ไม่มีสินค้าในตะกร้า", ToastAndroid.SHORT);
       alert("ไม่มีสินค้าในตะกร้า");
     }
+    setLoading(false);
   };
   const renderOtherList = ({ item }) => {
     const onOtherChangepage = (item) => {
@@ -233,6 +279,7 @@ function OrderScreen(props) {
           }}
         />
       </SafeAreaView>
+      <ModalLoading loading={loading} />
     </>
   );
 }
@@ -300,8 +347,6 @@ const styles = StyleSheet.create({
     fontFamily: "kanitRegular",
     fontSize: 18,
     color: "#8f8f8f",
-    textDecorationLine: "line-through",
-    textDecorationStyle: "solid",
   },
   blockButton1: {
     flexDirection: "row",
@@ -334,6 +379,14 @@ const styles = StyleSheet.create({
     color: "black",
     fontSize: 17,
     fontFamily: "kanitRegular",
+  },
+  boxPriceSale: {
+    borderTopWidth: 1,
+    borderTopColor: "red",
+    position: "relative",
+    width: 70,
+    transform: [{ rotate: "8deg" }],
+    marginTop: -15,
   },
 });
 

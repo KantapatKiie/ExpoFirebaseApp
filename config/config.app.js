@@ -1,7 +1,3 @@
-// const { REACT_NATIVE_APP_URL_API, REACT_NATIVE_APP_DELAY_SEARCH } = process.env;
-// export const DELAY_SEARCH = REACT_NATIVE_APP_DELAY_SEARCH;
-
-// const REACT_NATIVE_APP_API = "http://newpclinic.com/wd/api/v1";
 const REACT_NATIVE_APP_API = "http://demo-ecommerce.am2bmarketing.co.th/api/v1";
 
 export const API_URL = {
@@ -80,6 +76,7 @@ export const API_URL = {
 
   //COUPON
   COUPON_LIST_TR_API: REACT_NATIVE_APP_API + "/coupon/list",
+  COUPON_VERIFY_IDS_API: REACT_NATIVE_APP_API + "/coupon/verify/",
   MY_COUPON_LIST_TR_API: REACT_NATIVE_APP_API + "/coupon/my_coupon/",
   COLLECT_COUPON_ADD_HD_API: REACT_NATIVE_APP_API + "/coupon/",
 };

@@ -311,8 +311,6 @@ function ProductType(props) {
 const mapActions = {
   setObjProductActivity: ActionProduct.setObjProductActivity,
   clearObjProductActivity: ActionProduct.clearObjProductActivity,
-  setListTrProductActivity: ActionProduct.setListTrProductActivity,
-  pushListTrProductActivity: ActionProduct.pushListTrProductActivity,
 
   setObjProductType: ActionProductType.setObjProductType,
   clearObjProductType: ActionProductType.clearObjProductType,

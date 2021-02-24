@@ -1,4 +1,4 @@
-import React, {  useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -41,9 +41,9 @@ function Contact(props) {
     objContactHD: state.actionContact.objContactHD,
   }));
 
-  useEffect(() => {
-    props.clearObjContactHD();
-  }, []);
+  // useEffect(() => {
+  //   // props.clearObjContactHD();
+  // }, []);
 
   const itemTopic = [
     {
@@ -121,7 +121,6 @@ function Contact(props) {
       },
     })
       .then(function (response) {
-        console.log(response.data);
         ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
       })
       .catch(function (error) {
@@ -157,11 +156,10 @@ function Contact(props) {
                 latitude: 13.79910335904877,
                 longitude: 100.56033331534356,
               }}
-              // title="this is a marker"
-              // description="this is a marker example"
             />
           </MapView>
         </Block>
+        
         {/* Contact */}
         <Block felx>
           <ImageBackground

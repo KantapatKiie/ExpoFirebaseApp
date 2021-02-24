@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import {
-  View,
   Image,
   StyleSheet,
   Dimensions,
   FlatList,
   SectionList,
   SafeAreaView,
-  Modal,
   TextInput,
   TouchableOpacity,
 } from "react-native";
@@ -29,6 +27,12 @@ const token = getToken();
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
 function UseCoupon(props) {
+  const locale = useSelector(({ i18n }) => i18n.lang);
+  if (locale === "th") {
+    moment.locale("th");
+  } else {
+    moment.locale("en-au");
+  }
   const { objOrderScreen } = useSelector((state) => ({
     objOrderScreen: state.actionOrder.objOrderScreen,
   }));
@@ -37,144 +41,138 @@ function UseCoupon(props) {
   }));
 
   useEffect(() => {
+    setVerifyCoupon(false);
     loadDataCouponUser();
   }, []);
 
   const [couponList, setCouponList] = useState(null);
-  const [coponThis, setCouponThis] = useState(null);
+  const [verifyCoupon, setVerifyCoupon] = useState(false);
   async function loadDataCouponUser() {
-    if ((await token) !== null && (await token) !== undefined) {
+    await axios
+      .get(API_URL.MY_COUPON_LIST_TR_API + 1, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+        params: {
+          page: 1,
+        },
+      })
+      .then((response) => {
+        setCouponList(response.data.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+  const ListItemCoupon = ({ item }) => {
+    const selectCouponThis = async (item) => {
+      setVerifyCoupon(false);
+      let objCoupon = Object.assign({}, objUseCoupon);
       await axios
-        .get(API_URL.COUPON_LIST_TR_API, {
+        .get(API_URL.COUPON_VERIFY_IDS_API + item.code, {
           headers: {
             Accept: "application/json",
             Authorization: "Bearer " + (await token),
             "Content-Type": "application/json",
           },
         })
-        .then((response) => {
-          setCouponList(response.data.data);
+        .then(async (response) => {
+          objCoupon.code = response.data.data.code;
+          objCoupon.id = response.data.data.id;
+          objCoupon.image =
+            locale == "th"
+              ? response.data.data.image_th
+              : response.data.data.image_en;
+          objCoupon.title1_en = response.data.data.title1_en;
+          objCoupon.title1_th = response.data.data.title1_th;
+          objCoupon.title2_en = response.data.data.title2_en;
+          objCoupon.title2_th = response.data.data.title2_th;
+          objCoupon.coupon_discount = response.data.data.coupon_discount;
+
+          props.setObjUseCoupon(objCoupon);
+          props.navigation.navigate("Order Screen");
         })
         .catch(function (error) {
-          console.log(error);
+          console.log(false);
+          setVerifyCouponCollect(true);
         });
-    }
-  }
-  const ListItemCoupon = ({ item }) => {
-    const selectCouponThis = (item) => {
-      setCouponThis(item.id);
-      let objCoupon = Object.assign({}, objUseCoupon);
-      objCoupon.code = item.code;
-      objCoupon.id = item.id;
-      objCoupon.image = item.image;
-      objCoupon.title1_en = item.title1_en;
-      objCoupon.title1_th = item.title1_th;
-      objCoupon.title2_en = item.title2_en;
-      objCoupon.title2_th = item.title2_th;
-
-      props.setObjUseCoupon(objCoupon);
-      props.navigation.navigate("Order Screen");
     };
     return (
-      
-        <Block
-          row
-          style={{
-            backgroundColor: "#ededed",
-            width: width,
-            height: 110
+      <Block
+        row
+        style={{
+          backgroundColor: "#ededed",
+          width: width,
+          height: 110,
+        }}
+      >
+        <Image
+          source={{
+            uri:
+              locale == "th"
+                ? rootImage + item.image_th
+                : rootImage + item.image_en,
           }}
-        >
-          <Image
-            source={{ uri : rootImage + item.image}}
-            style={{ width: 160, height: 80, margin: 20 }}
-          />
+          style={{ width: 160, height: 80, margin: 20 }}
+        />
+
+        <Block>
           <Button
             titleStyle={{
               color: "white",
               fontFamily: "kanitRegular",
             }}
-            title={"ใช้คูปอง"}
+            title={"COLLECT"}
             type="solid"
             buttonStyle={styles.buttonCoupon}
             onPress={() => selectCouponThis(item)}
           />
         </Block>
+      </Block>
     );
   };
 
-  //#region modalConfirm
-  const [modalVisible, setModalVisible] = useState(false);
-  const handleConfirm = (e) => {
-    setModalVisible(false);
-  };
-  const modalHeader = (
-    <View style={styles2.modalHeader}>
-      <Text style={styles2.title}>Notifications 📢</Text>
-      <View style={styles2.divider}></View>
-    </View>
-  );
-  const modalBody = (
-    <View style={styles2.modalBody}>
-      <Text style={styles2.bodyText}>
-        Are you sure you want to product confirm ?
-      </Text>
-    </View>
-  );
-  const modalFooter = (
-    <View style={styles2.modalFooter}>
-      <View style={styles2.divider}></View>
-      <View style={{ flexDirection: "row-reverse", margin: 10 }}>
-        <TouchableOpacity
-          style={{ ...styles2.actions, backgroundColor: "#ed6868" }}
-          onPress={() => {
-            setModalVisible(!modalVisible);
-          }}
-        >
-          <Text style={styles2.actionText}>No</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{ ...styles2.actions, backgroundColor: "#54bf6d" }}
-          onPress={(e) => handleConfirm(e)}
-        >
-          <Text style={styles2.actionText}>Yes</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-  const modalContainer = (
-    <View style={styles2.modalContainer}>
-      {modalHeader}
-      {modalBody}
-      {modalFooter}
-    </View>
-  );
-  const modal = (
-    <Modal
-      transparent={true}
-      visible={modalVisible}
-      onRequestClose={() => {
-        Alert.alert("Modal has been closed.");
-      }}
-    >
-      <View style={styles2.modal}>
-        <View>{modalContainer}</View>
-      </View>
-    </Modal>
-  );
-  //#endregion
-  const onChangeCodeCoupon = () => {
+  const onChangeCodeCoupon = (value) => {
     let newObj = Object.assign({}, objUseCoupon);
-    newObj.CODE_COUPON = value;
+    newObj.code = value;
     props.setObjUseCoupon(newObj);
   };
 
-  const onSelectCoupon = () => {
+  const onUseCodeVerifyCoupon = async () => {
+    setVerifyCoupon(false);
+    setVerifyCouponCollect(false);
     let objCoupon = Object.assign({}, objUseCoupon);
-    objCoupon.id = coponThis;
-    props.setObjUseCoupon(objCoupon);
-    props.navigation.navigate("Order Screen");
-  }
+    await axios
+      .get(API_URL.COUPON_VERIFY_IDS_API + objUseCoupon.code, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(async (response) => {
+        objCoupon.code = response.data.data.code;
+        objCoupon.id = response.data.data.id;
+        objCoupon.image =
+          locale == "th"
+            ? response.data.data.image_th
+            : response.data.data.image_en;
+        objCoupon.title1_en = response.data.data.title1_en;
+        objCoupon.title1_th = response.data.data.title1_th;
+        objCoupon.title2_en = response.data.data.title2_en;
+        objCoupon.title2_th = response.data.data.title2_th;
+        objCoupon.coupon_discount = response.data.data.coupon_discount;
+
+        props.setObjUseCoupon(objCoupon);
+        props.navigation.navigate("Order Screen");
+      })
+      .catch(function (error) {
+        console.log(false);
+        setVerifyCoupon(true);
+      });
+  };
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
@@ -215,6 +213,19 @@ function UseCoupon(props) {
                       onChangeText={onChangeCodeCoupon}
                     />
                   </Block>
+                  {verifyCoupon ? (
+                    <Block style={{ marginLeft: 10 }}>
+                      <Text
+                        style={{
+                          color: "red",
+                          fontSize: 12,
+                          fontFamily: "kanitRegular",
+                        }}
+                      >
+                        ⚠ ไม่สามารถใช้โค้ตส่วนลดนี้ได้
+                      </Text>
+                    </Block>
+                  ) : null}
                 </Block>
                 <Block
                   style={{
@@ -225,10 +236,10 @@ function UseCoupon(props) {
                 >
                   <Button
                     titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-                    title={"ใช้โค้ด"}
+                    title={"USE CODE"}
                     type="solid"
                     buttonStyle={styles.buttonStyle1}
-                    onPress={() => props.navigation.navigate("")}
+                    onPress={onUseCodeVerifyCoupon}
                   />
                 </Block>
 
@@ -250,21 +261,13 @@ function UseCoupon(props) {
               {/* Button */}
               <Block
                 style={{
-                  paddingTop: 40,
-                  paddingBottom: 40,
+                  paddingTop: 20,
+                  paddingBottom: 20,
                   alignSelf: "center",
                   backgroundColor: "white",
                   width: width,
                 }}
-              >
-                <Button
-                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-                  title={"ตกลง"}
-                  type="solid"
-                  buttonStyle={styles.buttonStyle1}
-                  onPress={onSelectCoupon}
-                />
-              </Block>
+              ></Block>
             </>
           )}
           renderSectionFooter={() => <>{<WangdekInfo />}</>}
@@ -273,7 +276,6 @@ function UseCoupon(props) {
           }}
         />
       </SafeAreaView>
-      {modal}
     </>
   );
 }
@@ -327,7 +329,7 @@ const styles = StyleSheet.create({
     height: 30,
     alignSelf: "center",
     marginTop: 42,
-    marginLeft: 20,
+    marginLeft: 15,
   },
 });
 

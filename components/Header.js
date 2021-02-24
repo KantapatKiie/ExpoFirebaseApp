@@ -25,7 +25,6 @@ import { getToken } from "../store/mock/token";
 import { connect, useSelector } from "react-redux";
 import { actions as ActionProductType } from "../actions/action-product-type/ActionProductType";
 import ModalLoading from "../components/ModalLoading";
-// import SvgUri from "expo-svg-uri";
 
 const { width } = Dimensions.get("window");
 let token = getToken();
@@ -39,9 +38,6 @@ function Header(props) {
     moment.locale("en-au");
   }
   const [loading, setLoading] = useState(null);
-  const { auth_token } = useSelector((state) => ({
-    auth_token: state.auth.auth_token,
-  }));
   const { objProductType } = useSelector((state) => ({
     objProductType: state.actionProductType.objProductType,
   }));
@@ -49,22 +45,20 @@ function Header(props) {
   useEffect(() => {
     loadDataBrandsTypes();
     loadCountCart();
-  }, [props.navigation]);
+  }, []);
 
   //Count _Cart_&_Notifications_
   const [countCart, setCountCart] = useState(0);
   const [countNews, setCountNews] = useState(0);
   async function loadCountCart() {
-    if (token !== undefined || auth_token !== undefined) {
+    if ((await token) !== undefined && (await token) !== null) {
       await axios({
         method: "GET",
         url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          Authorization:
-            "Bearer " +
-            ((await token) !== undefined ? await token : auth_token),
+          Authorization: "Bearer " + (await token),
         },
       })
         .then(async (response) => {
@@ -204,18 +198,13 @@ function Header(props) {
               style={{
                 fontFamily: "kanitRegular",
                 color: "black",
-                fontSize: 9.2,
+                fontSize: 8,
                 textAlign: "center",
               }}
             >
               {locale == "th" ? item.name_th : item.name_en}
             </Text>
           </Block>
-          {/* <SvgUri
-            width={200}
-            height={200}
-            source={{ uri: rootImage + item.image }}
-          /> */}
         </TouchableOpacity>
       </Block>
     );
@@ -258,7 +247,7 @@ function Header(props) {
         >
           <Image
             source={{ uri: rootImage + item.image }}
-            style={{ width: 55, height: 28, resizeMode: "contain" }}
+            style={{ width: 60, height: 33, resizeMode: "contain" }}
           />
         </TouchableOpacity>
       </Block>
@@ -266,39 +255,14 @@ function Header(props) {
   };
 
   const ModalNotification = ({ style, navigation }) => {
-    const [modalVisible, setModalVisible] = useState(false);
     return (
       <>
-        <Modal
-          animationType="none"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(!modalVisible);
-          }}
-        >
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <Text style={styles.modalText}>Coming soon!</Text>
-              <TouchableHighlight
-                style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
-                onPress={() => {
-                  setModalVisible(!modalVisible);
-                }}
-              >
-                <Text style={styles.textStyle}>Close</Text>
-              </TouchableHighlight>
-            </View>
-          </View>
-        </Modal>
-
         <TouchableOpacity
           style={[styles.button, style]}
           onPress={() => navigation.navigate("Notifications")}
-          // onPress={() => { setModalVisible(true);}}
         >
           <Icons name="notifications" color={"#383838"} size={20} />
-          {countNews > 0 ? <Block middle style={styles.notify} /> : null}
+          {countNews ? <Block middle style={styles.notify} /> : null}
         </TouchableOpacity>
       </>
     );
@@ -335,47 +299,18 @@ function Header(props) {
           onPress={() => navigation.navigate("Filter Search")}
         >
           <Icons name="search" color={"#383838"} size={20} />
-          {/* <Feather name="search" size={20} /> */}
-
-          {/* <Block middle style={styles.notify} /> */}
         </TouchableOpacity>
       </>
     );
   };
   const ModalFavorite = ({ style, navigation }) => {
-    const [modalVisible, setModalVisible] = useState(false);
     return (
       <>
-        <Modal
-          animationType="none"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(!modalVisible);
-          }}
-        >
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <Text style={styles.modalText}>Coming soon!</Text>
-              <TouchableHighlight
-                style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
-                onPress={() => {
-                  setModalVisible(!modalVisible);
-                }}
-              >
-                <Text style={styles.textStyle}>Close</Text>
-              </TouchableHighlight>
-            </View>
-          </View>
-        </Modal>
-
         <TouchableOpacity
           style={[styles.button, style]}
           onPress={() => navigation.navigate("Favorite View")}
-          // onPress={() => { setModalVisible(true);}}
         >
           <Icons name="favorite" color={"#383838"} size={20} />
-          {/* <Block middle style={styles.notify} /> */}
         </TouchableOpacity>
       </>
     );
@@ -391,7 +326,20 @@ function Header(props) {
             source={require("../assets/icons/cart.png")}
             style={{ width: 20, height: 20 }}
           />
-          {countCart > 0 ? <Block middle style={styles.notify} /> : null}
+          {countCart > 0 ? (
+            <Block middle style={styles.notifyCart}>
+              <Text
+                style={{
+                  fontFamily: "kanitBold",
+                  color: "white",
+                  fontSize: 9.2,
+                  textAlign: "center",
+                }}
+              >
+                {countCart}
+              </Text>
+            </Block>
+          ) : null}
         </TouchableOpacity>
       </>
     );
@@ -475,19 +423,19 @@ function Header(props) {
             isWhite={white}
           />,
         ];
-        case "My Coupon":
-          return [
-            <ModalNotification
-              key="chat-deals"
-              navigation={navigation}
-              isWhite={white}
-            />,
-            <ModalSearch
-              key="basket-deals"
-              navigation={navigation}
-              isWhite={white}
-            />,
-          ];
+      case "My Coupon":
+        return [
+          <ModalNotification
+            key="chat-deals"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-deals"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
       case "Profile":
         return [
           <ModalNotification
@@ -998,6 +946,19 @@ function Header(props) {
           />,
         ];
       case "Privacy Policy":
+        return [
+          <ModalNotification
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <ModalSearch
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
+      case "Order Status Price Screen":
         return [
           <ModalNotification
             key="chat-search"
@@ -1574,6 +1535,19 @@ function Header(props) {
             isWhite={white}
           />,
         ];
+      case "Order Status Price Screen":
+        return [
+          <ModalFavorite
+            key="chat-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+          <BasketButton
+            key="basket-search"
+            navigation={navigation}
+            isWhite={white}
+          />,
+        ];
 
       default:
         break;
@@ -1604,7 +1578,8 @@ function Header(props) {
               listKey={(item) => item.id}
             />
           </Block>
-          <Block style={styles2.container2}>
+
+          <Block style={styles2.containerListBrands}>
             <FlatList
               horizontal
               data={listProductBrands}
@@ -1659,6 +1634,15 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 8,
     right: 8,
+  },
+  notifyCart: {
+    backgroundColor: materialTheme.COLORS.NEW_LABEL,
+    borderRadius: 10,
+    height: 15,
+    width: 15,
+    position: "absolute",
+    top: 5,
+    right: 4,
   },
   header: {
     backgroundColor: theme.COLORS.WHITE,
@@ -1742,15 +1726,15 @@ const styles = StyleSheet.create({
 const styles2 = StyleSheet.create({
   containerListType: {
     backgroundColor: "#f5f5f5",
-    height: 84,
+    height: 90,
     padding: 0,
   },
-  container2: {
+  containerListBrands: {
     backgroundColor: "white",
-    height: 42,
+    height: 45,
     padding: 0,
     shadowColor: "#e0e0e0",
-    elevation: 0.5,
+    elevation: 1,
   },
   sectionHeader: {
     fontWeight: "800",

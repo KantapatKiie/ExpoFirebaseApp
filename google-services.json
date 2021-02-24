@@ -15,13 +15,21 @@
       },
       "oauth_client": [
         {
+          "client_id": "409075053323-n7jlg6g17qgg0an55s6r0afqkku1n6qn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.iamcompany.expofirebase",
+            "certificate_hash": "09a3287100109bbef3da44f34465e69645c84a8b"
+          }
+        },
+        {
           "client_id": "409075053323-89u5bct6rhg1ifct7tvsgq701cqheias.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBOPwrViKPYbjD7ASVKheIlwHFq5GP4Qyg"
+          "current_key": "AIzaSyDH8lsMGevH9-GPw6EAHLF4Q57rU2MEMz8"
         }
       ],
       "services": {

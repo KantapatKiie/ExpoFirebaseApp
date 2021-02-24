@@ -33,21 +33,6 @@ const { width } = Dimensions.get("screen");
 const token = getToken();
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
-const defaultSocialsMedia = [
-  {
-    id: 1,
-    name: "facebook",
-    url: "https://www.facebook.com/xxx",
-    image: "/storage/24/fb-share.png",
-  },
-  {
-    id: 2,
-    name: "line",
-    url: "#",
-    image: "/storage/25/line-share.png",
-  },
-];
-
 function ProductDetail(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
   if (locale === "th") {
@@ -149,10 +134,21 @@ function ProductDetail(props) {
         product_quantity: objProductActivity.quantity,
       },
     })
-      .then(function (response) {
+      .then(async (response) => {
         ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
-        // props.navigation.navigate("Cart");
-        // AsyncStorage["sessionCartBefore"] = newObjCart;
+        
+        await axios({
+          method: "GET",
+          url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + (await token),
+          },
+        }).then(async (response) => {
+          let newListCount = await response.data.data.result;
+          props.navigation.navigate("Cart");
+        });
       })
       .catch(function (error) {
         console.log(error);
@@ -183,7 +179,7 @@ function ProductDetail(props) {
       });
   };
 
-  const [dataSocials, setDataSocials] = useState(defaultSocialsMedia);
+  const [dataSocials, setDataSocials] = useState(null);
   const loadDataSocialsMedia = async () => {
     await axios
       .get(API_URL.SOCIALS_LIST_HD_API, {
@@ -199,24 +195,37 @@ function ProductDetail(props) {
         console.log(error);
       });
   };
-  const shareLinkSocials = (item) => {
-    Share.share(
-      {
+  const shareLinkSocials = async (item) => {
+    if (Platform.OS === "android") {
+      Share.share({
         title: "Share message website",
         message: "Message",
         url: item.url,
-      },
-      {
+        tintColor: "black",
+        subject: "Share message website",
+      })
+        .then(function (response) {
+          ToastAndroid.show(response.data, ToastAndroid.SHORT);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    } else {
+      Share.share({
+        title: "Share message website",
+        message: "Message",
+        url: item.url,
+        subject: "Share message website",
         dialogTitle: "Share website",
         tintColor: "black",
-      }
-    )
-      .then(function (response) {
-        ToastAndroid.show(response.data, ToastAndroid.SHORT);
       })
-      .catch(function (error) {
-        console.log(error);
-      });
+        .then(function (response) {
+          ToastAndroid.show(response.data, ToastAndroid.SHORT);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   };
   return (
     <>
@@ -389,12 +398,14 @@ function ProductDetail(props) {
             <Block
               style={{ alignSelf: "flex-start", width: "45%", marginLeft: 5 }}
             >
+              
               <Text style={styles.detailFullprice}>
                 ฿
                 {commaNumber(
                   parseFloat(objProductActivity.product_full_price).toFixed(2)
                 )}
               </Text>
+              <Block style={styles.boxPriceSale}/>
             </Block>
             <Block row style={{ alignSelf: "flex-start", width: "50%" }}>
               <Text style={styles.detailPrice1}>ราคา : </Text>
@@ -525,13 +536,11 @@ function ProductDetail(props) {
 const mapActions = {
   setObjProductActivity: ActionProduct.setObjProductActivity,
   clearObjProductActivity: ActionProduct.clearObjProductActivity,
-  setListTrProductActivity: ActionProduct.setListTrProductActivity,
-  pushListTrProductActivity: ActionProduct.pushListTrProductActivity,
 
-  setObjCartBasket: ActionCart.setObjCartBasket,
-  clearObjCartBasket: ActionCart.clearObjCartBasket,
-  setListTrCartBasket: ActionCart.setListTrCartBasket,
-  pushListTrCartBasket: ActionCart.pushListTrCartBasket,
+  setObjCartScreen: ActionCart.setObjCartScreen,
+  clearObjCartScreen: ActionCart.clearObjCartScreen,
+  setListTrCartScreen: ActionCart.setListTrCartScreen,
+  pushListTrCartScreen: ActionCart.pushListTrCartScreen,
 };
 
 export default connect(null, mapActions)(ProductDetail);
@@ -595,9 +604,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "kanitRegular",
     marginTop: 8,
-    textDecorationLine: "line-through",
-    textDecorationStyle: "solid",
-    textDecorationColor: "red",
+    // textDecorationLine: "line-through",
+    // textDecorationStyle: "solid",
+    // textDecorationColor: "red",
+  },
+  boxPriceSale: {
+    borderTopWidth: 1,
+    borderTopColor: "red",
+    position: "relative",
+    width: 70,
+    transform: [{ rotate: '8deg'}],
+    marginTop: -14,
   },
   blockFavorite: {
     backgroundColor: "#d1d1d1",

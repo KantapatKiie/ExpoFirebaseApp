@@ -2,15 +2,12 @@ import React, { useEffect, useState, useRef } from "react";
 import { Image, StyleSheet } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { useIsFocused } from "@react-navigation/native";
 import { Header } from "../components";
 import { connect } from "react-redux";
 import * as ActionLogin from "../actions/action-actives/ActionLogin";
 import * as firebase from "firebase";
 import * as Notifications from "expo-notifications";
-// import * as Permissions from "expo-permissions";
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getToken } from "../store/mock/token";
+import * as Permissions from "expo-permissions";
 // Screen //
 import HomeScreen from "../screens/Home";
 import ProfileScreen from "../screens/Profile";
@@ -32,18 +29,14 @@ import ProductAllScreen from "../screens/product-cart/ProductAll";
 import PromotionsScreen from "../screens/notifications/Promotions";
 import FilterSearchScreen from "../screens/filter-search/FilterSearch";
 import EventsScreen from "../screens/events/Events";
-//History View
 import HistoryOrderScreen from "../screens/order-status/HistoryOrder";
 import OrderStatusScreen from "../screens/order-status/OrderStatus";
-//Order Screen & Notification-order
 import OrderScreen from "../screens/product-cart/OrderScreen";
 import OrderStatusPriceScreen from "../screens/product-cart/OrderStatusPriceScreen";
 import UseCouponScreen from "../screens/product-cart/notification-order-screen/UseCoupon";
 import UseDeliveryScreen from "../screens/product-cart/notification-order-screen/UseDelivery";
 import UseAddressDeliveryScreen from "../screens/product-cart/notification-order-screen/UseAddressDelivery";
-// Product-Type
 import ProductTypeScreen from "../screens/product-type/ProductType";
-// Etc //
 import NotificationsScreen from "../screens/notifications/Notifications";
 import HowToScreen from "../screens/notifications/HowTo";
 import NewsScreen from "../screens/notifications/News";
@@ -62,7 +55,7 @@ const firebaseConfig = {
   projectId: "fir-ntms-app",
   storageBucket: "fir-ntms-app.appspot.com",
   messagingSenderId: "409075053323",
-  appId: "1:409075053323:web:910b51843919d94284280e",
+  appId: "1:409075053323:android:0fddd1a03270ec0984280e",
   measurementId: "G-PPF21XCLZP",
 };
 if (!firebase.apps.length) {
@@ -76,7 +69,6 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const token = getToken();
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
