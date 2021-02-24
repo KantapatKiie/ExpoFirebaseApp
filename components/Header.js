@@ -25,7 +25,6 @@ import { getToken } from "../store/mock/token";
 import { connect, useSelector } from "react-redux";
 import { actions as ActionProductType } from "../actions/action-product-type/ActionProductType";
 import ModalLoading from "../components/ModalLoading";
-// import SvgUri from "expo-svg-uri";
 
 const { width } = Dimensions.get("window");
 let token = getToken();
@@ -52,15 +51,14 @@ function Header(props) {
   const [countCart, setCountCart] = useState(0);
   const [countNews, setCountNews] = useState(0);
   async function loadCountCart() {
-    if ((await token) !== undefined && (await token)  !== null) {
+    if ((await token) !== undefined && (await token) !== null) {
       await axios({
         method: "GET",
         url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          Authorization:
-            "Bearer " + (await token),
+          Authorization: "Bearer " + (await token),
         },
       })
         .then(async (response) => {
@@ -207,11 +205,6 @@ function Header(props) {
               {locale == "th" ? item.name_th : item.name_en}
             </Text>
           </Block>
-          {/* <SvgUri
-            width={200}
-            height={200}
-            source={{ uri: rootImage + item.image }}
-          /> */}
         </TouchableOpacity>
       </Block>
     );
@@ -1585,7 +1578,7 @@ function Header(props) {
               listKey={(item) => item.id}
             />
           </Block>
-          
+
           <Block style={styles2.containerListBrands}>
             <FlatList
               horizontal

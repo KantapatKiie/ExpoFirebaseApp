@@ -19,7 +19,6 @@ import { Block, Button, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import { actions as ActionProduct } from "../../actions/action-product/ActionProduct";
 import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
-import { actions as ActionCountCart } from "../../actions/action-cart/ActionCountCart";
 import WangdekInfo from "../../components/WangdekInfo";
 import ReadMore from "react-native-read-more-text";
 import NumericInput from "rn-numeric-input";
@@ -148,7 +147,6 @@ function ProductDetail(props) {
           },
         }).then(async (response) => {
           let newListCount = await response.data.data.result;
-          props.setCountCart(newListCount);
           props.navigation.navigate("Cart");
         });
       })
@@ -536,8 +534,6 @@ function ProductDetail(props) {
 }
 
 const mapActions = {
-  setCountCart: ActionCountCart.setCountCart,
-  
   setObjProductActivity: ActionProduct.setObjProductActivity,
   clearObjProductActivity: ActionProduct.clearObjProductActivity,
 

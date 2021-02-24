@@ -20,7 +20,6 @@ import { formatTr } from "../../i18n/I18nProvider";
 import { Block, Text, theme } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import { actions as ActionCart } from "../../actions/action-cart/ActionCart";
-import { actions as ActionCountCart } from "../../actions/action-cart/ActionCountCart";
 import WangdekInfo from "../../components/WangdekInfo";
 import NumericInput from "rn-numeric-input";
 import { Button } from "react-native-elements";
@@ -119,7 +118,6 @@ function CartScreen(props) {
           //   },
           // }).then(async (response) => {
           //   let newListCount = await response.data.data.result;
-          //   props.setCountCart(newListCount);
           //   props.navigation.navigate("Cart");
           // });
         })
@@ -319,8 +317,6 @@ function CartScreen(props) {
 }
 
 const mapActions = {
-  setCountCart: ActionCountCart.setCountCart,
-
   setObjCartScreen: ActionCart.setObjCartScreen,
   clearObjCartScreen: ActionCart.clearObjCartScreen,
   setListTrCartScreen: ActionCart.setListTrCartScreen,
