@@ -48,16 +48,32 @@ import PrivacyPolicyScreen from "../screens/notifications/PrivacyPolicy";
 import MyCouponScreen from "../screens/coupon/MyCoupon";
 
 //SET FIREBASE-CONFIG & NOTIFICATIONS-CONFIG
-const firebaseConfig = {
-  apiKey: "AIzaSyCJcBZXaJYkEn49dfUiqbKW2H5FWLgmKrQ",
-  authDomain: "fir-ntms-app.firebaseapp.com",
-  databaseURL: "https://fir-ntms-app.firebaseio.com/",
-  projectId: "fir-ntms-app",
-  storageBucket: "fir-ntms-app.appspot.com",
-  messagingSenderId: "409075053323",
-  appId: "1:409075053323:android:0fddd1a03270ec0984280e",
-  measurementId: "G-PPF21XCLZP",
-};
+var firebaseConfig = "";
+if(Platform.OS === "android"){
+  firebaseConfig = {
+    apiKey: "AIzaSyCJcBZXaJYkEn49dfUiqbKW2H5FWLgmKrQ",
+    authDomain: "fir-ntms-app.firebaseapp.com",
+    databaseURL: "https://fir-ntms-app.firebaseio.com/",
+    projectId: "fir-ntms-app",
+    storageBucket: "fir-ntms-app.appspot.com",
+    messagingSenderId: "409075053323",
+    appId: "1:409075053323:android:0fddd1a03270ec0984280e",
+    measurementId: "G-PPF21XCLZP",
+  };
+}
+else{
+  firebaseConfig = {
+    apiKey: "AIzaSyBZDneA3fjaLdJQ9C7qkNH0hoB4RfPDO7Q",
+    authDomain: "fir-ntms-app.firebaseapp.com",
+    databaseURL: "https://fir-ntms-app.firebaseio.com/",
+    projectId: "fir-ntms-app",
+    storageBucket: "fir-ntms-app.appspot.com",
+    messagingSenderId: "409075053323",
+    appId: "1:409075053323:ios:66566f6535fb724e84280e",
+    measurementId: "G-PPF21XCLZP",
+  };
+}
+
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }

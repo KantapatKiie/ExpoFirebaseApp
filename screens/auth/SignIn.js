@@ -355,7 +355,7 @@ function SignIn(props) {
               var tokenGenerate = await response.data.data.token;
               newLogin.TOKEN = tokenGenerate;
               setToken(tokenGenerate);
-              props.setTokenGenerate(tokenGenerate);
+              // props.setTokenGenerate(tokenGenerate);
               Updates.reloadAsync();
 
               //get UserInfo
@@ -564,7 +564,7 @@ function SignIn(props) {
       password: "",
     });
     await removeToken();
-    props.setTokenGenerate("");
+    // props.setTokenGenerate("");
     Updates.reloadAsync();
     setLoggedinStatus(false);
     ToastAndroid.show("Logout successfully", ToastAndroid.SHORT);
