@@ -41,7 +41,7 @@ const initialState = {
     logistics_id: 1,
     users_id: 8,
     total_amount: "6.00",
-    total_full_amounts: "6.00",
+    total_full_amounts: "0.00",
     total_weight: 112,
     discount: "0.00",
     promotion_discount: 0,

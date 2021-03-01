@@ -99,7 +99,8 @@ function OrderStatus(props) {
   }, []);
 
   // Step Indicators
-  const [currentPosition, setCurrentPosition] = useState(objOrderStatus.status);
+  // const [currentPosition, setCurrentPosition] = useState(objOrderStatus.status);
+  const [currentPosition, setCurrentPosition] = useState(status == "รอการชำระเงิน" ? 1 :status == "กำลังจัดเตรียมสินค้า" ? 3 :status == "ชำระเงินแล้ว" ? 2 : 4);
   const getStepIndicatorIconConfig = ({ position }) => {
     const iconConfig = {
       name: "feed",
@@ -270,13 +271,33 @@ function OrderStatus(props) {
         },
       })
       .then(function (response) {
-        // console.log(response.data);
         ToastAndroid.show(item.code + " is cancel", ToastAndroid.SHORT);
       })
       .catch(function (error) {
-        console.log("error :", error);
+        console.log(error.response.data);
       });
   };
+
+  const downloadSlipPayment = async () =>{
+    setLoading(false);
+    await axios
+      .get(API_URL.SEND_FILE_SLIPPAYMENTS_API + objOrderStatus.code, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+      })
+      .then(function (response) {
+        console.log(response.data.data);
+        setLoading(true);
+      })
+      .catch(function (error) {
+        console.log(false);
+        setLoading(true);
+      });
+    setLoading(true);
+  }
 
   return (
     <>
@@ -860,7 +881,7 @@ function OrderStatus(props) {
                   type="solid"
                   containerStyle={styles.blockButton1}
                   buttonStyle={styles.buttonStyle1}
-                  // onPress={() => props.navigation.navigate("Flash Sale")}
+                  onPress={downloadSlipPayment()}
                 />
                 <Button
                   titleStyle={{ color: "white", fontFamily: "kanitRegular" }}

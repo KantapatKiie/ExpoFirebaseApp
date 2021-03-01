@@ -121,15 +121,21 @@ function Home(props) {
         },
       })
       .then(async (response) => {
-        var date = moment().utcOffset("+07:00").format("YYYY-MM-DD hh:mm:ss");
-        var expirydate = await response.data.data.end_at;
-        var diffr = moment.duration(moment(expirydate).diff(moment(date)));
-        var hours = parseInt(diffr.asHours());
-        var minutes = parseInt(diffr.minutes());
-        var seconds = parseInt(diffr.seconds());
         let objNew = Object.assign({}, objHomeHD);
-        objNew.timeEnds = hours * 60 * 60 + minutes * 60 + seconds;
-        let newlistFlashsale = await response.data.data.lists;
+        let newlistFlashsale;
+        if (response.data.data !== null) {
+          var date = moment().utcOffset("+07:00").format("YYYY-MM-DD hh:mm:ss");
+          var expirydate =
+            (await response.data.data) != null ? response.data.data.end_at : 0;
+          var diffr = moment.duration(moment(expirydate).diff(moment(date)));
+          var hours = parseInt(diffr.asHours());
+          var minutes = parseInt(diffr.minutes());
+          var seconds = parseInt(diffr.seconds());
+          objNew.timeEnds = hours * 60 * 60 + minutes * 60 + seconds;
+          newlistFlashsale = await response.data.data.lists;
+        } else {
+          objNew.timeEnds = 0;
+        }
 
         setCountDownTime(objNew.timeEnds);
         props.setObjHomeHD(objNew);
@@ -324,7 +330,6 @@ function Home(props) {
     await axios({
       method: "GET",
       url: API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API,
-      timeout: 2500,
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
@@ -335,6 +340,7 @@ function Home(props) {
     })
       .then(async (resBestsale) => {
         var lstBestSale = await resBestsale.data.data.product_lists;
+        console.log(lstBestSale)
 
         let newlstBestsale = [];
         for (let i = 0; i < 4; i++) {
@@ -742,7 +748,7 @@ function Home(props) {
               </TouchableHighlight>
 
               {/* Coupon */}
-              {couponList ? (
+              {couponList > 1 ? (
                 <Block style={styles2.containerHeader}>
                   <FlatList
                     horizontal
