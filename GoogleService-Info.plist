@@ -7,7 +7,7 @@
 	<key>REVERSED_CLIENT_ID</key>
 	<string>com.googleusercontent.apps.409075053323-udnvvovr99ak6lj23pkjqevi4lio149m</string>
 	<key>ANDROID_CLIENT_ID</key>
-	<string>409075053323-2k6quu1vm2ec0gl3g3kthle7s1dqk7p2.apps.googleusercontent.com</string>
+	<string>409075053323-1p6en7l1nlnregbcu8sl2km244usi3t1.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyBZDneA3fjaLdJQ9C7qkNH0hoB4RfPDO7Q</string>
 	<key>GCM_SENDER_ID</key>
@@ -31,7 +31,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:409075053323:ios:66566f6535fb724e84280e</string>
+	<string>1:409075053323:ios:9331daf13ab5f0d184280e</string>
 	<key>DATABASE_URL</key>
 	<string>https://fir-ntms-app.firebaseio.com</string>
 </dict>
