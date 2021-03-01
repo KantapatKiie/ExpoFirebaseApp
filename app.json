@@ -16,8 +16,8 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "usesIcloudStorage": true,
       "bundleIdentifier": "com.iamcompany.expofirebase",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "buildNumber": "1.0.0",
       "config": {
         "googleMapsApiKey": "AIzaSyBZDneA3fjaLdJQ9C7qkNH0hoB4RfPDO7Q"
@@ -36,7 +36,8 @@
         "googleMaps": {
           "apiKey": "AIzaSyDH8lsMGevH9-GPw6EAHLF4Q57rU2MEMz8"
         }
-      }
+      },
+      "permissions":["ACCESS_BACKGROUND_LOCATION", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
     }
   }
 }
