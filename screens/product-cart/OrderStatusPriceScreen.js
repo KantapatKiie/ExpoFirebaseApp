@@ -30,12 +30,12 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { ToastAndroid } from "react-native";
 import Omise from "omise-react-native";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
+import CountryList from "../../i18n/Country.json"
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 Omise.config("pkey_test_5mvrvso2arsfg21lm3v", "2019-05-29");
-var TotalAmounts = 0;
 
 function OrderStatus(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -77,8 +77,8 @@ function OrderStatus(props) {
   useEffect(() => {
     setCheckPayType(1);
     loadDataDeliveryList(objUseDelivery.id);
-    summaryPriceListTrOrder(listTrOrder);
     getCountry();
+    checkPurchaseOrderList();
   }, []);
 
   const [newDelivery, setNewDelivery] = useState({
@@ -108,32 +108,6 @@ function OrderStatus(props) {
       .catch(function (error) {
         console.log(error);
       });
-  };
-  const summaryPriceListTrOrder = async (list) => {
-    var Amounts = 0;
-    var Discounts = 0;
-    var Vats = listTrOrder[0].vat;
-    var CouponDiscounts = objUseCoupon.coupon_discount;
-    var PromotionsDiscount = listTrOrder[0].promotion_discount;
-    var newSummaryPrice = Object.assign({}, objOrderStatusPriceScreen);
-    for (var i = 0; i < list.length; i++) {
-      Amounts += (await list[i].product_price) * list[i].quantity;
-    }
-    newSummaryPrice.total_amount = Amounts;
-    newSummaryPrice.discount = Discounts;
-    newSummaryPrice.coupon_discount = CouponDiscounts;
-    newSummaryPrice.promotion_discount = PromotionsDiscount;
-    newSummaryPrice.vat = Vats;
-
-    TotalAmounts = await (parseFloat(Amounts) +
-      parseFloat(newDelivery.base_price) -
-      parseFloat(Discounts) -
-      parseFloat(CouponDiscounts) -
-      parseFloat(PromotionsDiscount) +
-      parseFloat(Vats));
-    newSummaryPrice.total_full_amounts = TotalAmounts;
-
-    props.setobjOrderStatusPriceScreenins(newSummaryPrice);
   };
 
   const [checkPayType, setCheckPayType] = useState(1);
@@ -209,96 +183,134 @@ function OrderStatus(props) {
   };
 
   //#region Payment Credit/Debit
-  const [objjOmiseTransfer, setObjOmiseTransfer] = useState({
+  const [objOmiseTransfer, setObjOmiseTransfer] = useState({
     card_number: "",
     card_name: "",
     expire_date: "",
     secure_code: "",
-    bank_code: 0,
-    bank_name: "",
+    country_code: 0,
+    country_name: "",
   });
   const [modalVisible, setModalVisible] = useState(false);
-  const checkedOmiseTransfer = async () => {
-    const tokenOmise = await Omise.createToken({
-      card: {
-        name: "KANTAPAT",
-        city: "Bangkok",
-        postal_code: 10210,
-        number: "4242424242424242",
-        expiration_month: 10,
-        expiration_year: 2022,
-        security_code: 111,
-      },
-    });
-    return tokenOmise;
-
-    // const transferData = await Omise.createSource({
-    //   amount: 1500,
-    //   currency: "thb",
-    //   // type: 'internet_banking_bbl',
-    //   card: tokenOmise.id,
-    // });
-  };
-  const handleConfirmPaymentOmise = async () => {
-    const tokenOmise = await checkedOmiseTransfer();
-    console.log(tokenOmise.id);
+  const [purchaseList, checkPurchaseList] = useState(0);
+  const [orderNumber, setOrderNumber] = useState("");
+  async function checkPurchaseOrderList() {
     await axios({
-      method: "POST",
-      url: API_URL.CREATE_ORDER_HD_API,
+      method: "GET",
+      url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
       headers: {
-        Accept: "*/*",
-        Authorization: "Bearer " + (await token),
+        Accept: "application/json",
         "Content-Type": "application/json",
-      },
-      data: {
-        coupons_id: objUseCoupon.id,
-        logistics_id: objUseDelivery.id,
-        delivery_address: {
-          fullname:
-            objUseAddressDelivery.FIRST_NAME +
-            " " +
-            objUseAddressDelivery.LAST_NAME,
-          telephone: objUseAddressDelivery.PHONE_NUMBER_ORDER,
-          address: objUseAddressDelivery.ADDRESS_NAME_ORDER,
-          sub_district_id: objUseAddressDelivery.SUB_DISTRICT_CODE_ORDER,
-          district_id: objUseAddressDelivery.DISTRICT_CODE_ORDER,
-          province_id: objUseAddressDelivery.PROVINCE_CODE_ORDER,
-          postcode: objUseAddressDelivery.ZIP_CODE_ORDER,
-        },
-        payment_type: checkPayType == 1 ? 0 : 1,
-        payment_token: tokenOmise.id,
-        total_amount: objOrderStatusPriceScreen.total_amount,
-        delivery_charge: newDelivery.base_price,
-        discount: objOrderStatusPriceScreen.discount,
-        coupon_discount: objUseCoupon.coupon_discount,
-        promotion_discount: objOrderStatusPriceScreen.promotion_discount,
-        vat: objOrderStatusPriceScreen.vat,
+        Authorization: "Bearer " + (await token),
       },
     })
-      .then(function (response) {
-        ToastAndroid.show(
-          "เลขที่สั่งซื้อ " + response.data.data.code,
-          ToastAndroid.SHORT
-        );
-        props.navigation.navigate("Payment");
+      .then(async (response) => {
+        checkPurchaseList(response.data.data.result);
       })
       .catch(function (error) {
         console.log(error.response.data);
       });
-    setModalVisible(false);
+  }
+  const checkedOmiseTransfer = async () => {
+    const tokenOmise = await Omise.createToken({
+      card: {
+        name: objOmiseTransfer.card_name,
+        number: objOmiseTransfer.card_number,
+        city: objOmiseTransfer.country_name,
+        expiration_month: parseInt(
+          objOmiseTransfer.expire_date.substring(0, 2)
+        ),
+        expiration_year: parseInt(
+          moment(new Date()).format("YYYY").substr(0, 2) +
+            objOmiseTransfer.expire_date.substring(3, 5)
+        ),
+        security_code: parseInt(objOmiseTransfer.secure_code),
+      },
+    });
+    return tokenOmise;
+
+    // const tokenOmise = await Omise.createToken({
+    //   card: {
+    //     name: "KANTAPAT",
+    //     city: "Bangkok",
+    //     postal_code: 10210,
+    //     number: "4242424242424242",
+    //     expiration_month: 10,
+    //     expiration_year: 2022,
+    //     security_code: 111,
+    //   },
+    // });
+    // return tokenOmise;
+  };
+  const handleConfirmPaymentOmise = async () => {
+    if (
+      objOmiseTransfer.card_number !== "" &&
+      objOmiseTransfer.card_name !== "" &&
+      objOmiseTransfer.expire_date !== "" &&
+      objOmiseTransfer.secure_code !== "" &&
+      objOmiseTransfer.country_code !== ""
+    ) {
+      setLoading(true);
+      const tokenOmise = await checkedOmiseTransfer();
+      await axios({
+        method: "POST",
+        url: API_URL.CREATE_ORDER_HD_API,
+        headers: {
+          Accept: "*/*",
+          Authorization: "Bearer " + (await token),
+          "Content-Type": "application/json",
+        },
+        data: {
+          coupons_id: objUseCoupon.id,
+          logistics_id: objUseDelivery.id,
+          delivery_address: {
+            fullname:
+              objUseAddressDelivery.FIRST_NAME +
+              " " +
+              objUseAddressDelivery.LAST_NAME,
+            telephone: objUseAddressDelivery.PHONE_NUMBER_ORDER,
+            address: objUseAddressDelivery.ADDRESS_NAME_ORDER,
+            sub_district_id: objUseAddressDelivery.SUB_DISTRICT_CODE_ORDER,
+            district_id: objUseAddressDelivery.DISTRICT_CODE_ORDER,
+            province_id: objUseAddressDelivery.PROVINCE_CODE_ORDER,
+            postcode: objUseAddressDelivery.ZIP_CODE_ORDER,
+          },
+          payment_type: checkPayType == 1 ? 0 : 1,
+          payment_token: tokenOmise.id,
+          total_amount: objOrderStatusPriceScreen.total_amount,
+          delivery_charge: newDelivery.base_price,
+          discount: objOrderStatusPriceScreen.discount,
+          coupon_discount: objUseCoupon.coupon_discount,
+          promotion_discount: objOrderStatusPriceScreen.promotion_discount,
+          vat: objOrderStatusPriceScreen.vat,
+        },
+      })
+        .then(async (response) => {
+          setOrderNumber(response.data.data.code);
+          checkPurchaseOrderList();
+          setLoading(false);
+        })
+        .catch(function (error) {
+          console.log(error.response.data);
+          setLoading(false);
+        });
+      setModalVisible(false);
+      setLoading(false);
+    }
+    setLoading(false)
   };
   const onChangeCardNumber = (e) => {
-    let newObj = Object.assign({}, objjOmiseTransfer);
+    let newObj = Object.assign({}, objOmiseTransfer);
     newObj.card_number = e;
     setObjOmiseTransfer(newObj);
   };
   const onChangeCardName = (e) => {
-    let newObj = Object.assign({}, objjOmiseTransfer);
+    let newObj = Object.assign({}, objOmiseTransfer);
     newObj.card_name = e;
     setObjOmiseTransfer(newObj);
   };
   const onChangeExpriceDate = (e) => {
-    let newObj = Object.assign({}, objjOmiseTransfer);
+    let newObj = Object.assign({}, objOmiseTransfer);
     if (e.length >= 2) {
       newObj.expire_date = e.substr(0, 2) + "/" + (e.substr(3) || "");
     } else {
@@ -307,41 +319,28 @@ function OrderStatus(props) {
     setObjOmiseTransfer(newObj);
   };
   const onChangeSecureCode = (e) => {
-    let newObj = Object.assign({}, objjOmiseTransfer);
+    let newObj = Object.assign({}, objOmiseTransfer);
     newObj.secure_code = e;
     setObjOmiseTransfer(newObj);
   };
   const [country, setCountry] = useState([
     {
-      label: objjOmiseTransfer.bank_name,
-      value: objjOmiseTransfer.bank_code,
+      label: objOmiseTransfer.country_name,
+      value: objOmiseTransfer.country_code,
     },
   ]);
   const getCountry = async () => {
-    await axios
-      .get(API_URL.BANK_LIST_HD_API, {
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer " + (await token),
-          "Content-Type": "application/json",
-        },
-      })
-      .then(function (response) {
-        let newlstBin = response.data.data.map(function (item) {
-          item.label = item.bank_name_en + " - " + item.bank_name_th;
-          item.value = item.id;
-          return item;
-        });
-        setCountry(newlstBin);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    let newlstBin = CountryList.map(function (item) {
+      item.label = item.country;
+      item.value = item.tld;
+      return item;
+    });
+    setCountry(newlstBin);
   };
   const onChangeCountry = (item) => {
-    let newObj = Object.assign({}, objjOmiseTransfer);
-    newObj.bank_code = item.value;
-    newObj.bank_name = item.label;
+    let newObj = Object.assign({}, objOmiseTransfer);
+    newObj.country_code = item.value;
+    newObj.country_name = item.label;
     setObjOmiseTransfer(newObj);
   };
   const modalPayment = (
@@ -377,8 +376,10 @@ function OrderStatus(props) {
                     <TextInput
                       style={stylesModal.inputKey}
                       placeholder={"Card Number"}
-                      placeholderTextColor="#808080"
-                      value={objjOmiseTransfer.card_number}
+                      placeholderTextColor={
+                        objOmiseTransfer.card_number !== "" ? "#808080" : "red"
+                      }
+                      value={objOmiseTransfer.card_number}
                       onChangeText={onChangeCardNumber}
                       keyboardType={"ascii-capable"}
                       maxLength={16}
@@ -388,8 +389,10 @@ function OrderStatus(props) {
                     <TextInput
                       style={stylesModal.inputKey}
                       placeholder={"Name on card"}
-                      placeholderTextColor="#808080"
-                      value={objjOmiseTransfer.card_name}
+                      placeholderTextColor={
+                        objOmiseTransfer.card_name !== "" ? "#808080" : "red"
+                      }
+                      value={objOmiseTransfer.card_name}
                       onChangeText={onChangeCardName}
                     />
                   </Block>
@@ -399,8 +402,10 @@ function OrderStatus(props) {
                     <TextInput
                       style={stylesModal.inputKey}
                       placeholder={"Expire date"}
-                      placeholderTextColor="#808080"
-                      value={objjOmiseTransfer.expire_date}
+                      placeholderTextColor={
+                        objOmiseTransfer.expire_date !== "" ? "#808080" : "red"
+                      }
+                      value={objOmiseTransfer.expire_date}
                       onChangeText={onChangeExpriceDate}
                       keyboardType={"phone-pad"}
                       maxLength={5}
@@ -410,8 +415,10 @@ function OrderStatus(props) {
                     <TextInput
                       style={stylesModal.inputKey}
                       placeholder={"Security code"}
-                      placeholderTextColor="#808080"
-                      value={objjOmiseTransfer.secure_code}
+                      placeholderTextColor={
+                        objOmiseTransfer.secure_code !== "" ? "#808080" : "red"
+                      }
+                      value={objOmiseTransfer.secure_code}
                       onChangeText={onChangeSecureCode}
                       keyboardType={"numeric"}
                       maxLength={3}
@@ -429,7 +436,8 @@ function OrderStatus(props) {
                   dropDownStyle={{ backgroundColor: "#fafafa" }}
                   placeholderStyle={{
                     textAlign: "left",
-                    color: "gray",
+                    color:
+                      objOmiseTransfer.country_name !== "" ? "#808080" : "red",
                   }}
                   placeholder={"- Country -"}
                   labelStyle={{
@@ -443,10 +451,12 @@ function OrderStatus(props) {
                     borderRadius: 20,
                     color: "white",
                   }}
+                  searchable={true}
+                  searchablePlaceholder={"Search Country.."}
                   defaultValue={
-                    objjOmiseTransfer.bank_name == ""
+                    objOmiseTransfer.country_name == ""
                       ? null
-                      : objjOmiseTransfer.bank_code
+                      : objOmiseTransfer.country_code
                   }
                   onChangeItem={(item) => onChangeCountry(item)}
                 />
@@ -459,7 +469,11 @@ function OrderStatus(props) {
                   titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
                   title={
                     "Checkout " +
-                    commaNumber(parseFloat(TotalAmounts).toFixed(2)) +
+                    commaNumber(
+                      parseFloat(
+                        objOrderStatusPriceScreen.total_full_amounts
+                      ).toFixed(2)
+                    ) +
                     " THB"
                   }
                   type="solid"
@@ -873,111 +887,150 @@ function OrderStatus(props) {
                     }}
                   >
                     ยอดรวมทั้งสิ้น : ฿{" "}
-                    {commaNumber(parseFloat(objOrderStatusPriceScreen.total_full_amounts).toFixed(2))}
+                    {commaNumber(
+                      parseFloat(
+                        objOrderStatusPriceScreen.total_full_amounts
+                      ).toFixed(2)
+                    )}
                   </Text>
                 </Block>
               </Block>
 
               {/* Payment Type */}
-              <Block
-                style={{
-                  backgroundColor: "white",
-                  width: width,
-                  borderBottomWidth: 1,
-                  borderBottomColor: "#e0e0e0",
-                }}
-              >
-                <Block style={{ margin: 25 }}>
-                  <Text
+              {purchaseList > 0 ? (
+                <>
+                  <Block
                     style={{
-                      color: "black",
-                      fontFamily: "kanitBold",
-                      fontSize: 20,
+                      backgroundColor: "white",
+                      width: width,
+                      borderBottomWidth: 1,
+                      borderBottomColor: "#e0e0e0",
                     }}
                   >
-                    เลือกช่องทางการชำระเงิน
-                  </Text>
+                    <Block style={{ margin: 25 }}>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontFamily: "kanitBold",
+                          fontSize: 20,
+                        }}
+                      >
+                        เลือกช่องทางการชำระเงิน
+                      </Text>
 
-                  <Block style={{ marginTop: 15 }}>
-                    <TouchableOpacity
-                      style={styles.blockPaymentType}
-                      onPress={() => setCheckPayType(1)}
-                    >
-                      <Block row style={{ margin: 15 }}>
-                        <RadioButton
-                          value={1}
-                          style={{ margintop: 25 }}
-                          status={checkPayType === 1 ? "checked" : "unchecked"}
+                      <Block style={{ marginTop: 15 }}>
+                        <TouchableOpacity
+                          style={styles.blockPaymentType}
                           onPress={() => setCheckPayType(1)}
-                        />
-                        <Text
-                          style={{
-                            fontFamily: "kanitRegular",
-                            fontSize: 17,
-                            color: "black",
-                            marginTop: 5,
-                            marginLeft: 10,
-                          }}
                         >
-                          โอนเข้าบัญชีธนาคาร
-                        </Text>
-                      </Block>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.blockPaymentTypes}
-                      onPress={() => setCheckPayType(2)}
-                    >
-                      <Block row style={{ margin: 15 }}>
-                        <RadioButton
-                          value={2}
-                          status={checkPayType === 2 ? "checked" : "unchecked"}
+                          <Block row style={{ margin: 15 }}>
+                            <RadioButton
+                              value={1}
+                              style={{ margintop: 25 }}
+                              status={
+                                checkPayType === 1 ? "checked" : "unchecked"
+                              }
+                              onPress={() => setCheckPayType(1)}
+                            />
+                            <Text
+                              style={{
+                                fontFamily: "kanitRegular",
+                                fontSize: 17,
+                                color: "black",
+                                marginTop: 5,
+                                marginLeft: 10,
+                              }}
+                            >
+                              โอนเข้าบัญชีธนาคาร
+                            </Text>
+                          </Block>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.blockPaymentTypes}
                           onPress={() => setCheckPayType(2)}
-                        />
-                        <Text
-                          style={{
-                            fontFamily: "kanitRegular",
-                            fontSize: 17,
-                            color: "black",
-                            marginTop: 5,
-                            marginLeft: 10,
-                          }}
                         >
-                          ชำระผ่านบัตรเครดิต/เดบิต
-                        </Text>
+                          <Block row style={{ margin: 15 }}>
+                            <RadioButton
+                              value={2}
+                              status={
+                                checkPayType === 2 ? "checked" : "unchecked"
+                              }
+                              onPress={() => setCheckPayType(2)}
+                            />
+                            <Text
+                              style={{
+                                fontFamily: "kanitRegular",
+                                fontSize: 17,
+                                color: "black",
+                                marginTop: 5,
+                                marginLeft: 10,
+                              }}
+                            >
+                              ชำระผ่านบัตรเครดิต/เดบิต
+                            </Text>
+                          </Block>
+                        </TouchableOpacity>
                       </Block>
-                    </TouchableOpacity>
+                    </Block>
                   </Block>
-                </Block>
-              </Block>
 
-              {/* Button */}
-              <Block
-                row
-                style={{
-                  paddingTop: 40,
-                  paddingBottom: 40,
-                  alignSelf: "center",
-                  backgroundColor: "white",
-                  width: width,
-                }}
-              >
-                <Button
-                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-                  title={"ย้อนกลับ"}
-                  type="solid"
-                  containerStyle={styles.blockButton1}
-                  buttonStyle={styles.buttonStyle1}
-                  onPress={() => props.navigation.navigate("Order Screen")}
-                />
-                <Button
-                  titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
-                  title={"ยืนยันการชำระเงิน"}
-                  type="solid"
-                  containerStyle={styles.blockButton2}
-                  buttonStyle={styles.buttonStyle2}
-                  onPress={onConfirmToPaymentPage}
-                />
-              </Block>
+                  {/* Button */}
+                  <Block
+                    row
+                    style={{
+                      paddingTop: 40,
+                      paddingBottom: 40,
+                      alignSelf: "center",
+                      backgroundColor: "white",
+                      width: width,
+                    }}
+                  >
+                    <Button
+                      titleStyle={{
+                        color: "white",
+                        fontFamily: "kanitRegular",
+                      }}
+                      title={"ย้อนกลับ"}
+                      type="solid"
+                      containerStyle={styles.blockButton1}
+                      buttonStyle={styles.buttonStyle1}
+                      onPress={() => props.navigation.navigate("Order Screen")}
+                    />
+                    <Button
+                      titleStyle={{
+                        color: "white",
+                        fontFamily: "kanitRegular",
+                      }}
+                      title={"ยืนยันการชำระเงิน"}
+                      type="solid"
+                      containerStyle={styles.blockButton2}
+                      buttonStyle={styles.buttonStyle2}
+                      onPress={onConfirmToPaymentPage}
+                    />
+                  </Block>
+                </>
+              ) : (
+                <Block
+                  style={{
+                    backgroundColor: "white",
+                    alignSelf: "center",
+                    width: width,
+                    height: 50,
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "kanitRegular",
+                      fontSize: 18,
+                      color: "red",
+                      textAlign: "center",
+                    }}
+                  >
+                    รายการสั่งซื้อเลขที่ : {orderNumber.toString()}
+                  </Text>
+                </Block>
+              )}
             </>
           )}
           renderSectionFooter={() => <>{<WangdekInfo />}</>}

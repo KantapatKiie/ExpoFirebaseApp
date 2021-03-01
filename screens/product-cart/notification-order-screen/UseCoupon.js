@@ -95,8 +95,7 @@ function UseCoupon(props) {
           props.navigation.navigate("Order Screen");
         })
         .catch(function (error) {
-          console.log(false);
-          setVerifyCouponCollect(true);
+          console.log(error, false)
         });
     };
     return (
@@ -142,7 +141,7 @@ function UseCoupon(props) {
 
   const onUseCodeVerifyCoupon = async () => {
     setVerifyCoupon(false);
-    setVerifyCouponCollect(false);
+    // setVerifyCouponCollect(false);
     let objCoupon = Object.assign({}, objUseCoupon);
     await axios
       .get(API_URL.COUPON_VERIFY_IDS_API + objUseCoupon.code, {

@@ -141,38 +141,59 @@ function OrderScreen(props) {
             props.setObjUseDelivery(objUseDelivery);
             props.setObjUseAddressDelivery(objUseAddressDelivery);
 
+            //Calculate Order Price
             var Amounts = 0;
-            var Discounts = 0;
-            var Vats = listTrOrder[0].vat;
-            var CouponDiscounts = objUseCoupon.coupon_discount;
-            var PromotionsDiscount = listTrOrder[0].promotion_discount;
+            var Discounts = 0; //ส่วนลด
+            var Vats = listTrOrder[0].vat; //ภาษีทั้งหมด
+            var TotalAmounts = 0; //ราคารวมทั้งหมด บวกภาษีแล้ว
+            var CouponDiscounts = objUseCoupon.coupon_discount; //ส่วนลดจากคูปอง
+            var PromotionsDiscount = listTrOrder[0].promotion_discount; //ส่วนลดจากโปรโมชั่น
             var newSummaryPrice = Object.assign({}, objOrderStatusPriceScreen);
-            for (var i = 0; i < list.length; i++) {
-              Amounts += (await list[i].product_price) * list[i].quantity;
+            for (var i = 0; i < listTrOrder.length; i++) {
+              Amounts += (await listTrOrder[i].product_price) * listTrOrder[i].quantity;
             }
             newSummaryPrice.total_amount = Amounts;
             newSummaryPrice.discount = Discounts;
             newSummaryPrice.coupon_discount = CouponDiscounts;
             newSummaryPrice.promotion_discount = PromotionsDiscount;
             newSummaryPrice.vat = Vats;
-        
-            TotalAmounts = await (parseFloat(Amounts) +
-              parseFloat(newDelivery.base_price) -
-              parseFloat(Discounts) -
-              parseFloat(CouponDiscounts) -
-              parseFloat(PromotionsDiscount) +
-              parseFloat(Vats));
-            newSummaryPrice.total_full_amounts = TotalAmounts;
-        
-            props.setobjOrderStatusPriceScreenins(newSummaryPrice);
+
+            await axios
+              .get(API_URL.LOGISTICS_LIST_HD_API, {
+                headers: {
+                  Accept: "application/json",
+                  Authorization: "Bearer " + (await token),
+                  "Content-Type": "application/json",
+                  "X-localization": locale,
+                },
+              })
+              .then(async (response) => {
+                let newDelivery = await response.data.data.filter(
+                  (item) => item.id == objUseDelivery.id
+                );
+
+                TotalAmounts = await (parseFloat(Amounts) +
+                  parseFloat(newDelivery[0].base_price) -
+                  parseFloat(Discounts) -
+                  parseFloat(CouponDiscounts) -
+                  parseFloat(PromotionsDiscount) +
+                  parseFloat(Vats));
+                newSummaryPrice.total_full_amounts = TotalAmounts;
+
+                props.setobjOrderStatusPriceScreenins(newSummaryPrice);
+                props.navigation.navigate("Order Status Price Screen");
+                setLoading(false);
+              });
+          }).catch((error) => {
+            console.log(error,"error")
             setLoading(false);
-            props.navigation.navigate("Order Status Price Screen");
           });
         } else {
           ToastAndroid.show("กรุณาเลือกที่อยู่ในการจัดส่ง", ToastAndroid.SHORT);
           setLoading(false);
         }
       } else {
+        setLoading(false);
         ToastAndroid.show("กรุณาเลือกช่องทางการจัดส่ง", ToastAndroid.SHORT);
       }
     } else {
@@ -292,6 +313,7 @@ const mapActions = {
   setObjUseCoupon: ActionOrder.setObjUseCoupon,
   setObjUseDelivery: ActionOrder.setObjUseDelivery,
   setObjUseAddressDelivery: ActionOrder.setObjUseAddressDelivery,
+  setobjOrderStatusPriceScreenins: ActionOrder.setobjOrderStatusPriceScreenins,
 
   setObjCartScreen: ActionCart.setObjCartScreen,
   clearObjCartScreen: ActionCart.clearObjCartScreen,

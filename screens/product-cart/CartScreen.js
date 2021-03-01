@@ -71,11 +71,13 @@ function CartScreen(props) {
     })
       .then(async (response) => {
         let newlst = await response.data.data;
+        console.log(newlst)
         setListCarts(newlst);
         setLoading(false);
       })
       .catch(function (error) {
         setLoading(true);
+        setListCarts(null);
         console.log(error.response.data);
       });
     setLoading(false);

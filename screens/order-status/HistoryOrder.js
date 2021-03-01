@@ -30,18 +30,6 @@ import { getToken } from "../../store/mock/token";
 const { width } = Dimensions.get("screen");
 const token = getToken();
 
-const defaultListHistoryOrder = [
-  {
-    id: 9999,
-    code: "ORD-2020120010",
-    quantity: "2",
-    amount: "6.00",
-    status_th: "รอการชำระเงิน",
-    status_en: "Waiting for payment",
-    created_at: moment(new Date()).format("YYYY-MM-DDT00:00:00"),
-  },
-];
-
 function HistoryOrder(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
   if (locale === "th") {
@@ -72,7 +60,7 @@ function HistoryOrder(props) {
   }, []);
 
   const [numList, setNumList] = useState(1);
-  const [stateObj, setStateObj] = useState(defaultListHistoryOrder);
+  const [stateObj, setStateObj] = useState(null);
   const [objSearch, setObjSerach] = useState({
     SEARCH_ORDER: "",
   });
@@ -101,7 +89,6 @@ function HistoryOrder(props) {
   };
   async function loadHistoryOrderList() {
     setLoading(false);
-    console.log("Load Load");
     await axios
       .get(API_URL.HISTORY_ORDER_LIST_API, {
         headers: {
@@ -114,7 +101,6 @@ function HistoryOrder(props) {
         },
       })
       .then(function (response) {
-        console.log(response.data.data);
         setStateObj(response.data.data.orders.lists);
         setLoading(true);
       })
@@ -149,7 +135,7 @@ function HistoryOrder(props) {
       });
     setLoading(true);
   };
-  const renderProduct = ({ item }) => {
+  const renderOrderListview = ({ item }) => {
     let status = item.status_th;
     const renderStatus = () => {
       if (status == "ชำระเงินแล้ว") {
@@ -176,7 +162,7 @@ function HistoryOrder(props) {
       }
       return null;
     };
-    const handleViewDetail = async () => {
+    const handleViewDetail = async (item) => {
       props.clearObjOrderStatus();
       setLoading(false);
       await axios
@@ -192,6 +178,7 @@ function HistoryOrder(props) {
           newObjStatus.status_th = item.status_th;
           newObjStatus.status_en = item.status_en;
           props.setStatusObjins(newObjStatus);
+          console.log();
 
           props.setObjOrderStatus(response.data.data.orders);
           props.setListLogisticOrderStatus(response.data.data.orders.logistics);
@@ -213,7 +200,7 @@ function HistoryOrder(props) {
         });
       setLoading(true);
     };
-    const handleCancelOrder = async () => {
+    const handleCancelOrder = async (item) => {
       await axios
         .put(API_URL.CANCEL_ORDER_HD_API + item.code, {
           headers: {
@@ -223,11 +210,10 @@ function HistoryOrder(props) {
           },
         })
         .then(function (response) {
-          console.log(response.data);
           ToastAndroid.show(item.code + " is cancel", ToastAndroid.SHORT);
         })
         .catch(function (error) {
-          console.log("error :", error);
+          console.log(error.response.data);
         });
     };
     return (
@@ -352,7 +338,7 @@ function HistoryOrder(props) {
                 type="solid"
                 containerStyle={styles.blockButton1}
                 buttonStyle={styles.buttonStyle1}
-                onPress={handleViewDetail}
+                onPress={() => handleViewDetail(item)}
               />
               <Button
                 titleStyle={{ color: "white", fontFamily: "kanitRegular" }}
@@ -380,82 +366,80 @@ function HistoryOrder(props) {
 
   return (
     <>
-      <Block flex center style={{ width: width }}>
-        <View style={{ backgroundColor: "white" }}>
-          <SafeAreaView style={{ flex: 1 }}>
-            <SectionList
-              stickySectionHeadersEnabled={false}
-              sections={HISTORY_LIST}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshingPage}
-                  onRefresh={onRefreshPageNow}
-                />
-              }
-              renderSectionHeader={() => (
-                <>
-                  {/* Title */}
-                  <TouchableOpacity
-                    onPress={() => props.navigation.navigate("Sign In")}
-                  >
-                    <Block
-                      row
-                      style={{
-                        paddingTop: 20,
-                        paddingLeft: 20,
-                        paddingBottom: 20,
-                        backgroundColor: "white",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "black",
-                          fontFamily: "kanitRegular",
-                          fontSize: 18,
-                        }}
-                      >
-                        {"<  "}ประวัติการสั่งซื้อ
-                      </Text>
-                    </Block>
-                  </TouchableOpacity>
-
-                  {/* Filter */}
-                  <Searchbar
-                    placeholder="ค้นหาคำสั่งซื้อ"
-                    value={objSearch.SEARCH_ORDER}
-                    onChange={onChangeSearch}
-                    style={styles.search}
-                    inputStyle={{ fontSize: 16, fontFamily: "kanitRegular" }}
-                  />
-                  {/* List order */}
-                  <FlatList
-                    data={stateObj}
-                    style={styles.containers}
-                    renderItem={renderProduct}
-                    keyExtractor={(item) => item.id.toString()}
-                  />
-                  {/* Load more */}
-                  <TouchableOpacity
-                    onPress={loadMoreHistoryOrderList}
-                    style={{ marginBottom: 25, marginTop: 15 }}
+      <Block flex center style={{ width: width, backgroundColor: "white" }}>
+        <SafeAreaView style={{ flex: 1 }}>
+          <SectionList
+            stickySectionHeadersEnabled={false}
+            sections={HISTORY_LIST}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshingPage}
+                onRefresh={onRefreshPageNow}
+              />
+            }
+            renderSectionHeader={() => (
+              <>
+                {/* Title */}
+                <TouchableOpacity
+                  onPress={() => props.navigation.navigate("Sign In")}
+                >
+                  <Block
+                    row
+                    style={{
+                      paddingTop: 20,
+                      paddingLeft: 20,
+                      paddingBottom: 20,
+                      backgroundColor: "white",
+                    }}
                   >
                     <Text
-                      style={styles.loadMoreText}
-                      size={14}
-                      color={theme.COLORS.PRIMARY}
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 18,
+                      }}
                     >
-                      {LOAD_MORE + " >"}
+                      {"<  "}ประวัติการสั่งซื้อ
                     </Text>
-                  </TouchableOpacity>
-                </>
-              )}
-              renderSectionFooter={() => <>{<WangdekInfo />}</>}
-              renderItem={() => {
-                return null;
-              }}
-            />
-          </SafeAreaView>
-        </View>
+                  </Block>
+                </TouchableOpacity>
+
+                {/* Filter */}
+                <Searchbar
+                  placeholder="ค้นหาคำสั่งซื้อ"
+                  value={objSearch.SEARCH_ORDER}
+                  onChange={onChangeSearch}
+                  style={styles.search}
+                  inputStyle={{ fontSize: 16, fontFamily: "kanitRegular" }}
+                />
+                {/* List order */}
+                <FlatList
+                  data={stateObj}
+                  style={styles.containers}
+                  renderItem={renderOrderListview}
+                  keyExtractor={(item) => item.id.toString()}
+                />
+                {/* Load more */}
+                <TouchableOpacity
+                  onPress={loadMoreHistoryOrderList}
+                  style={{ marginBottom: 25, marginTop: 15 }}
+                >
+                  <Text
+                    style={styles.loadMoreText}
+                    size={14}
+                    color={theme.COLORS.PRIMARY}
+                  >
+                    {LOAD_MORE + " >"}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+            renderSectionFooter={() => <>{<WangdekInfo />}</>}
+            renderItem={() => {
+              return null;
+            }}
+          />
+        </SafeAreaView>
       </Block>
       <ModalLoading loading={!loading} />
     </>
