@@ -16,7 +16,6 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "usesIcloudStorage": true,
       "bundleIdentifier": "com.iamcompany.expofirebase",
       "googleServicesFile": "./GoogleService-Info.plist",
       "buildNumber": "1.0.0",
