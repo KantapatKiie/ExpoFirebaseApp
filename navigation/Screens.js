@@ -51,25 +51,26 @@ import MyCouponScreen from "../screens/coupon/MyCoupon";
 var firebaseConfig = "";
 if(Platform.OS === "android"){
   firebaseConfig = {
-    apiKey: "AIzaSyCJcBZXaJYkEn49dfUiqbKW2H5FWLgmKrQ",
+    apiKey: "AIzaSyCDxn47t_h3GNimmzIWPImeBWyJ6Swa2wA",
     authDomain: "fir-ntms-app.firebaseapp.com",
     databaseURL: "https://fir-ntms-app.firebaseio.com/",
     projectId: "fir-ntms-app",
     storageBucket: "fir-ntms-app.appspot.com",
     messagingSenderId: "409075053323",
-    appId: "1:409075053323:android:0fddd1a03270ec0984280e",
+    // appId: "1:409075053323:android:0fddd1a03270ec0984280e",
+    appId: "1:409075053323:android:1949d93ebba083a084280e",
     measurementId: "G-PPF21XCLZP",
   };
 }
 else{
   firebaseConfig = {
-    apiKey: "AIzaSyBZDneA3fjaLdJQ9C7qkNH0hoB4RfPDO7Q",
+    apiKey: "AIzaSyCDxn47t_h3GNimmzIWPImeBWyJ6Swa2wA",
     authDomain: "fir-ntms-app.firebaseapp.com",
     databaseURL: "https://fir-ntms-app.firebaseio.com/",
     projectId: "fir-ntms-app",
     storageBucket: "fir-ntms-app.appspot.com",
     messagingSenderId: "409075053323",
-    appId: "1:409075053323:ios:66566f6535fb724e84280e",
+    appId: "1:409075053323:ios:6ece46cde4ea08b484280e",
     measurementId: "G-PPF21XCLZP",
   };
 }

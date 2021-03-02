@@ -16,15 +16,15 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.iamcompany.expofirebase",
+      "bundleIdentifier": "com.iamcommerces.wangdekcm",
       "googleServicesFile": "./GoogleService-Info.plist",
       "buildNumber": "1.0.0",
       "config": {
-        "googleMapsApiKey": "AIzaSyBZDneA3fjaLdJQ9C7qkNH0hoB4RfPDO7Q"
+        "googleMapsApiKey": "AIzaSyBI942n6MHprSMMt3BV4mYPhdrfKXTJ16I"
       }
     },
     "android": {
-      "package": "com.iamcompany.expofirebase",
+      "package": "com.iamcommerces.wangdekcm",
       "googleServicesFile": "./google-services.json",
       "versionCode": 1,
       "useNextNotificationsApi": true,
@@ -34,7 +34,7 @@
       },
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyDH8lsMGevH9-GPw6EAHLF4Q57rU2MEMz8"
+          "apiKey": "AIzaSyCDxn47t_h3GNimmzIWPImeBWyJ6Swa2wA"
         }
       },
       "permissions":["ACCESS_BACKGROUND_LOCATION", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE", "INTERNET"]

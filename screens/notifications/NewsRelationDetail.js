@@ -57,10 +57,10 @@ function NewsRelationDetail(props) {
   const { objNewsRelationsHD } = useSelector((state) => ({
     objNewsRelationsHD: state.actionNewsRelations.objNewsRelationsHD,
   }));
-console.log(objNewsRelationsHD)
+
   useEffect(() => {
     loadDataSocialsMedia();
-    loadDescription()
+    loadDescription();
   }, []);
 
   const [descriptionPage, setDescriptionPage] = useState({
@@ -68,7 +68,6 @@ console.log(objNewsRelationsHD)
     description_en: "......",
   });
   const loadDescription = async () => {
-    
     await axios
       .get(API_URL.NEWS_EVENTS_RELATIONS_HD + objNewsRelationsHD.id, {
         headers: {
@@ -134,7 +133,6 @@ console.log(objNewsRelationsHD)
         });
     }
   };
-
   return (
     <>
       <ScrollView
@@ -149,37 +147,40 @@ console.log(objNewsRelationsHD)
             marginLeft: 10,
           }}
         >
-          <Block
-            style={{
-              backgroundColor: objNewsRelationsHD.colorTitle,
-              width: 50,
-              height: 65,
-              borderRadius: 10,
-            }}
-          >
-            <Text
+          {objNewsRelationsHD.operate_datetime !== "0000-00-00 00:00:00" &&
+          objNewsRelationsHD.operate_datetime !== null ? (
+            <Block
               style={{
-                color: "white",
-                fontFamily: "kanitRegular",
-                fontSize: 26,
-                fontWeight: "bold",
-                textAlign: "center",
+                backgroundColor: objNewsRelationsHD.colorTitle,
+                width: 50,
+                height: 65,
+                borderRadius: 10,
               }}
             >
-              {moment(objNewsRelationsHD.operate_datetime).format("DD")}
-            </Text>
-            <Text
-              style={{
-                color: "white",
-                fontFamily: "kanitRegular",
-                fontSize: 18,
-                fontWeight: "bold",
-                textAlign: "center",
-              }}
-            >
-              {moment(objNewsRelationsHD.operate_datetime).format("MMM")}
-            </Text>
-          </Block>
+              <Text
+                style={{
+                  color: "white",
+                  fontFamily: "kanitRegular",
+                  fontSize: 26,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+              >
+                {moment(objNewsRelationsHD.operate_datetime).format("DD")}
+              </Text>
+              <Text
+                style={{
+                  color: "white",
+                  fontFamily: "kanitRegular",
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+              >
+                {moment(objNewsRelationsHD.operate_datetime).format("MMM")}
+              </Text>
+            </Block>
+          ) : null}
           <Block>
             <Text
               style={{
@@ -197,20 +198,23 @@ console.log(objNewsRelationsHD)
             </Text>
           </Block>
         </Block>
-        <Block row style={{ marginTop: 15 }}>
-          <Text
-            style={{
-              color: "#8a8a8a",
-              fontFamily: "kanitRegular",
-              fontSize: 17,
-              textAlign: "left",
-              marginLeft: 15,
-            }}
-          >
-            วันที่ {moment(objNewsRelationsHD.operate_datetime).format("LLLL")}{" "}
-            น.
-          </Text>
-        </Block>
+        {objNewsRelationsHD.operate_datetime !== "0000-00-00 00:00:00" &&
+        objNewsRelationsHD.operate_datetime !== null ? (
+          <Block style={{ marginTop: 15 }}>
+            <Text
+              style={{
+                color: "#8a8a8a",
+                fontFamily: "kanitRegular",
+                fontSize: 17,
+                textAlign: "left",
+                marginLeft: 15,
+              }}
+            >
+              วันที่{" "}
+              {moment(objNewsRelationsHD.operate_datetime).format("LLLL")} น.
+            </Text>
+          </Block>
+        ) : null}
         <Block
           style={{
             borderRadius: 20,
@@ -255,7 +259,9 @@ console.log(objNewsRelationsHD)
               textAlign: "left",
             }}
           >
-            {locale == "th" ? descriptionPage.description_th : descriptionPage.description_en}
+            {locale == "th"
+              ? descriptionPage.description_th
+              : descriptionPage.description_en}
           </Text>
         </Block>
         <Block
