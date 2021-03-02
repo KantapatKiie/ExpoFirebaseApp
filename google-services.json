@@ -8,6 +8,45 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:409075053323:android:1949d93ebba083a084280e",
+        "android_client_info": {
+          "package_name": "com.iamcommerces.wangdekcm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "409075053323-89u5bct6rhg1ifct7tvsgq701cqheias.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDxn47t_h3GNimmzIWPImeBWyJ6Swa2wA"
+        },
+        {
+          "current_key": "AIzaSyDH8lsMGevH9-GPw6EAHLF4Q57rU2MEMz8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "409075053323-89u5bct6rhg1ifct7tvsgq701cqheias.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "409075053323-6eocqff1ksgcdfto4khl067al7icpj52.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "newBareApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:409075053323:android:0fddd1a03270ec0984280e",
         "android_client_info": {
           "package_name": "com.iamcompany.expofirebase"
@@ -15,11 +54,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "409075053323-n7jlg6g17qgg0an55s6r0afqkku1n6qn.apps.googleusercontent.com",
+          "client_id": "409075053323-2k6quu1vm2ec0gl3g3kthle7s1dqk7p2.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.iamcompany.expofirebase",
-            "certificate_hash": "09a3287100109bbef3da44f34465e69645c84a8b"
+            "certificate_hash": "9615e8dea1d0b8980d0f691754bc44394ac9811b"
           }
         },
         {
@@ -28,6 +67,9 @@
         }
       ],
       "api_key": [
+        {
+          "current_key": "AIzaSyCDxn47t_h3GNimmzIWPImeBWyJ6Swa2wA"
+        },
         {
           "current_key": "AIzaSyDH8lsMGevH9-GPw6EAHLF4Q57rU2MEMz8"
         }

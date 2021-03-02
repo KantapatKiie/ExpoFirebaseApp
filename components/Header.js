@@ -59,6 +59,7 @@ function Header(props) {
           Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: "Bearer " + (await token),
+          "X-localization": locale,
         },
       })
         .then(async (response) => {
@@ -80,9 +81,7 @@ function Header(props) {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
-        Connection: "keep-alive",
-        "X-CSRF-TOKEN": "",
-        "Accept-Encoding": "gzip, deflate",
+        "X-localization": locale,
       },
     })
       .then(async (resType) => {
@@ -95,7 +94,7 @@ function Header(props) {
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
-            Connection: "keep-alive",
+            "X-localization": locale,
           },
         })
           .then(async (resBrands) => {

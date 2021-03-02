@@ -340,7 +340,7 @@ function Home(props) {
     })
       .then(async (resBestsale) => {
         var lstBestSale = await resBestsale.data.data.product_lists;
-        console.log(lstBestSale)
+        console.log(lstBestSale);
 
         let newlstBestsale = [];
         for (let i = 0; i < 4; i++) {
@@ -618,6 +618,17 @@ function Home(props) {
 
     const onSelectNewsEvents = (item) => {
       let objNews = Object.assign({}, objNewsRelationsHD);
+      objNews.id = item.id;
+      objNews.type = item.type;
+      objNews.title_th = item.title_th;
+      objNews.title_en = item.title_en;
+      objNews.short_description_th = item.short_description_th;
+      objNews.short_description_en = item.short_description_en;
+      objNews.operate_datetime = item.operate_datetime;
+      objNews.image = item.image;
+      objNews.colorTitle = colorEtc;
+
+      props.setObjNewsRelationsHD(objNews);
       props.navigation.navigate("News Relation Detail");
     };
     return (
@@ -630,39 +641,41 @@ function Home(props) {
             }}
             style={styles2.itemPhotos}
           >
-            <Block
-              style={{
-                backgroundColor: colorItem,
-                width: 45,
-                height: 60,
-                borderRadius: 10,
-                marginTop: 110,
-                marginLeft: 5,
-              }}
-            >
-              <Text
+            {fullDate !== "0000-00-00 00:00:00" && fullDate !== null ? (
+              <Block
                 style={{
-                  color: "white",
-                  fontFamily: "kanitRegular",
-                  fontSize: 26,
-                  fontWeight: "bold",
-                  textAlign: "center",
+                  backgroundColor: colorItem,
+                  width: 45,
+                  height: 60,
+                  borderRadius: 10,
+                  marginTop: 110,
+                  marginLeft: 5,
                 }}
               >
-                {moment(fullDate).format("DD")}
-              </Text>
-              <Text
-                style={{
-                  color: "white",
-                  fontFamily: "kanitRegular",
-                  fontSize: 15,
-                  fontWeight: "bold",
-                  textAlign: "center",
-                }}
-              >
-                {moment(fullDate).format("MMM")}
-              </Text>
-            </Block>
+                <Text
+                  style={{
+                    color: "white",
+                    fontFamily: "kanitRegular",
+                    fontSize: 26,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                >
+                  {moment(fullDate).format("DD")}
+                </Text>
+                <Text
+                  style={{
+                    color: "white",
+                    fontFamily: "kanitRegular",
+                    fontSize: 15,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                  }}
+                >
+                  {moment(fullDate).format("MMM")}
+                </Text>
+              </Block>
+            ) : null}
           </ImageBackground>
           {/* Detail */}
           <Block style={{ backgroundColor: "white", padding: 15, width: 300 }}>
@@ -688,7 +701,10 @@ function Home(props) {
             <TouchableOpacity
               onPress={() => onSelectNewsEvents(item)}
               style={{
-                backgroundColor: colorEtc,
+                backgroundColor:
+                  fullDate !== "0000-00-00 00:00:00" && fullDate !== null
+                    ? colorEtc
+                    : "gray",
                 borderRadius: 10,
                 width: 100,
                 Opacity: 0.5,
@@ -696,7 +712,10 @@ function Home(props) {
             >
               <Text
                 style={{
-                  color: "white",
+                  color:
+                    fullDate !== "0000-00-00 00:00:00" && fullDate !== null
+                      ? "white"
+                      : "black",
                   fontFamily: "kanitBold",
                   textAlign: "center",
                   fontSize: 13,

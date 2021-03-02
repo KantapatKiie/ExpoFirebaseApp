@@ -3,19 +3,19 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>409075053323-udnvvovr99ak6lj23pkjqevi4lio149m.apps.googleusercontent.com</string>
+	<string>409075053323-1nu7j9s02d3p0jossil7bh3p4so2q6gq.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.409075053323-udnvvovr99ak6lj23pkjqevi4lio149m</string>
+	<string>com.googleusercontent.apps.409075053323-1nu7j9s02d3p0jossil7bh3p4so2q6gq</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>409075053323-1p6en7l1nlnregbcu8sl2km244usi3t1.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
-	<string>AIzaSyBZDneA3fjaLdJQ9C7qkNH0hoB4RfPDO7Q</string>
+	<string>AIzaSyBI942n6MHprSMMt3BV4mYPhdrfKXTJ16I</string>
 	<key>GCM_SENDER_ID</key>
 	<string>409075053323</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.iamcompany.expofirebase</string>
+	<string>com.iamcommerces.wangdekcm</string>
 	<key>PROJECT_ID</key>
 	<string>fir-ntms-app</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,7 +31,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:409075053323:ios:9331daf13ab5f0d184280e</string>
+	<string>1:409075053323:ios:6ece46cde4ea08b484280e</string>
 	<key>DATABASE_URL</key>
 	<string>https://fir-ntms-app.firebaseio.com</string>
 </dict>
