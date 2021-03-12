@@ -339,7 +339,7 @@ function FilterSearch(props) {
                   arrowSize={18}
                   arrowStyle={{
                     backgroundColor: "#02d483",
-                    borderRadius: 20,
+                    borderRadius: 18,
                     color: "white",
                   }}
                   defaultValue={filterSearch}

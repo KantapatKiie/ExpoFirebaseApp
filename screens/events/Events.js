@@ -513,10 +513,10 @@ function Events(props) {
                         fontFamily: "kanitRegular",
                       }}
                       arrowColor={"white"}
-                      arrowSize={18}
+                      arrowSize={15}
                       arrowStyle={{
                         backgroundColor: "#02d483",
-                        borderRadius: 20,
+                        borderRadius: 15,
                         color: "white",
                       }}
                       onChangeItem={onChangeEventsType}
@@ -567,7 +567,7 @@ function Events(props) {
                         )}
                         iconContent={
                           <TouchableOpacity onPress={showTime1Picker}>
-                            <Icons name="clock" size={20} color="#02d483" />
+                            <Icons name="clock" size={18} color="#02d483" />
                           </TouchableOpacity>
                         }
                       />
@@ -583,7 +583,7 @@ function Events(props) {
                         )}
                         iconContent={
                           <TouchableOpacity onPress={showTime2Picker}>
-                            <Icons name="clock" size={20} color="#02d483" />
+                            <Icons name="clock" size={18} color="#02d483" />
                           </TouchableOpacity>
                         }
                       />
@@ -834,12 +834,11 @@ const styles = StyleSheet.create({
     height: 35,
     width: 166,
     borderRadius: 0,
-    alignSelf: "center",
+    alignSelf: "flex-start",
     marginLeft: 20,
   },
 });
 
-//Header Calendar
 const linerStyle = StyleSheet.create({
   container: {
     flex: 1,
