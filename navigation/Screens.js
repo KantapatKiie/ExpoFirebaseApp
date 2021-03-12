@@ -49,7 +49,7 @@ import MyCouponScreen from "../screens/coupon/MyCoupon";
 
 //SET FIREBASE-CONFIG & NOTIFICATIONS-CONFIG
 var firebaseConfig = "";
-if(Platform.OS === "android"){
+if(Platform.OS == "android"){
   firebaseConfig = {
     apiKey: "AIzaSyCDxn47t_h3GNimmzIWPImeBWyJ6Swa2wA",
     authDomain: "fir-ntms-app.firebaseapp.com",
@@ -57,14 +57,13 @@ if(Platform.OS === "android"){
     projectId: "fir-ntms-app",
     storageBucket: "fir-ntms-app.appspot.com",
     messagingSenderId: "409075053323",
-    // appId: "1:409075053323:android:0fddd1a03270ec0984280e",
     appId: "1:409075053323:android:1949d93ebba083a084280e",
     measurementId: "G-PPF21XCLZP",
   };
 }
 else{
   firebaseConfig = {
-    apiKey: "AIzaSyCDxn47t_h3GNimmzIWPImeBWyJ6Swa2wA",
+    apiKey: "AIzaSyBI942n6MHprSMMt3BV4mYPhdrfKXTJ16I",
     authDomain: "fir-ntms-app.firebaseapp.com",
     databaseURL: "https://fir-ntms-app.firebaseio.com/",
     projectId: "fir-ntms-app",
@@ -1106,67 +1105,68 @@ function MyTabs() {
 }
 
 function OnboardingStack(props) {
-  //#region BackpUp Firebase
-  // const [expoPushToken, setExpoPushToken] = useState("");
-  // const [notification, setNotification] = useState(false);
-  // const notificationListener = useRef();
-  // const responseListener = useRef();
+  //#region EXPO_PUSH_NOTIFICATIONS_FCM
+  var token;
+  const [expoPushToken, setExpoPushToken] = useState("");
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
 
-  // useEffect(() => {
-  //   registerForPushNotificationsAsync().then((token) =>
-  //     setExpoPushToken(token)
-  //   );
+  useEffect(() => {
+    registerForPushNotificationsAsync().then((token) =>
+      setExpoPushToken(token)
+    );
 
-  //   notificationListener.current = Notifications.addNotificationReceivedListener(
-  //     (notification) => {
-  //       setNotification(notification);
+    notificationListener.current = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        setNotification(notification);
 
-  //     }
-  //   );
-  //   responseListener.current = Notifications.addNotificationResponseReceivedListener(
-  //     (response) => {
-  //       console.log(response);
-  //     }
-  //   );
-  //   return () => {
-  //     Notifications.removeNotificationSubscription(notificationListener);
-  //     Notifications.removeNotificationSubscription(responseListener);
-  //   };
-  // }, []);
+      }
+    );
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        console.log(response);
+      }
+    );
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener);
+      Notifications.removeNotificationSubscription(responseListener);
+    };
+  }, []);
 
-  // async function registerForPushNotificationsAsync() {
-  //   let token;
-  //   const { status: existingStatus } = await Permissions.getAsync(
-  //     Permissions.NOTIFICATIONS
-  //   );
-  //   let finalStatus = existingStatus;
+  async function registerForPushNotificationsAsync() {
+    const { status: existingStatus } = await Permissions.getAsync(
+      Permissions.NOTIFICATIONS
+    );
+    var finalStatus = existingStatus;
 
-  //   if (existingStatus !== "granted") {
-  //     const { status } = Permissions.askAsync(Permissions.NOTIFICATIONS);
-  //     finalStatus = status;
-  //   }
-  //   if (finalStatus !== "granted") {
-  //     alert("Failed to get push token for push notification!");
-  //     return;
-  //   }
-  //   token = (await Notifications.getExpoPushTokenAsync()).data;
-  //   // token = (await Notifications.getDevicePushTokenAsync()).data;
-  //   console.log(token);
+    if (existingStatus !== "granted") {
+      const { status } = Permissions.askAsync(Permissions.NOTIFICATIONS);
+      finalStatus = status;
+    }
+    if (finalStatus !== "granted") {
+      alert("Failed to get push token for push notification!");
+      return;
+    }
 
-  //   firebase.database().ref("ExpoToken").set({
-  //     Token: token,
-  //   });
+    token = (await Notifications.getExpoPushTokenAsync()).data;
+    // console.log(token);
 
-  //   if (Platform.OS === "android") {
-  //     await Notifications.setNotificationChannelAsync("default", {
-  //       name: "default",
-  //       importance: Notifications.AndroidImportance.MAX,
-  //       vibrationPattern: [0, 250, 250, 250],
-  //       lightColor: "#FF231F7C",
-  //     });
-  //   }
-  //   return token;
-  // }
+    // token = (await Notifications.getDevicePushTokenAsync()).data;
+    // firebase.database().ref("ExpoToken").set({
+    //   Token: token,
+    // });
+
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
+      });
+    }
+    return token;
+  }
   //#endregion
   return (
     <>

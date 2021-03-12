@@ -222,7 +222,6 @@ function PaymentNotifications(props) {
               },
               data: formData,
             }).then(function (response) {
-              console.log(response.data);
               setLoading(false);
               ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
             });

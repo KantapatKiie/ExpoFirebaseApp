@@ -93,7 +93,6 @@ function FlashsaleProduct(props) {
         //   },
         // })
         // .then(async (response) => {
-        //   console.log(response.data.data)
         //   // props.setListCouponHD(response.data.data);
         // })
       })

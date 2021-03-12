@@ -121,7 +121,6 @@ export const actions = {
 //       const { objHomeHD } = yield select(homeHDD);
 
 //       const responseListBestsaler = yield call(GetBestsaler);
-//       console.log(responseListBestsaler)
 
 //       // // Clone Object
 //       // let newObj = { ...objHomeHD };

@@ -166,6 +166,7 @@ function UseCoupon(props) {
 
         props.setObjUseCoupon(objCoupon);
         props.navigation.navigate("Order Screen");
+        
       })
       .catch(function (error) {
         console.log(false);

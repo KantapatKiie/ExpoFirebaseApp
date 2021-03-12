@@ -76,10 +76,11 @@ function Home(props) {
       setTimeout(async () => {
         await loadDataFlashsale();
       }, 200);
-      setTimeout(async () => {
-        await loadDataCoupon();
-      }, 200);
-      loadDataProductLists();
+      if (token) {
+        loadDataCoupon();
+      }
+      loadDataProductBestsale();
+      loadDataProductPopular();
       loadDataNews();
       ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
       setRefreshingPage(false);
@@ -102,8 +103,11 @@ function Home(props) {
   useEffect(() => {
     // setModalVisible(false); // Popup Coupon
     loadDataFlashsale();
-    loadDataCoupon();
-    loadDataProductLists();
+    if (token) {
+      loadDataCoupon();
+    }
+    loadDataProductBestsale();
+    loadDataProductPopular();
     loadDataNews();
   }, []);
 
@@ -326,7 +330,7 @@ function Home(props) {
   // Best selling
   const [listBestsale, setListBestsale] = useState(null);
   const [listPopularSale, setListPopularSale] = useState(null);
-  async function loadDataProductLists() {
+  async function loadDataProductBestsale() {
     await axios({
       method: "GET",
       url: API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API,
@@ -340,35 +344,40 @@ function Home(props) {
     })
       .then(async (resBestsale) => {
         var lstBestSale = await resBestsale.data.data.product_lists;
-        console.log(lstBestSale);
-
         let newlstBestsale = [];
         for (let i = 0; i < 4; i++) {
           if (lstBestSale[i] !== undefined) newlstBestsale.push(lstBestSale[i]);
         }
-        //Popularity List
-        await axios({
-          method: "GET",
-          url: API_URL.POPULARITY_PRODUCT_LISTVIEW_API,
-          timeout: 2500,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          params: {
-            page: 1,
-          },
-        }).then(async (resPopuplar) => {
-          let lstPopular = await resPopuplar.data.data.product_lists;
-          let newlstPopular = [];
-          for (let i = 0; i < 4; i++) {
-            if (lstPopular[i] !== undefined) newlstPopular.push(lstPopular[i]);
-          }
-          if (newlstBestsale || lstPopular) {
-            setListBestsale(newlstBestsale);
-            setListPopularSale(lstPopular);
-          }
-        });
+        if (lstBestSale) {
+          setListBestsale(newlstBestsale);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+  async function loadDataProductPopular() {
+    await axios({
+      method: "GET",
+      url: API_URL.POPULARITY_PRODUCT_LISTVIEW_API,
+      timeout: 2500,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      params: {
+        page: 1,
+      },
+    })
+      .then(async (resPopuplar) => {
+        let lstPopular = await resPopuplar.data.data.product_lists;
+        let newlstPopular = [];
+        for (let i = 0; i < 4; i++) {
+          if (lstPopular[i] !== undefined) newlstPopular.push(lstPopular[i]);
+        }
+        if (lstPopular) {
+          setListPopularSale(lstPopular);
+        }
       })
       .catch(function (error) {
         console.log(error);
@@ -729,7 +738,6 @@ function Home(props) {
       </View>
     );
   };
-
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
@@ -759,12 +767,14 @@ function Home(props) {
               </Block>
 
               {/* Count Down */}
-              <TouchableHighlight
-                style={{ width: width }}
-                onPress={onClickFalshsaleDetail}
-              >
-                <CountDownEvent times={countDownTime} />
-              </TouchableHighlight>
+              {countDownTime > 10 ? (
+                <TouchableHighlight
+                  style={{ width: width }}
+                  onPress={onClickFalshsaleDetail}
+                >
+                  <CountDownEvent times={countDownTime} />
+                </TouchableHighlight>
+              ) : null}
 
               {/* Coupon */}
               {couponList > 1 ? (
@@ -785,88 +795,92 @@ function Home(props) {
           renderSectionFooter={() => (
             <>
               {/* Best seller product */}
-              <Block flex style={styles.textContainerBlock1}>
-                <Block style={{ alignSelf: "center", marginTop: 20 }}>
-                  <Text
-                    style={{
-                      fontSize: 27,
-                      color: "white",
-                      marginTop: 20,
-                      fontFamily: "kanitRegular",
-                      textAlign: "center",
-                    }}
+              {listBestsale != null ? (
+                <Block flex style={styles.textContainerBlock1}>
+                  <Block style={{ alignSelf: "center", marginTop: 20 }}>
+                    <Text
+                      style={{
+                        fontSize: 27,
+                        color: "white",
+                        marginTop: 20,
+                        fontFamily: "kanitRegular",
+                        textAlign: "center",
+                      }}
+                    >
+                      {GOOD_PRODUCT}
+                    </Text>
+                  </Block>
+                  <FlatList
+                    data={listBestsale}
+                    style={styles.containers}
+                    renderItem={renderBestsaler}
+                    numColumns={2}
+                    keyExtractor={(item) => item.id.toString()}
+                    listKey={(item) => item.id.toString()}
+                  />
+                  <TouchableOpacity
+                    onPress={viewAllBestsaler}
+                    style={{ marginBottom: 40, marginTop: 15 }}
                   >
-                    {GOOD_PRODUCT}
-                  </Text>
+                    <Text
+                      style={{
+                        alignSelf: "center",
+                        marginTop: 10,
+                        color: "white",
+                        fontFamily: "kanitRegular",
+                        borderBottomWidth: 5,
+                        borderBottomColor: "white",
+                        borderRadius: 2,
+                      }}
+                    >
+                      {VIEW_ALL + " >"}
+                    </Text>
+                  </TouchableOpacity>
                 </Block>
-                <FlatList
-                  data={listBestsale}
-                  style={styles.containers}
-                  renderItem={renderBestsaler}
-                  numColumns={2}
-                  keyExtractor={(item) => item.id.toString()}
-                  listKey={(item) => item.id.toString()}
-                />
-                <TouchableOpacity
-                  onPress={viewAllBestsaler}
-                  style={{ marginBottom: 40, marginTop: 15 }}
-                >
-                  <Text
-                    style={{
-                      alignSelf: "center",
-                      marginTop: 10,
-                      color: "white",
-                      fontFamily: "kanitRegular",
-                      borderBottomWidth: 5,
-                      borderBottomColor: "white",
-                      borderRadius: 2,
-                    }}
-                  >
-                    {VIEW_ALL + " >"}
-                  </Text>
-                </TouchableOpacity>
-              </Block>
+              ) : null}
 
               {/* Popular product */}
-              <Block flex style={styles.textContainerBlock2}>
-                <Block style={{ alignSelf: "center", marginTop: 20 }}>
-                  <Text
-                    style={{
-                      fontSize: 25,
-                      fontFamily: "kanitRegular",
-                      textAlign: "center",
-                    }}
+              {listPopularSale != null ? (
+                <Block flex style={styles.textContainerBlock2}>
+                  <Block style={{ alignSelf: "center", marginTop: 20 }}>
+                    <Text
+                      style={{
+                        fontSize: 25,
+                        fontFamily: "kanitRegular",
+                        textAlign: "center",
+                      }}
+                    >
+                      {POPULAR_PRODUCT}
+                    </Text>
+                  </Block>
+                  <FlatList
+                    data={listPopularSale}
+                    style={styles.containers}
+                    renderItem={renderPopularsaler}
+                    numColumns={2}
+                    keyExtractor={(item) => item.id.toString()}
+                    listKey={(item) => item.id.toString()}
+                  />
+                  <TouchableOpacity
+                    onPress={viewAllPopularity}
+                    style={{ marginBottom: 25, marginTop: 15 }}
                   >
-                    {POPULAR_PRODUCT}
-                  </Text>
+                    <Text
+                      style={{
+                        alignSelf: "center",
+                        marginTop: 10,
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        borderBottomWidth: 5,
+                        borderBottomColor: "#0fa8db",
+                        borderRadius: 2,
+                      }}
+                    >
+                      {VIEW_ALL + " >"}
+                    </Text>
+                  </TouchableOpacity>
                 </Block>
-                <FlatList
-                  data={listPopularSale}
-                  style={styles.containers}
-                  renderItem={renderPopularsaler}
-                  numColumns={2}
-                  keyExtractor={(item) => item.id.toString()}
-                  listKey={(item) => item.id.toString()}
-                />
-                <TouchableOpacity
-                  onPress={viewAllPopularity}
-                  style={{ marginBottom: 25, marginTop: 15 }}
-                >
-                  <Text
-                    style={{
-                      alignSelf: "center",
-                      marginTop: 10,
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      borderBottomWidth: 5,
-                      borderBottomColor: "#0fa8db",
-                      borderRadius: 2,
-                    }}
-                  >
-                    {VIEW_ALL + " >"}
-                  </Text>
-                </TouchableOpacity>
-              </Block>
+              ) : null}
 
               {/* Public relations */}
               <Block
@@ -924,6 +938,7 @@ function Home(props) {
           }}
         />
       </SafeAreaView>
+
       <ModalPopupCoupon />
       <ModalLoading loading={loading} />
     </>
