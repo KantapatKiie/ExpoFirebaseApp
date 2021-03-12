@@ -697,16 +697,18 @@ function Home(props) {
               {locale == "th" ? item.title_th : item.title_en}
             </Text>
             <Text style={styles2.TextActivity}>
-              {moment(fullDate).format("LLLL")}{" "}
+              {fullDate != "0000-00-00 00:00:00"
+                ? moment(fullDate).format("LLLL")
+                : null}
             </Text>
             <Text style={styles2.TextActivity}>&nbsp;</Text>
             {/* Detail Information */}
-            <Text style={styles2.TextActivity}>
+            <Text style={styles2.TextActivitys}>
               {locale == "th"
                 ? item.short_description_th
                 : item.short_description_en}
             </Text>
-            <Text style={styles2.TextActivity}>&nbsp;</Text>
+            <Text>&nbsp;</Text>
             <TouchableOpacity
               onPress={() => onSelectNewsEvents(item)}
               style={{
@@ -1199,6 +1201,11 @@ const styles2 = StyleSheet.create({
   TextActivity: {
     color: "black",
     fontFamily: "kanitRegular",
+  },
+  TextActivitys: {
+    color: "black",
+    fontFamily: "kanitRegular",
+    height: 130
   },
 });
 
