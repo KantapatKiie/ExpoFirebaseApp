@@ -111,6 +111,7 @@ function ProductType(props) {
                   color: "black",
                   fontFamily: "kanitRegular",
                   fontSize: 15,
+                  height:25
                 }}
               >
                 {locale == "th" ? item.name_th : item.name_en}
@@ -205,7 +206,6 @@ function ProductType(props) {
     props.setObjProductActivity(newObj);
     props.navigation.navigate("Products", { params: product });
   };
-
   return (
     <>
       <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
@@ -215,28 +215,32 @@ function ProductType(props) {
           renderSectionHeader={() => (
             <>
               {/* Title */}
-              <TouchableOpacity
-                onPress={() => props.navigation.navigate("Sign In")}
-              >
-                <Block
-                  row
-                  style={{
-                    paddingTop: 20,
-                    paddingLeft: 20,
-                    backgroundColor: "white",
-                  }}
+              {objProductType.ITEM_NAME !== "" ? (
+                <TouchableOpacity
+                  onPress={() => props.navigation.navigate("Sign In")}
                 >
-                  <Text
+                  <Block
+                    row
                     style={{
-                      color: "black",
-                      fontFamily: "kanitRegular",
-                      fontSize: 25,
+                      paddingTop: 20,
+                      paddingLeft: 20,
+                      backgroundColor: "white",
                     }}
                   >
-                    {objProductType.ITEM_NAME}
-                  </Text>
-                </Block>
-              </TouchableOpacity>
+                    <Text
+                      style={{
+                        color: "black",
+                        fontFamily: "kanitRegular",
+                        fontSize: 25,
+                      }}
+                    >
+                      {objProductType.ITEM_NAME}
+                    </Text>
+                  </Block>
+                </TouchableOpacity>
+              ) : (
+                <Block style={{ padding: 5 }} />
+              )}
 
               {/* Filter */}
               <Block row style={{ marginLeft: 10, marginTop: 10 }}>

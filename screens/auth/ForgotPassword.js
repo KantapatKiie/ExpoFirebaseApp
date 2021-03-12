@@ -85,7 +85,6 @@ function ForgotPassword(props) {
           },
         })
           .then(function (response) {
-            console.log(response.data);
             ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
           })
           .catch(function (error) {

@@ -259,6 +259,7 @@ function FilterSearch(props) {
         setLoading(false);
         let newObj = Object.assign({}, objProductType);
         newObj.TABS_TYPE = true;
+        newObj.ITEM_NAME = "";
         props.setObjProductType(newObj);
         props.setListTrProductType(response.data.data);
         props.navigation.navigate("Product Type");

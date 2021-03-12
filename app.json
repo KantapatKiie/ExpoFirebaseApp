@@ -15,10 +15,11 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true,
+      "icon": "./assets/images/logoapp.png",
+      "supportsTablet": false,
       "bundleIdentifier": "com.iamcommerces.wangdekcm",
       "googleServicesFile": "./GoogleService-Info.plist",
-      "buildNumber": "1.0.0",
+      "buildNumber": "1.0.1",
       "config": {
         "googleMapsApiKey": "AIzaSyBI942n6MHprSMMt3BV4mYPhdrfKXTJ16I"
       }
@@ -26,6 +27,7 @@
     "android": {
       "package": "com.iamcommerces.wangdekcm",
       "googleServicesFile": "./google-services.json",
+      "icon": "./assets/images/logoapp.png",
       "versionCode": 1,
       "useNextNotificationsApi": true,
       "adaptiveIcon": {
@@ -38,6 +40,12 @@
         }
       },
       "permissions":["ACCESS_BACKGROUND_LOCATION", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE", "INTERNET"]
+    },
+    "notification": {
+      "icon": "./assets/images/logoapp.png",
+      "color": "#002C56",
+      "iosDisplayInForeground": true,
+      "androidMode": "default"
     }
   }
 }

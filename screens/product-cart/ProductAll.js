@@ -30,40 +30,6 @@ const { width } = Dimensions.get("screen");
 let token = getToken();
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 
-const defalutBestsaleProduct = [
-  {
-    id: 2,
-    name_th: "กระเป๋า เอ",
-    name_en: "Bag A",
-    image: "/storage/2/download-%281%29.jfif",
-    price: "1000.00",
-    total_quantity: "4",
-  },
-];
-const defalutPopularProduct = [
-  {
-    id: 2,
-    name_th: "กระเป๋า เอ",
-    name_en: "Bag A",
-    image: "/storage/2/download-%281%29.jfif",
-    price: "1000.00",
-    total_quantity: "4",
-  },
-];
-const defalutPromotionsProduct = [
-  {
-    id: 4,
-    product_id: 4,
-    product_name_th: "เสื้อผ้า 002",
-    product_name_en: "Clothing 002",
-    product_image: "/storage/4/images.jfif",
-    product_price: 100,
-    product_discount: "-50.00%",
-    promotion_conditions_id: 3,
-    promotions_id: 1,
-  },
-];
-
 function ProductAll(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
   if (locale === "th") {
@@ -81,11 +47,9 @@ function ProductAll(props) {
   }, []);
 
   // Best selling
-  const [listBestsale, setListBestsale] = useState(defalutBestsaleProduct);
-  const [listPopularSale, setListPopularSale] = useState(defalutPopularProduct);
-  const [listPromotions, setListPromotions] = useState(
-    defalutPromotionsProduct
-  );
+  const [listBestsale, setListBestsale] = useState(null);
+  const [listPopularSale, setListPopularSale] = useState(null);
+  const [listPromotions, setListPromotions] = useState(null);
   async function loadProductListAllType() {
     await axios
       .get(API_URL.BEST_SELLING_PRODUCT_LISTVIEW_API, {
@@ -217,6 +181,7 @@ function ProductAll(props) {
                 color: "black",
                 fontFamily: "kanitRegular",
                 fontSize: 15,
+                height:25
               }}
             >
               {locale == "th" ? item.name_th : item.name_en}
@@ -300,6 +265,7 @@ function ProductAll(props) {
                 color: "black",
                 fontFamily: "kanitRegular",
                 fontSize: 15,
+                height:25
               }}
             >
               {locale == "th" ? item.name_th : item.name_en}
@@ -383,6 +349,7 @@ function ProductAll(props) {
                 color: "black",
                 fontFamily: "kanitRegular",
                 fontSize: 15,
+                height:25
               }}
             >
               {locale == "th" ? item.product_name_th : item.product_name_en}
@@ -430,31 +397,34 @@ function ProductAll(props) {
                   />
 
                   {/* Best seller product */}
-                  <Block flex style={styles.textContainerBlocks1}>
-                    <Block style={{ alignSelf: "center" }}>
-                      <Text
-                        style={{
-                          fontSize: 27,
-                          color: "white",
-                          marginTop: 20,
-                          fontFamily: "kanitRegular",
-                          textAlign: "center",
-                        }}
-                      >
-                        {GOOD_PRODUCT}
-                      </Text>
+                  {listBestsale != null ? (
+                    <Block flex style={styles.textContainerBlocks1}>
+                      <Block style={{ alignSelf: "center" }}>
+                        <Text
+                          style={{
+                            fontSize: 27,
+                            color: "white",
+                            marginTop: 20,
+                            fontFamily: "kanitRegular",
+                            textAlign: "center",
+                          }}
+                        >
+                          {GOOD_PRODUCT}
+                        </Text>
+                      </Block>
+                      <FlatList
+                        data={listBestsale}
+                        style={styles.containers}
+                        renderItem={renderBestsaler}
+                        numColumns={2}
+                        keyExtractor={(item) => item.id.toString()}
+                        listKey={(item) => item.id.toString()}
+                      />
                     </Block>
-                    <FlatList
-                      data={listBestsale}
-                      style={styles.containers}
-                      renderItem={renderBestsaler}
-                      numColumns={2}
-                      keyExtractor={(item) => item.id.toString()}
-                      listKey={(item) => item.id.toString()}
-                    />
-                  </Block>
+                  ) : null}
 
                   {/* Popular product */}
+                  {listPopularSale != null ? (
                   <Block flex style={styles.textContainerBlock2}>
                     <Block style={{ alignSelf: "center" }}>
                       <Text
@@ -476,8 +446,10 @@ function ProductAll(props) {
                       listKey={(item) => item.id.toString()}
                     />
                   </Block>
+                   ) : null}
 
                   {/* Promotion product */}
+                  {listPromotions != null ? (
                   <Block flex style={styles.textContainerBlock3}>
                     <Block style={{ alignSelf: "center" }}>
                       <Text
@@ -522,6 +494,7 @@ function ProductAll(props) {
                       </Text>
                     </TouchableOpacity>
                   </Block>
+                   ) : null}
                 </>
               )}
               renderSectionFooter={() => <>{<WangdekInfo />}</>}

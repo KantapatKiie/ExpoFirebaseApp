@@ -47,7 +47,7 @@ function OrderScreen(props) {
       objOrderStatusPriceScreen: state.actionOrder.objOrderStatusPriceScreen,
     })
   );
-  const [listTrOrder, setListTrOrder] = useState();
+  const [listTrOrder, setListTrOrder] = useState(null);
 
   useEffect(() => {
     loadCartLists();

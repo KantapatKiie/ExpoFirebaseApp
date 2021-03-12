@@ -17,7 +17,6 @@ const mockFailure = (value) => {
 
 //Get Login
 export const logins = (email, password, shouldSucceed = true) => {
-  console.log(email, password);
 
   if (!shouldSucceed) {
     return mockFailure({ error: 500, message: "Something went wrong!" });
@@ -28,7 +27,6 @@ export const logins = (email, password, shouldSucceed = true) => {
 
 //Get CreateAccount
 export const createAccount = (firstname, lastname, email, password, shouldSucceed = true) => {
-  console.log(firstname, lastname, email, password);
 
   if (!shouldSucceed) {
     return mockFailure({ error: 500, message: "Something went wrong!" });

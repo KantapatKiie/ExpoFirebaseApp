@@ -371,7 +371,6 @@ function SignUp(props) {
           },
         })
           .then(function (response) {
-            console.log(response.data);
             setLoading(false);
           })
           .catch(function (error) {

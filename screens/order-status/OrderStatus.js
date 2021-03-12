@@ -289,7 +289,6 @@ function OrderStatus(props) {
         },
       })
       .then(function (response) {
-        console.log(response.data.data);
         setLoading(true);
       })
       .catch(function (error) {
