@@ -19,6 +19,7 @@ import { API_URL } from "../../config/config.app";
 import { Block, Text } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
+import { WebView } from "react-native-webview";
 
 const { height, width } = Dimensions.get("screen");
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
