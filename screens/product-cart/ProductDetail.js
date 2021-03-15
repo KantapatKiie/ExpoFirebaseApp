@@ -28,6 +28,7 @@ import CountDown from "react-native-countdown-component";
 import commaNumber from "comma-number";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
+import HTML from "react-native-render-html";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -523,9 +524,12 @@ function ProductDetail(props) {
               renderTruncatedFooter={renderTruncatedFooter}
               renderRevealedFooter={renderRevealedFooter}
             >
-              <Text style={styles.detailTextDesc}>
-                {objProductActivity.DETAIL}
-              </Text>
+              <HTML
+                source={{
+                  html: objProductActivity.DETAIL,
+                }}
+                contentWidth={width}
+              />
             </ReadMore>
           </Block>
         </Block>
