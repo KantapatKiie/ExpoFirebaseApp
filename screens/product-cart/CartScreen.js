@@ -219,7 +219,6 @@ function CartScreen(props) {
       });
     setLoading(false);
   };
-
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>

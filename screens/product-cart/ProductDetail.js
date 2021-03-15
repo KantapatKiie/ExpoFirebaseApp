@@ -28,6 +28,8 @@ import CountDown from "react-native-countdown-component";
 import commaNumber from "comma-number";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
+import HTML from "react-native-render-html";
+import Toast from 'react-native-simple-toast';
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -135,20 +137,21 @@ function ProductDetail(props) {
       },
     })
       .then(async (response) => {
-        ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        Toast.show(response.data.data, Toast.LONG);
+        props.navigation.navigate("Cart");
         
-        await axios({
-          method: "GET",
-          url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + (await token),
-          },
-        }).then(async (response) => {
-          let newListCount = await response.data.data.result;
-          props.navigation.navigate("Cart");
-        });
+        // await axios({
+        //   method: "GET",
+        //   url: API_URL.COUNT_CART_ORDER_LISTVIEW_API,
+        //   headers: {
+        //     Accept: "application/json",
+        //     "Content-Type": "application/json",
+        //     Authorization: "Bearer " + (await token),
+        //   },
+        // }).then(async (response) => {
+        //   // let newListCount = await response.data.data.result;
+        //   props.navigation.navigate("Cart");
+        // });
       })
       .catch(function (error) {
         console.log(error);
@@ -173,6 +176,7 @@ function ProductDetail(props) {
     })
       .then(function (response) {
         ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        props.navigation.navigate("Cart");
       })
       .catch(function (error) {
         console.log(error);
@@ -523,9 +527,12 @@ function ProductDetail(props) {
               renderTruncatedFooter={renderTruncatedFooter}
               renderRevealedFooter={renderRevealedFooter}
             >
-              <Text style={styles.detailTextDesc}>
-                {objProductActivity.DETAIL}
-              </Text>
+              <HTML
+                source={{
+                  html: objProductActivity.DETAIL,
+                }}
+                contentWidth={width}
+              />
             </ReadMore>
           </Block>
         </Block>
