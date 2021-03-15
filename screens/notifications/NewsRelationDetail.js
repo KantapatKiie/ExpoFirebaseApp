@@ -19,7 +19,7 @@ import { API_URL } from "../../config/config.app";
 import { Block, Text } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
-import { WebView } from "react-native-webview";
+import HTML from "react-native-render-html";
 
 const { height, width } = Dimensions.get("screen");
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
@@ -252,7 +252,16 @@ function NewsRelationDetail(props) {
             alignSelf: "center",
           }}
         >
-          <Text
+          <HTML
+            source={{
+              html:
+                locale == "th"
+                  ? descriptionPage.description_th
+                  : descriptionPage.description_en,
+            }}
+            contentWidth={width}
+          />
+          {/* <Text
             style={{
               color: "black",
               fontFamily: "kanitRegular",
@@ -263,7 +272,7 @@ function NewsRelationDetail(props) {
             {locale == "th"
               ? descriptionPage.description_th
               : descriptionPage.description_en}
-          </Text>
+          </Text> */}
         </Block>
         <Block
           style={{

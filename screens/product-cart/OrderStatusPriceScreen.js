@@ -291,7 +291,7 @@ function OrderStatus(props) {
           setLoading(false);
         })
         .catch(function (error) {
-          console.log(error.response.data);
+          // console.log(error.response.data);
           setLoading(false);
         });
       setModalVisible(false);

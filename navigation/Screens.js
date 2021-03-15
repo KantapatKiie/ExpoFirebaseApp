@@ -1106,67 +1106,67 @@ function MyTabs() {
 
 function OnboardingStack(props) {
   //#region EXPO_PUSH_NOTIFICATIONS_FCM
-  var token;
-  const [expoPushToken, setExpoPushToken] = useState("");
-  const [notification, setNotification] = useState(false);
-  const notificationListener = useRef();
-  const responseListener = useRef();
+  // var token;
+  // const [expoPushToken, setExpoPushToken] = useState("");
+  // const [notification, setNotification] = useState(false);
+  // const notificationListener = useRef();
+  // const responseListener = useRef();
 
-  useEffect(() => {
-    registerForPushNotificationsAsync().then((token) =>
-      setExpoPushToken(token)
-    );
+  // useEffect(() => {
+  //   registerForPushNotificationsAsync().then((token) =>
+  //     setExpoPushToken(token)
+  //   );
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(
-      (notification) => {
-        setNotification(notification);
+  //   notificationListener.current = Notifications.addNotificationReceivedListener(
+  //     (notification) => {
+  //       setNotification(notification);
 
-      }
-    );
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        console.log(response);
-      }
-    );
-    return () => {
-      Notifications.removeNotificationSubscription(notificationListener);
-      Notifications.removeNotificationSubscription(responseListener);
-    };
-  }, []);
+  //     }
+  //   );
+  //   responseListener.current = Notifications.addNotificationResponseReceivedListener(
+  //     (response) => {
+  //       console.log(response);
+  //     }
+  //   );
+  //   return () => {
+  //     Notifications.removeNotificationSubscription(notificationListener);
+  //     Notifications.removeNotificationSubscription(responseListener);
+  //   };
+  // }, []);
 
-  async function registerForPushNotificationsAsync() {
-    const { status: existingStatus } = await Permissions.getAsync(
-      Permissions.NOTIFICATIONS
-    );
-    var finalStatus = existingStatus;
+  // async function registerForPushNotificationsAsync() {
+  //   const { status: existingStatus } = await Permissions.getAsync(
+  //     Permissions.NOTIFICATIONS
+  //   );
+  //   var finalStatus = existingStatus;
 
-    if (existingStatus !== "granted") {
-      const { status } = Permissions.askAsync(Permissions.NOTIFICATIONS);
-      finalStatus = status;
-    }
-    if (finalStatus !== "granted") {
-      alert("Failed to get push token for push notification!");
-      return;
-    }
+  //   if (existingStatus !== "granted") {
+  //     const { status } = Permissions.askAsync(Permissions.NOTIFICATIONS);
+  //     finalStatus = status;
+  //   }
+  //   if (finalStatus !== "granted") {
+  //     alert("Failed to get push token for push notification!");
+  //     return;
+  //   }
 
-    token = (await Notifications.getExpoPushTokenAsync()).data;
-    // console.log(token);
+  //   token = (await Notifications.getExpoPushTokenAsync()).data;
+  //   // console.log(token);
 
-    // token = (await Notifications.getDevicePushTokenAsync()).data;
-    // firebase.database().ref("ExpoToken").set({
-    //   Token: token,
-    // });
+  //   // token = (await Notifications.getDevicePushTokenAsync()).data;
+  //   // firebase.database().ref("ExpoToken").set({
+  //   //   Token: token,
+  //   // });
 
-    if (Platform.OS === "android") {
-      await Notifications.setNotificationChannelAsync("default", {
-        name: "default",
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#FF231F7C",
-      });
-    }
-    return token;
-  }
+  //   if (Platform.OS === "android") {
+  //     await Notifications.setNotificationChannelAsync("default", {
+  //       name: "default",
+  //       importance: Notifications.AndroidImportance.MAX,
+  //       vibrationPattern: [0, 250, 250, 250],
+  //       lightColor: "#FF231F7C",
+  //     });
+  //   }
+  //   return token;
+  // }
   //#endregion
   return (
     <>
