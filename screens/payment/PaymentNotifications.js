@@ -366,8 +366,8 @@ function PaymentNotifications(props) {
             style={{
               color: "black",
               fontFamily: "kanitRegular",
-              fontSize: 23,
-              textAlign: "center",
+              fontSize: 18,
+              textAlign: "left",
             }}
           >
             โอนเข้าบัญชี
@@ -392,10 +392,10 @@ function PaymentNotifications(props) {
               fontFamily: "kanitRegular",
             }}
             arrowColor={"white"}
-            arrowSize={18}
+            arrowSize={15}
             arrowStyle={{
               backgroundColor: "#02d483",
-              borderRadius: 20,
+              borderRadius: 15,
               color: "white",
             }}
             defaultValue={

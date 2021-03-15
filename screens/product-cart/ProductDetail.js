@@ -398,14 +398,13 @@ function ProductDetail(props) {
             <Block
               style={{ alignSelf: "flex-start", width: "45%", marginLeft: 5 }}
             >
-              
               <Text style={styles.detailFullprice}>
                 ฿
                 {commaNumber(
                   parseFloat(objProductActivity.product_full_price).toFixed(2)
                 )}
               </Text>
-              <Block style={styles.boxPriceSale}/>
+              <Block style={styles.boxPriceSale} />
             </Block>
             <Block row style={{ alignSelf: "flex-start", width: "50%" }}>
               <Text style={styles.detailPrice1}>ราคา : </Text>
@@ -480,40 +479,43 @@ function ProductDetail(props) {
           </Block>
 
           {/* Button */}
-          <Block style={styles.padded}>
-            <Button
-              shadowless
-              style={styles.button1}
-              color={"black"}
-              onPress={addProductToCarts}
-            >
-              <Text
-                style={{
-                  fontFamily: "kanitRegular",
-                  color: "white",
-                  fontSize: 15,
-                }}
+          {token._W != undefined ? (
+            <Block style={styles.padded}>
+              <Button
+                shadowless
+                style={styles.button1}
+                color={"black"}
+                onPress={addProductToCarts}
               >
-                เพิ่มลงรถเข็น
-              </Text>
-            </Button>
-            <Button
-              shadowless
-              style={styles.button2}
-              color={"black"}
-              onPress={buyProductToCart}
-            >
-              <Text
-                style={{
-                  fontFamily: "kanitRegular",
-                  color: "white",
-                  fontSize: 15,
-                }}
+                <Text
+                  style={{
+                    fontFamily: "kanitRegular",
+                    color: "white",
+                    fontSize: 15,
+                  }}
+                >
+                  เพิ่มลงรถเข็น
+                </Text>
+              </Button>
+              <Button
+                shadowless
+                style={styles.button2}
+                color={"black"}
+                onPress={buyProductToCart}
               >
-                ซื้อเลย
-              </Text>
-            </Button>
-          </Block>
+                <Text
+                  style={{
+                    fontFamily: "kanitRegular",
+                    color: "white",
+                    fontSize: 15,
+                  }}
+                >
+                  ซื้อเลย
+                </Text>
+              </Button>
+            </Block>
+          ) : null}
+
           <Block style={{ margin: 10 }}>
             <Text style={styles.detailText}>ข้อมูลสินค้า</Text>
             <ReadMore
