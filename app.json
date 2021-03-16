@@ -2,7 +2,7 @@
   "expo": {
     "name": "Wangdek",
     "slug": "Wangdek",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "privacy": "public",
     "icon": "./assets/images/logoapp.png",
