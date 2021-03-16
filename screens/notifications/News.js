@@ -7,7 +7,6 @@ import {
   TouchableHighlight,
   Image,
   Dimensions,
-  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -23,6 +22,7 @@ import CountDownEvent from "../../components/CountDownEvent";
 import WangdekInfo from "../../components/WangdekInfo";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
+import Toast from 'react-native-tiny-toast'
 
 const { width } = Dimensions.get("screen");
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
@@ -96,7 +96,12 @@ function News(props) {
       props.navigation.navigate("Flashsale Product");
     }
     else{
-      ToastAndroid.show("⏰ Flashsale Time Out ⏰", ToastAndroid.SHORT)
+      Toast.show("⏰ Flashsale Time Out ⏰", {
+        containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+        position: Toast.position.center,
+        animation: true,
+        textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+      });
     }
   };
   return (

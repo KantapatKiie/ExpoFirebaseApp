@@ -5,11 +5,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   SectionList,
-  View,
   Dimensions,
   SafeAreaView,
   FlatList,
-  ToastAndroid,
   RefreshControl,
 } from "react-native";
 import axios from "axios";
@@ -17,7 +15,7 @@ import moment from "moment";
 import "moment/locale/th";
 import "moment/locale/en-au";
 import * as ActionOrderStatus from "../../actions/action-order-status/ActionOrderStatus.js";
-import { Block, Text, theme, Input } from "galio-framework";
+import { Block, Text, theme } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
 import { Button } from "react-native-elements";
@@ -26,6 +24,7 @@ import ModalLoading from "../../components/ModalLoading";
 import { API_URL } from "../../config/config.app";
 import commaNumber from "comma-number";
 import { getToken } from "../../store/mock/token";
+import Toast from 'react-native-tiny-toast'
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -47,7 +46,12 @@ function HistoryOrder(props) {
     setRefreshingPage(true);
     wait(1000).then(() => {
       loadHistoryOrderList();
-      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      Toast.show("Refresh Page", {
+        containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+        position: Toast.position.center,
+        animation: true,
+        textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+      });
       setRefreshingPage(false);
     });
   }, []);
@@ -210,7 +214,12 @@ function HistoryOrder(props) {
           },
         })
         .then(function (response) {
-          ToastAndroid.show(item.code + " is cancel", ToastAndroid.SHORT);
+          Toast.show(item.code + " is cancel", {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
         })
         .catch(function (error) {
           console.log(error.response.data);

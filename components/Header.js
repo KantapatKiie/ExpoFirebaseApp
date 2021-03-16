@@ -11,6 +11,7 @@ import {
   FlatList,
   SafeAreaView,
   ImageBackground,
+  Platform,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -1611,11 +1612,10 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   navbar: {
-    paddingVertical: 0,
-    paddingBottom: theme.SIZES.BASE * 1.4,
-    paddingTop: theme.SIZES.BASE * 2.8,
+    paddingBottom: Platform.OS === "android" ? theme.SIZES.BASE * 1.4 : theme.SIZES.BASE * 1,
+    paddingTop: Platform.OS === "android" ?  theme.SIZES.BASE * 3.2 :  theme.SIZES.BASE * 1.2,
     zIndex: 4,
-    height: 95,
+    height: Platform.OS === "android" ?  95 :  85,
   },
   shadow: {
     backgroundColor: theme.COLORS.WHITE,

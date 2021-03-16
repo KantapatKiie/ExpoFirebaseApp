@@ -6,7 +6,6 @@ import {
   Text,
   TouchableOpacity,
   TextInput,
-  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -26,6 +25,7 @@ import * as ImagePicker from "expo-image-picker";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
 import ModalLoading from "../../components/ModalLoading";
+import Toast from 'react-native-tiny-toast'
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -191,8 +191,12 @@ function PaymentNotifications(props) {
         let formData = new FormData();
         if (response.data.success !== true) {
           setLoading(false);
-
-          ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+          Toast.show(response.data.message, {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
         } else {
           if (imagePicker != null) {
             let localUri = imagePicker;
@@ -223,7 +227,12 @@ function PaymentNotifications(props) {
               data: formData,
             }).then(function (response) {
               setLoading(false);
-              ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+              Toast.show(response.data.data, {
+                containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+                position: Toast.position.center,
+                animation: true,
+                textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+              });
             });
           }
         }
@@ -231,7 +240,12 @@ function PaymentNotifications(props) {
       .catch(function (error) {
         console.log(error);
         setLoading(false);
-        ToastAndroid.show(error.response.data.data, ToastAndroid.SHORT);
+        Toast.show(error.response.data.data, {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
       });
     setLoading(false);
   };

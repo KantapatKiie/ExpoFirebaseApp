@@ -10,7 +10,6 @@ import {
   Image,
   FlatList,
   ImageBackground,
-  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -29,6 +28,7 @@ import { API_URL } from "../../config/config.app";
 import commaNumber from "comma-number";
 import { getToken } from "../../store/mock/token";
 import ModalLoading from "../../components/ModalLoading";
+import Toast from 'react-native-tiny-toast'
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -114,11 +114,21 @@ function FlashsaleProduct(props) {
         },
       })
         .then(function (response) {
-          ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+          Toast.show(response.data.data, {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
         })
         .catch(function (error) {
           console.log(error);
-          ToastAndroid.show(error.response.data, ToastAndroid.SHORT);
+          Toast.show(error.response.data, {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
         });
     };
     return (

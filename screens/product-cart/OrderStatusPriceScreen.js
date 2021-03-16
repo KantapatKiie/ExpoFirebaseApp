@@ -27,10 +27,10 @@ import { getToken } from "../../store/mock/token";
 import { RadioButton } from "react-native-paper";
 import { Button } from "react-native-elements";
 import DropDownPicker from "react-native-dropdown-picker";
-import { ToastAndroid } from "react-native";
 import Omise from "omise-react-native";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import CountryList from "../../i18n/Country.json"
+import Toast from 'react-native-tiny-toast'
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -55,7 +55,12 @@ function OrderStatus(props) {
       setCheckPayType(1);
       loadDataDeliveryList(objUseDelivery.id);
       summaryPriceListTrOrder(listTrOrder);
-      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      Toast.show("Refresh Page", {
+        containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+        position: Toast.position.center,
+        animation: true,
+        textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+      });
       setRefreshingPage(false);
     });
   }, []);
@@ -535,10 +540,12 @@ function OrderStatus(props) {
         },
       })
         .then(function (response) {
-          ToastAndroid.show(
-            "เลขที่สั่งซื้อ " + response.data.data.code,
-            ToastAndroid.SHORT
-          );
+          Toast.show("เลขที่สั่งซื้อ " + response.data.data.code, {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
           props.navigation.navigate("Payment");
         })
         .catch(function (error) {

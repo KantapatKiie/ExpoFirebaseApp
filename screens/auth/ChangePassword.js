@@ -9,7 +9,6 @@ import {
   Platform,
   UIManager,
   TouchableOpacity,
-  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import * as ActionChangepassword from "../../actions/action-change-password/ActionChangepassword";
@@ -20,6 +19,7 @@ import { Button } from "react-native-elements";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
 import ModalLoading from "../../components/ModalLoading";
+import Toast from 'react-native-tiny-toast'
 
 const token = getToken();
 
@@ -31,9 +31,9 @@ if (
 }
 
 function ChangePassword(props) {
-  const { objChangePassword } = useSelector((state) => ({
-    objChangePassword: state.actionChangepassword.objChangePassword,
-  }));
+  // const { objChangePassword } = useSelector((state) => ({
+  //   objChangePassword: state.actionChangepassword.objChangePassword,
+  // }));
 
   useEffect(() => {
     setStateObj("");
@@ -85,18 +85,33 @@ function ChangePassword(props) {
         .then(function (response) {
           console.log(response.data);
           setLoading(true);
-          ToastAndroid.show("Password updated!", ToastAndroid.SHORT);
+          Toast.show("Password updated!", {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
         })
         .catch(function (error) {
           console.log("error :", error);
           setLoading(true);
           setRequiredOldPassword(true);
-          ToastAndroid.show("Password correct!", ToastAndroid.SHORT);
+          Toast.show("Password correct!", {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
         });
     } else {
       setLoading(true);
       setRequiredNewPassword(true);
-      ToastAndroid.show("Passwords does not match", ToastAndroid.SHORT);
+      Toast.show("Passwords does not match", {
+        containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+        position: Toast.position.center,
+        animation: true,
+        textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+      });
     }
   };
 
