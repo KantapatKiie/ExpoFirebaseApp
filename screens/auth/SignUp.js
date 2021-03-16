@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Dimensions,
   ScrollView,
-  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -22,9 +21,7 @@ import { RadioButton } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Button, CheckBox } from "react-native-elements";
 import { API_URL } from "../../config/config.app";
-// import { Register } from "../../store/crud/auth.crud";
-// import { createAccount } from "../../store/mock/mock";
-// import * as auth from "../../store/ducks/auth.duck";
+import Toast from 'react-native-tiny-toast'
 
 const { height, width } = Dimensions.get("screen");
 
@@ -59,7 +56,12 @@ function SignUp(props) {
     let newObj = Object.assign({}, objSignUpHD);
     newObj.PASSWORD_2 = value;
     if (newObj.PASSWORD_2 !== objSignUpHD.PASSWORD_1) {
-      ToastAndroid.show("รหัสผ่านไม่ตรงกัน", ToastAndroid.SHORT);
+      Toast.show("รหัสผ่านไม่ตรงกัน", {
+        containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+        position: Toast.position.center,
+        animation: true,
+        textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+      });
     }
     props.setObjSignUp(newObj);
   };
@@ -380,10 +382,20 @@ function SignUp(props) {
       } else {
         setLoading(false);
         setCheckPassword(true);
-        ToastAndroid.show("กรุณากรอกข้อมูลให้ครบถ้วน", ToastAndroid.LONG);
+        Toast.show("กรุณากรอกข้อมูลให้ครบถ้วน", {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
       }
     } else {
-      ToastAndroid.show("Email ไม่ถูกต้อง", ToastAndroid.LONG);
+      Toast.show("Email was wrong", {
+        containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+        position: Toast.position.center,
+        animation: true,
+        textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+      });
     }
   };
 

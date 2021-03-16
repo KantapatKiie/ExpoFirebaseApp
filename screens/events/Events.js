@@ -9,7 +9,7 @@ import {
   SafeAreaView,
   SectionList,
   FlatList,
-  ToastAndroid,
+  Platform,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -23,13 +23,14 @@ import WangdekInfo from "../../components/WangdekInfo";
 import { LinearGradient } from "expo-linear-gradient";
 import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { Calendar } from "react-native-big-calendar";
 import { formatTr } from "../../i18n/I18nProvider";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import { Button, CheckBox } from "react-native-elements";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
 import ModalLoading from "../../components/ModalLoading";
+import Toast from 'react-native-tiny-toast'
+// import { Calendar } from "react-native-big-calendar";
 
 LogBox.ignoreLogs(["Setting a timer"]);
 const { width } = Dimensions.get("screen");
@@ -376,12 +377,22 @@ function Events(props) {
       },
     })
       .then(function (response) {
-        ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        Toast.show(response.data.data, {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
         onLoadActivitiesList();
       })
       .catch(function (error) {
         console.log(error);
-        ToastAndroid.show(error.response.data.data, ToastAndroid.SHORT);
+        Toast.show(error.response.data.data, {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
       });
   };
 
@@ -484,44 +495,43 @@ function Events(props) {
                   <Block style={styles.blockTitle1}>
                     <Text style={styles.fontTitle2}>ลงทะเบียนจองพื้นที่</Text>
                   </Block>
-                  <Block>
-                    <Text style={styles.fontDescription}>
-                      เลือกประเภทกิจกจจรม :
-                    </Text>
-                    <DropDownPicker
-                      items={itemEvents}
-                      containerStyle={{
-                        height: 35,
-                        width: width - 40,
-                        alignSelf: "center",
-                        marginTop: 7,
-                      }}
-                      style={{ backgroundColor: "#f0f0f0" }}
-                      itemStyle={{
-                        justifyContent: "flex-start",
-                      }}
-                      dropDownStyle={{ backgroundColor: "#f0f0f0" }}
-                      placeholderStyle={{
-                        textAlign: "left",
-                        color: "gray",
-                        fontFamily: "kanitRegular",
-                      }}
-                      placeholder={"- โปรดเลือก -"}
-                      labelStyle={{
-                        textAlign: "left",
-                        color: "#000",
-                        fontFamily: "kanitRegular",
-                      }}
-                      arrowColor={"white"}
-                      arrowSize={15}
-                      arrowStyle={{
-                        backgroundColor: "#02d483",
-                        borderRadius: 15,
-                        color: "white",
-                      }}
-                      onChangeItem={onChangeEventsType}
-                    />
-                  </Block>
+                  <Text style={styles.fontDescription}>
+                    เลือกประเภทกิจกจจรม :
+                  </Text>
+                  <DropDownPicker
+                    items={itemEvents}
+                    containerStyle={{
+                      height: Platform.OS === "android" ? 35 : 48,
+                      width: width - 40,
+                      alignSelf: "center",
+                      marginTop: 7,
+                      flexDirection: "column",
+                    }}
+                    style={{ backgroundColor: "#f0f0f0" }}
+                    itemStyle={{
+                      justifyContent: "flex-start",
+                    }}
+                    dropDownStyle={{ backgroundColor: "#f0f0f0" }}
+                    placeholderStyle={{
+                      textAlign: "left",
+                      color: "gray",
+                      fontFamily: "kanitRegular",
+                    }}
+                    placeholder={"- โปรดเลือก -"}
+                    labelStyle={{
+                      textAlign: "left",
+                      color: "#000",
+                      fontFamily: "kanitRegular",
+                    }}
+                    arrowColor={"white"}
+                    arrowSize={17}
+                    arrowStyle={{
+                      backgroundColor: "#02d483",
+                      borderRadius: 17,
+                      color: "white",
+                    }}
+                    onChangeItem={onChangeEventsType}
+                  />
                   <Block>
                     <Text style={styles.fontDescription}>ชื่องานกิจกรรม :</Text>
                     <Block style={styles.inputView}>

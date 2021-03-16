@@ -12,6 +12,7 @@ import {
   ImageBackground,
   Modal,
   RefreshControl,
+  LogBox,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -33,11 +34,12 @@ import { getToken } from "../store/mock/token";
 import CountDownEvent from "../components/CountDownEvent";
 import commaNumber from "comma-number";
 import ModalLoading from "../components/ModalLoading";
-import { ToastAndroid } from "react-native";
+import Toast from "react-native-tiny-toast";
 
 const { width } = Dimensions.get("screen");
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
 let token = getToken();
+LogBox.ignoreLogs(["Setting a timer"]);
 
 function Home(props) {
   const locale = useSelector(({ i18n }) => i18n.lang);
@@ -82,7 +84,16 @@ function Home(props) {
       loadDataProductBestsale();
       loadDataProductPopular();
       loadDataNews();
-      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      Toast.show("Refresh Page", {
+        containerStyle: { backgroundColor: "#f0f0f0", borderRadius: 25 },
+        position: Toast.position.center,
+        animation: true,
+        textStyle: {
+          fontSize: 14,
+          fontFamily: "kanitRegular",
+          color: "#3b3838",
+        },
+      });
       setRefreshingPage(false);
     });
   }, []);
@@ -189,11 +200,29 @@ function Home(props) {
         },
       })
         .then(function (response) {
-          ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+          Toast.show(response.data.data, {
+            containerStyle: { backgroundColor: "#f0f0f0", borderRadius: 25 },
+            position: Toast.position.center,
+            animation: true,
+            textStyle: {
+              fontSize: 14,
+              fontFamily: "kanitRegular",
+              color: "#3b3838",
+            },
+          });
         })
         .catch(function (error) {
           console.log(error);
-          ToastAndroid.show(error.response.data, ToastAndroid.SHORT);
+          Toast.show(error.response.data, {
+            containerStyle: { backgroundColor: "#f0f0f0", borderRadius: 25 },
+            position: Toast.position.center,
+            animation: true,
+            textStyle: {
+              fontSize: 14,
+              fontFamily: "kanitRegular",
+              color: "#3b3838",
+            },
+          });
         });
     };
     return (
@@ -231,11 +260,29 @@ function Home(props) {
           },
         })
           .then(function (response) {
-            ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+            Toast.show(response.data.data, {
+              containerStyle: { backgroundColor: "#f0f0f0", borderRadius: 25 },
+              position: Toast.position.center,
+              animation: true,
+              textStyle: {
+                fontSize: 14,
+                fontFamily: "kanitRegular",
+                color: "#3b3838",
+              },
+            });
           })
           .catch(function (error) {
             console.log(error);
-            ToastAndroid.show(error.response.data, ToastAndroid.SHORT);
+            Toast.show(error.response.data, {
+              containerStyle: { backgroundColor: "#f0f0f0", borderRadius: 25 },
+              position: Toast.position.center,
+              animation: true,
+              textStyle: {
+                fontSize: 14,
+                fontFamily: "kanitRegular",
+                color: "#3b3838",
+              },
+            });
           });
       };
       return (
@@ -769,7 +816,7 @@ function Home(props) {
               </Block>
 
               {/* Count Down */}
-              {countDownTime > 10 ? (
+              {countDownTime > 15 ? (
                 <TouchableHighlight
                   style={{ width: width }}
                   onPress={onClickFalshsaleDetail}
@@ -940,7 +987,6 @@ function Home(props) {
           }}
         />
       </SafeAreaView>
-
       <ModalPopupCoupon />
       <ModalLoading loading={loading} />
     </>
@@ -1205,7 +1251,7 @@ const styles2 = StyleSheet.create({
   TextActivitys: {
     color: "black",
     fontFamily: "kanitRegular",
-    height: 130
+    height: 130,
   },
 });
 

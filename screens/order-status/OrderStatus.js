@@ -9,7 +9,6 @@ import {
   SafeAreaView,
   FlatList,
   RefreshControl,
-  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -25,6 +24,7 @@ import ModalLoading from "../../components/ModalLoading";
 import { API_URL } from "../../config/config.app";
 import commaNumber from "comma-number";
 import { getToken } from "../../store/mock/token";
+import Toast from 'react-native-tiny-toast'
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -82,7 +82,12 @@ function OrderStatus(props) {
     setRefreshingPage(true);
     wait(1000).then(() => {
       loadingCartDetails();
-      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      Toast.show("Refresh Page", {
+        containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+        position: Toast.position.center,
+        animation: true,
+        textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+      });
       setRefreshingPage(false);
     });
   }, []);
@@ -271,7 +276,12 @@ function OrderStatus(props) {
         },
       })
       .then(function (response) {
-        ToastAndroid.show(item.code + " is cancel", ToastAndroid.SHORT);
+        Toast.show(item.code + " is cancel", {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
       })
       .catch(function (error) {
         console.log(error.response.data);

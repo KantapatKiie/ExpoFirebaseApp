@@ -11,7 +11,6 @@ import {
   UIManager,
   Image,
   Dimensions,
-  ToastAndroid,
   ImageBackground,
 } from "react-native";
 import axios from "axios";
@@ -29,6 +28,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Updates from "expo-updates";
 import WangdekInfo from "../../components/WangdekInfo";
 import { API_URL } from "../../config/config.app";
+import Toast from 'react-native-tiny-toast'
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -273,7 +273,12 @@ function SignIn(props) {
               });
           });
         setLoggedinStatus(true);
-        ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+        Toast.show(response.data.message, {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
       });
     setLoading(false);
     setLoggedinStatus(true);
@@ -314,11 +319,21 @@ function SignIn(props) {
       },
     })
       .then((response) => {
-        ToastAndroid.show("Upload success!", ToastAndroid.SHORT);
+        Toast.show("Upload success!", {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
       })
       .catch((error) => {
         console.log("upload error", error);
-        ToastAndroid.show("Upload failed!", ToastAndroid.SHORT);
+        Toast.show("Upload failed!", {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
       });
   };
   // Login
@@ -521,7 +536,12 @@ function SignIn(props) {
                 });
               setLoggedinStatus(true);
               setLoading(false);
-              ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+              Toast.show(response.data.message, {
+                containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+                position: Toast.position.center,
+                animation: true,
+                textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+              });
             })
             .catch(function (error) {
               setLoggedinStatus(false);
@@ -529,17 +549,24 @@ function SignIn(props) {
               setRequiredEmail(true);
               setLoading(false);
               console.log("error:", error.message);
-              ToastAndroid.show(
-                "Email or Password was Wrong",
-                ToastAndroid.SHORT
-              );
+              Toast.show("Email or Password was Wrong", {
+                containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+                position: Toast.position.center,
+                animation: true,
+                textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+              });
             });
         } else {
           setLoading(false);
           setLoggedinStatus(false);
           setRequiredPass(false);
           setRequiredEmail(true);
-          ToastAndroid.show("Email was Wrong", ToastAndroid.SHORT);
+          Toast.show("Email was Wrong", {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
         }
       } else {
         setLoading(false);
@@ -550,10 +577,12 @@ function SignIn(props) {
       setRequiredEmail(true);
       setRequiredPass(true);
       setLoading(false);
-      ToastAndroid.show(
-        "Please enter your email & password",
-        ToastAndroid.SHORT
-      );
+      Toast.show("Please enter your email & password", {
+        containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+        position: Toast.position.center,
+        animation: true,
+        textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+      });
     }
     setLoading(false);
   }
@@ -567,7 +596,12 @@ function SignIn(props) {
     // props.setTokenGenerate("");
     Updates.reloadAsync();
     setLoggedinStatus(false);
-    ToastAndroid.show("Logout successfully", ToastAndroid.SHORT);
+    Toast.show("Logout successfully", {
+      containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+      position: Toast.position.center,
+      animation: true,
+      textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+    });
   }
 
   // Facbook login
@@ -594,17 +628,29 @@ function SignIn(props) {
           .then((data) => {
             setLoggedinStatus(true);
             setUserData(data);
-            ToastAndroid.show(
-              "Logged in complete Hi " + data.name + "!",
-              ToastAndroid.SHORT
-            );
+            Toast.show("Logged in complete Hi " + data.name + "!", {
+              containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+              position: Toast.position.center,
+              animation: true,
+              textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+            });
           })
           .catch((e) => console.log(e));
       } else {
-        ToastAndroid.show("Login failed", ToastAndroid.SHORT);
+        Toast.show("Login failed!", {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
       }
     } catch ({ message }) {
-      ToastAndroid.show("Error", ToastAndroid.SHORT);
+      Toast.show("failed", {
+        containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+        position: Toast.position.center,
+        animation: true,
+        textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+      });
     }
   };
 

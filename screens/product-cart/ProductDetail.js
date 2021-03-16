@@ -5,7 +5,6 @@ import {
   StatusBar,
   Dimensions,
   TouchableOpacity,
-  ToastAndroid,
   ScrollView,
   Share,
 } from "react-native";
@@ -29,7 +28,7 @@ import commaNumber from "comma-number";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
 import HTML from "react-native-render-html";
-import Toast from 'react-native-simple-toast';
+import Toast from 'react-native-tiny-toast'
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -137,7 +136,12 @@ function ProductDetail(props) {
       },
     })
       .then(async (response) => {
-        Toast.show(response.data.data, Toast.LONG);
+        Toast.show(response.data.data, {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
         props.navigation.navigate("Cart");
         
         // await axios({
@@ -175,7 +179,12 @@ function ProductDetail(props) {
       },
     })
       .then(function (response) {
-        ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        Toast.show(response.data.data, {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
         props.navigation.navigate("Cart");
       })
       .catch(function (error) {
@@ -209,7 +218,12 @@ function ProductDetail(props) {
         subject: "Share message website",
       })
         .then(function (response) {
-          ToastAndroid.show(response.data, ToastAndroid.SHORT);
+          Toast.show(response.data, {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
         })
         .catch(function (error) {
           console.log(error);
@@ -224,7 +238,12 @@ function ProductDetail(props) {
         tintColor: "black",
       })
         .then(function (response) {
-          ToastAndroid.show(response.data, ToastAndroid.SHORT);
+          Toast.show(response.data, {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
         })
         .catch(function (error) {
           console.log(error);

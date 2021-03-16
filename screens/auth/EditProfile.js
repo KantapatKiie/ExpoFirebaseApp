@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Dimensions,
   ScrollView,
-  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -23,7 +22,8 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { Button } from "react-native-elements";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from 'react-native-tiny-toast'
+// import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -379,7 +379,12 @@ function EditProfile(props) {
       .then(function (response) {
         console.log(response.data);
         setLoading(true);
-        ToastAndroid.show("User updated", ToastAndroid.SHORT);
+        Toast.show("User updated", {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
       })
       .catch(function (error) {
         console.log("error:", error);

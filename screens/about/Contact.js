@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ImageBackground,
   Image,
-  ToastAndroid,
   TextInput,
 } from "react-native";
 import axios from "axios";
@@ -26,6 +25,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import WangdekInfo from "../../components/WangdekInfo";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
+import Toast from 'react-native-tiny-toast'
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -121,16 +121,31 @@ function Contact(props) {
       },
     })
       .then(function (response) {
-        ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+        Toast.show(response.data.data, {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
       })
       .catch(function (error) {
         console.log(error);
-        ToastAndroid.show(error.response.data.data, ToastAndroid.SHORT);
+        Toast.show(error.response.data.data, {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
       });
   };
   const unsendTopicContactUs = () => {
     props.clearObjContactHD();
-    ToastAndroid.show("ยกเลิกการส่งแบบฟอริ์ม", ToastAndroid.SHORT);
+    Toast.show("ยกเลิกการส่งแบบฟอริ์ม", {
+      containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+      position: Toast.position.center,
+      animation: true,
+      textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+    });
   };
 
   return (

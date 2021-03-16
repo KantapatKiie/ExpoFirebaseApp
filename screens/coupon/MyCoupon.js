@@ -10,7 +10,6 @@ import {
   FlatList,
   SectionList,
   RefreshControl,
-  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -24,6 +23,7 @@ import * as ActionMyCoupon from "../../actions/action-my-coupon/ActionMyCoupon";
 import WangdekInfo from "../../components/WangdekInfo";
 import { getToken } from "../../store/mock/token";
 import ModalLoading from "../../components/ModalLoading";
+import Toast from 'react-native-tiny-toast'
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -47,7 +47,12 @@ function MyCoupon(props) {
     setRefreshingPage(true);
     wait(1000).then(() => {
       loadListCoupon();
-      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      Toast.show("Refresh Page", {
+        containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+        position: Toast.position.center,
+        animation: true,
+        textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+      });
       setRefreshingPage(false);
     });
   }, []);

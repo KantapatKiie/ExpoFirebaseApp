@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
-  ToastAndroid,
   TouchableOpacity,
   Image,
   ScrollView,
@@ -20,6 +19,7 @@ import { Block, Text } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
 import HTML from "react-native-render-html";
+import Toast from 'react-native-tiny-toast'
 
 const { height, width } = Dimensions.get("screen");
 const rootImage = "http://demo-ecommerce.am2bmarketing.co.th";
@@ -112,7 +112,12 @@ function NewsRelationDetail(props) {
         dialogTitle: "Share website",
       })
         .then(function (response) {
-          ToastAndroid.show(response.data, ToastAndroid.SHORT);
+          Toast.show(response.data, {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
         })
         .catch(function (error) {
           console.log(error);
@@ -127,7 +132,12 @@ function NewsRelationDetail(props) {
         tintColor: "black",
       })
         .then(function (response) {
-          ToastAndroid.show(response.data, ToastAndroid.SHORT);
+          Toast.show(response.data, {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
         })
         .catch(function (error) {
           console.log(error);

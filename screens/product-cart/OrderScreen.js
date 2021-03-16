@@ -7,7 +7,6 @@ import {
   Dimensions,
   SectionList,
   TouchableOpacity,
-  ToastAndroid,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -26,6 +25,7 @@ import { Button } from "react-native-elements";
 import commaNumber from "comma-number";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
+import Toast from 'react-native-tiny-toast'
 
 const { height, width } = Dimensions.get("screen");
 const token = getToken();
@@ -189,16 +189,30 @@ function OrderScreen(props) {
             setLoading(false);
           });
         } else {
-          ToastAndroid.show("กรุณาเลือกที่อยู่ในการจัดส่ง", ToastAndroid.SHORT);
+          Toast.show("กรุณาเลือกที่อยู่ในการจัดส่ง", {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
           setLoading(false);
         }
       } else {
         setLoading(false);
-        ToastAndroid.show("กรุณาเลือกช่องทางการจัดส่ง", ToastAndroid.SHORT);
+        Toast.show("กรุณาเลือกช่องทางการจัดส่ง", {
+          containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+          position: Toast.position.center,
+          animation: true,
+          textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+        });
       }
     } else {
-      ToastAndroid.show("ไม่มีสินค้าในตะกร้า", ToastAndroid.SHORT);
-      alert("ไม่มีสินค้าในตะกร้า");
+      Toast.show("ไม่มีสินค้าในตะกร้า", {
+        containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+        position: Toast.position.center,
+        animation: true,
+        textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+      });
     }
     setLoading(false);
   };

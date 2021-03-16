@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   SafeAreaView,
   FlatList,
-  ToastAndroid,
   RefreshControl,
   Alert,
 } from "react-native";
@@ -27,6 +26,7 @@ import commaNumber from "comma-number";
 import { API_URL } from "../../config/config.app";
 import { getToken } from "../../store/mock/token";
 import ModalLoading from "../../components/ModalLoading";
+import Toast from 'react-native-tiny-toast'
 
 const { height, width } = Dimensions.get("screen");
 const token = getToken();
@@ -48,7 +48,12 @@ function CartScreen(props) {
     setRefreshingPage(true);
     wait(1000).then(() => {
       loadCartLists();
-      ToastAndroid.show("Refresh Page", ToastAndroid.SHORT);
+      Toast.show("Refresh Page", {
+        containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+        position: Toast.position.center,
+        animation: true,
+        textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+      });
       setRefreshingPage(false);
     });
   }, []);
@@ -71,7 +76,6 @@ function CartScreen(props) {
     })
       .then(async (response) => {
         let newlst = await response.data.data;
-        console.log(newlst)
         setListCarts(newlst);
         setLoading(false);
       })
@@ -108,7 +112,12 @@ function CartScreen(props) {
         },
       })
         .then(async (response) => {
-          ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+          Toast.show(response.data.data, {
+            containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+            position: Toast.position.center,
+            animation: true,
+            textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+          });
 
           // await axios({
           //   method: "GET",
@@ -177,7 +186,7 @@ function CartScreen(props) {
             <Text style={styles.fontPriceProductFullPrice}>
               ฿{commaNumber(parseFloat(item.product_full_price).toFixed(2))}
             </Text>
-            <Block style={styles.boxPriceSale}/>
+            <Block style={styles.boxPriceSale} />
           </Block>
           <Block style={{ width: "40%", alignSelf: "center" }}>
             <Text style={styles.fontPriceProduct}>
@@ -370,7 +379,7 @@ const styles = StyleSheet.create({
     fontFamily: "kanitRegular",
     fontSize: 18,
     color: "#8f8f8f",
-    marginTop:5
+    marginTop: 5,
   },
   blockButton1: {
     flexDirection: "row",
@@ -401,7 +410,7 @@ const styles = StyleSheet.create({
     borderTopColor: "red",
     position: "relative",
     width: 70,
-    transform: [{ rotate: '8deg'}],
+    transform: [{ rotate: "8deg" }],
     marginTop: -15,
   },
 });

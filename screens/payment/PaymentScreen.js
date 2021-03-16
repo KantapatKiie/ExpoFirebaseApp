@@ -5,24 +5,22 @@ import {
   Dimensions,
   Text,
   TouchableOpacity,
-  View,
   Image,
-  ToastAndroid,
 } from "react-native";
 import { Block } from "galio-framework";
 import { connect, useSelector } from "react-redux";
 import * as ActionPayment from "../../actions/action-payment/ActionPayment";
 import { Button } from "react-native-elements";
-import { Icon } from "../../components";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
+// import { Icon } from "../../components";
 
 const { height, width } = Dimensions.get("screen");
 
 function PaymentScreen(props) {
-  const { objPaymentHD } = useSelector((state) => ({
-    objPaymentHD: state.actionPayment.objPaymentHD,
-  }));
+  // const { objPaymentHD } = useSelector((state) => ({
+  //   objPaymentHD: state.actionPayment.objPaymentHD,
+  // }));
 
   useEffect(() => {
     setObjSearch({
@@ -33,10 +31,6 @@ function PaymentScreen(props) {
   const [objSearch, setObjSearch] = useState({
     PLACE_NO: "",
   });
-
-  const showToast = () => {
-    ToastAndroid.show("Test ToastAndriod React Native !", ToastAndroid.SHORT);
-  };
 
   return (
     <>
@@ -205,7 +199,7 @@ function PaymentScreen(props) {
             type="solid"
             containerStyle={styles.blockButton2}
             buttonStyle={styles.buttonStyle2}
-            onPress={() => showToast()}
+            onPress={() => props.navigation.navigate("Payment Notifications")}
           />
         </Block>
         {/* Info */}

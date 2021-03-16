@@ -2,14 +2,13 @@ import React, { useState, useEffect } from "react";
 import { connect, useSelector } from "react-redux";
 import {
   Image,
-  CheckBox,
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
   SectionList,
   Dimensions,
   FlatList,
-  ToastAndroid,
+  Platform,
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -28,6 +27,7 @@ import { Searchbar } from "react-native-paper";
 import DropDownPicker from "react-native-dropdown-picker";
 import RangeSlider from "react-native-range-slider-expo";
 import ModalLoading from "../../components/ModalLoading";
+import Checkboxs from "react-native-modest-checkbox";
 
 const { width } = Dimensions.get("window");
 let token = getToken();
@@ -133,21 +133,19 @@ function FilterSearch(props) {
     };
     return (
       <Block row style={{ marginTop: 10 }} key={item.id}>
-        <CheckBox
-          value={item.image == "" ? true : false}
-          onValueChange={() => onCheckItemType(item)}
-        />
-        <Block style={{ width: "72%" }}>
-          <Text
-            style={{
+        <Block style={{ width: "82%" }}>
+          <Checkboxs
+            checked={item.image == "" ? true : false}
+            onChange={() => onCheckItemType(item)}
+            label={locale == "th" ? item.name_th : item.name_en}
+            labelStyle={{
               color: "#707070",
               fontSize: 14,
               fontFamily: "kanitRegular",
               margin: 5,
             }}
-          >
-            {locale == "th" ? item.name_th : item.name_en}
-          </Text>
+            checkboxStyle={{ width: 28, height: 28}}
+          />
         </Block>
         <Block style={{ width: "22%" }}>
           <Text
@@ -192,21 +190,19 @@ function FilterSearch(props) {
     };
     return (
       <Block row style={{ marginTop: 10 }} key={item.id}>
-        <CheckBox
-          value={item.image == "" ? true : false}
-          onValueChange={() => onCheckItemBrands(item)}
-        />
-        <Block style={{ width: "72%" }}>
-          <Text
-            style={{
+        <Block style={{ width: "82%" }}>
+          <Checkboxs
+            checked={item.image == "" ? true : false}
+            onChange={() => onCheckItemBrands(item)}
+            label={locale == "th" ? item.name_th : item.name_en}
+            labelStyle={{
               color: "#707070",
               fontSize: 14,
               fontFamily: "kanitRegular",
               margin: 5,
             }}
-          >
-            {locale == "th" ? item.name_th : item.name_en}
-          </Text>
+            checkboxStyle={{ width: 28, height: 28 }}
+          />
         </Block>
         <Block style={{ width: "22%" }}>
           <Text
@@ -305,47 +301,45 @@ function FilterSearch(props) {
               </TouchableOpacity>
 
               {/* Search & Filter */}
-              <Block>
-                <Searchbar
-                  placeholder="ค้นหาคำสั่งซื้อ"
-                  value={objFilterSearch.SEARCH_ORDER}
-                  onChange={onChangeSearch}
-                  style={styles.search}
-                  inputStyle={{
-                    color: "#707070",
-                    fontSize: 15,
-                    fontFamily: "kanitRegular",
-                  }}
-                />
-                <DropDownPicker
-                  items={itemFilter}
-                  containerStyle={{
-                    height: 40,
-                    width: width - 23,
-                    alignSelf: "center",
-                  }}
-                  style={{ backgroundColor: "#f0f0f0" }}
-                  itemStyle={{
-                    justifyContent: "flex-start",
-                  }}
-                  dropDownStyle={{ backgroundColor: "#f0f0f0" }}
-                  labelStyle={{
-                    textAlign: "left",
-                    color: "#707070",
-                    fontSize: 15,
-                    fontFamily: "kanitRegular",
-                  }}
-                  arrowColor={"white"}
-                  arrowSize={18}
-                  arrowStyle={{
-                    backgroundColor: "#02d483",
-                    borderRadius: 18,
-                    color: "white",
-                  }}
-                  defaultValue={filterSearch}
-                  onChangeItem={onChangeFilter}
-                />
-              </Block>
+              <Searchbar
+                placeholder="ค้นหาคำสั่งซื้อ"
+                value={objFilterSearch.SEARCH_ORDER}
+                onChange={onChangeSearch}
+                style={styles.search}
+                inputStyle={{
+                  color: "#707070",
+                  fontSize: 15,
+                  fontFamily: "kanitRegular",
+                }}
+              />
+              <DropDownPicker
+                items={itemFilter}
+                containerStyle={{
+                  height: Platform.OS === "android" ? 40 : 50,
+                  width: width - 23,
+                  alignSelf: "center",
+                }}
+                style={{ backgroundColor: "#f0f0f0" }}
+                itemStyle={{
+                  justifyContent: "flex-start",
+                }}
+                dropDownStyle={{ backgroundColor: "#f0f0f0" }}
+                labelStyle={{
+                  textAlign: "left",
+                  color: "#707070",
+                  fontSize: 15,
+                  fontFamily: "kanitRegular",
+                }}
+                arrowColor={"white"}
+                arrowSize={18}
+                arrowStyle={{
+                  backgroundColor: "#02d483",
+                  borderRadius: 18,
+                  color: "white",
+                }}
+                defaultValue={filterSearch}
+                onChangeItem={onChangeFilter}
+              />
 
               {/* Checkbox Type */}
               <Block

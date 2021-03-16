@@ -11,7 +11,6 @@ import {
   Platform,
   UIManager,
   Dimensions,
-  ToastAndroid
 } from "react-native";
 import axios from "axios";
 import moment from "moment";
@@ -25,6 +24,7 @@ import { Block } from "galio-framework";
 import { formatTr } from "../../i18n/I18nProvider";
 import WangdekInfo from "../../components/WangdekInfo";
 import ModalLoading from "../../components/ModalLoading";
+import Toast from 'react-native-tiny-toast'
 
 const { width } = Dimensions.get("screen");
 const token = getToken();
@@ -85,11 +85,21 @@ function ForgotPassword(props) {
           },
         })
           .then(function (response) {
-            ToastAndroid.show(response.data.data, ToastAndroid.SHORT);
+            Toast.show(response.data.data, {
+              containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+              position: Toast.position.center,
+              animation: true,
+              textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+            });
           })
           .catch(function (error) {
             console.log(error);
-            ToastAndroid.show(error.response.data, ToastAndroid.SHORT);
+            Toast.show(error.response.data, {
+              containerStyle:{ backgroundColor:"#f0f0f0", borderRadius:25},
+              position: Toast.position.center,
+              animation: true,
+              textStyle: { fontSize:14,fontFamily: "kanitRegular", color:"#3b3838" },
+            });
           });
       }
     } else {
