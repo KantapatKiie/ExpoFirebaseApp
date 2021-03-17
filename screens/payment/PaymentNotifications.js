@@ -146,7 +146,7 @@ function PaymentNotifications(props) {
   };
   const onChangePhoneNumber = (e) => {
     let newObj = Object.assign({}, objSearch);
-    newObj.fullname = e;
+    newObj.telephone = e;
     setObjSearch(newObj);
   };
   const onChangeEmail = (e) => {
